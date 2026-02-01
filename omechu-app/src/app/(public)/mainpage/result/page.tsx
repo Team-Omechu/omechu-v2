@@ -2,8 +2,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
 import { useRouter } from "next/navigation";
 
+import { useLocationAnswerStore } from "@/entities/location";
+import { MenuItem, useGetMenu } from "@/entities/menu";
+import { useQuestionAnswerStore } from "@/entities/question";
+import { useAuthStore } from "@/entities/user/model/auth.store";
 import {
   Header,
   MainLoading,
@@ -13,10 +18,6 @@ import {
   RecommendedFoodCard,
   Button,
 } from "@/shared";
-import { useAuthStore } from "@/entities/user/model/auth.store";
-import { MenuItem, useGetMenu } from "@/entities/menu";
-import { useQuestionAnswerStore } from "@/entities/question";
-import { useLocationAnswerStore } from "@/entities/location";
 import { TagCard } from "@/widgets/TagCard";
 
 export default function ResultPage() {

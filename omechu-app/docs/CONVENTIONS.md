@@ -65,6 +65,33 @@ src/
 └── shared/        # Reusable code (ui, api, lib, config)
 ```
 
+#### Route Group Structure
+
+Next.js App Router의 Route Group을 활용하여 인증 여부에 따라 라우트를 분류합니다.
+
+```
+src/app/
+├── (auth)/        # 인증 페이지 (로그인, 회원가입, 비밀번호 재설정)
+├── (public)/      # 비로그인 접근 가능 (메인, 랜덤추천, 메뉴배틀)
+├── (private)/     # 로그인 필수 → layout.tsx에서 ProtectedRoute 적용
+│   ├── layout.tsx # ProtectedRoute로 children 감싸기
+│   ├── mypage/
+│   └── onboarding/
+└── api/           # Next.js Route Handlers
+```
+
+| Route Group | 인증 필요 | 설명                                           |
+| ----------- | --------- | ---------------------------------------------- |
+| `(auth)`    | ✕         | 로그인/회원가입 등 인증 플로우 전용            |
+| `(public)`  | ✕         | 비로그인 사용자도 접근 가능한 페이지           |
+| `(private)` | ✔         | 로그인 필수, 미인증 시 `/login`으로 리다이렉트 |
+
+**규칙:**
+
+- 새 페이지 추가 시 반드시 `(public)` 또는 `(private)` 중 적절한 그룹에 배치
+- `(private)` 그룹의 layout.tsx가 `ProtectedRoute`로 하위 전체를 보호하므로 개별 페이지에서 인증 체크 불필요
+- Route Group은 URL에 영향을 주지 않음 (`/mypage`는 그대로 `/mypage`)
+
 #### Entity Module Structure
 
 ```

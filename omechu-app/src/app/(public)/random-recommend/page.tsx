@@ -5,16 +5,15 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { Header, ModalWrapper } from "@/shared";
 import { useQuestionAnswerStore } from "@/entities/question";
-import { RandomRecommendModal } from "@/widgets/RandomRecommendModal";
-
 import {
   EMPTY_RANDOM_DRAW_SELECTION,
   type RandomDrawSelection,
   type RandomDrawGroupKey,
 } from "@/entities/randomDraw";
+import { Header, ModalWrapper } from "@/shared";
 import { RandomDrawSelector } from "@/widgets/RandomDraw";
+import { RandomRecommendModal } from "@/widgets/RandomRecommendModal";
 
 export default function RandomRecommendPage() {
   const router = useRouter();

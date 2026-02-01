@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { useOnboardingStore } from "@/entities/onboarding";
 import { OnboardingCharacterIcon } from "@/shared/assets/icons/onboarding/OnboardingCharacterIcon";
 import { BottomButton, FormField, Input } from "@/shared/index";
 
@@ -43,6 +44,7 @@ export default function OnboardingStartForm() {
         disabled={!isValidNickname}
         onClick={() => {
           if (!isValidNickname) return;
+          useOnboardingStore.getState().setNickname(nickname);
           router.push("/onboarding/state");
         }}
       >

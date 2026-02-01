@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import {
   BasicAllergyForm,
   completeOnboarding,
@@ -10,6 +12,7 @@ import {
 
 export default function AllergyForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { nickname, exercise, prefer, allergy } = useOnboardingStore();
 
   const handleSave = async () => {
@@ -19,6 +22,7 @@ export default function AllergyForm() {
       prefer,
       allergy,
     });
+    queryClient.invalidateQueries({ queryKey: ["user", "profile"] });
   };
 
   return (

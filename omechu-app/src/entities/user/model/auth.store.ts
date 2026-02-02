@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 import type { LoginSuccessData } from "@/entities/user/api/authApi";
+import { queryClient } from "@/shared/lib/queryClient";
 
 interface AuthStoreState {
   isLoggedIn: boolean;
@@ -46,8 +47,8 @@ export const useAuthStore = create<AuthStore>()(
           accessToken: null,
           refreshToken: null,
         });
+        queryClient.clear();
         try {
-          // 모든 user-specific storage 클리어
           localStorage.removeItem(AUTH_STORAGE_KEY);
           localStorage.removeItem("onboarding-storage");
           localStorage.removeItem("tag-data-storage");

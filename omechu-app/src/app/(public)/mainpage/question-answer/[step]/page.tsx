@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+
 import { useParams, useRouter } from "next/navigation";
 
+import { useQuestionAnswerStore } from "@/entities/question";
 import {
   BaseModal,
   Header,
@@ -10,7 +12,6 @@ import {
   PaginationButton,
   ProgressBar,
 } from "@/shared";
-import { useQuestionAnswerStore } from "@/entities/question";
 import {
   BudgetStep,
   MealTimeStep,

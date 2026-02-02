@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 import { getCurrentUserWithToken, useAuthStore } from "@/entities/user";
 import { Toast, useToast } from "@/shared";
+import { queryClient } from "@/shared/lib/queryClient";
 
 export default function OAuthCallbackPage() {
   return (
@@ -75,10 +76,9 @@ function CallbackContent() {
       }
 
       try {
-        // 1. 토큰으로 유저 정보 조회
         const user = await getCurrentUserWithToken(accessToken);
 
-        // 2. Zustand store에 저장
+        queryClient.clear();
         useAuthStore.getState().login({
           accessToken,
           refreshToken: refreshToken || "",

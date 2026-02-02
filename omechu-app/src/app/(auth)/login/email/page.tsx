@@ -52,19 +52,11 @@ export default function EmailLoginPage() {
   const onSubmit = useCallback(
     (data: LoginFormValues) => {
       login(data, {
-        onSuccess: async (res) => {
+        onSuccess: async () => {
           try {
-            const userKey = res?.userId ?? "me";
-
-            // 프로필 prefetch로 화면 로딩 최적화
             await queryClient.prefetchQuery({
-              queryKey: ["profile", userKey],
+              queryKey: ["user", "profile"],
               queryFn: fetchProfile,
-            });
-
-            queryClient.invalidateQueries({
-              queryKey: ["profile"],
-              exact: false,
             });
             justLoggedInRef.current = true;
           } catch (e) {

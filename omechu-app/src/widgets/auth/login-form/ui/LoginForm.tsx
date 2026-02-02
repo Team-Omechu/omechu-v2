@@ -73,26 +73,11 @@ export default function LoginForm() {
   const onSubmit = useCallback(
     (data: LoginFormValues) => {
       login(data, {
-        onSuccess: async (res) => {
+        onSuccess: async () => {
           try {
-            const userKey = res?.userId ?? "me";
-
-            queryClient.setQueryData(["profile", userKey], {
-              id: String(userKey),
-              nickname: "",
-              exercise: "",
-              prefer: [],
-              allergy: [],
-            });
-
             await queryClient.prefetchQuery({
-              queryKey: ["profile", userKey],
+              queryKey: ["user", "profile"],
               queryFn: fetchProfile,
-            });
-
-            queryClient.invalidateQueries({
-              queryKey: ["profile"],
-              exact: false,
             });
             justLoggedInRef.current = true;
           } catch (e) {

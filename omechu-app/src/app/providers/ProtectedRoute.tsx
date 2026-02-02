@@ -36,9 +36,9 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
       checkAuthAndProceed(useAuthStore.getState().isLoggedIn);
     });
 
-    // 이미 하이드레이션이 완료된 경우
+    // 이미 하이드레이션이 완료된 경우 (store에서 직접 읽어 stale 클로저 방지)
     if (useAuthStore.persist.hasHydrated()) {
-      checkAuthAndProceed(isLoggedIn);
+      checkAuthAndProceed(useAuthStore.getState().isLoggedIn);
     }
 
     return () => {

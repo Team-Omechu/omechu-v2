@@ -20,7 +20,7 @@ const foodValueToLabel: Record<string, string> = {
   western: "양식",
   chinese: "중식",
   japanese: "일식",
-  other: "다른 나라",
+  other: "다른나라",
 };
 
 interface BasicFoodFormProps {

@@ -6,9 +6,21 @@ const normExercise = (v?: string | null) => {
   const s = (v ?? "").trim();
   if (!s) return null;
   const u = s.toUpperCase();
-  if (u === "DIET" || s.includes("다이어트")) return "다이어트 중";
-  if (u === "BULK" || s.includes("증량")) return "증량 중";
-  if (u === "MAINTAIN" || s.includes("유지")) return "유지 중";
+  if (
+    u === "DIET" ||
+    u === "DIETING" ||
+    u === "CUTTING" ||
+    s.includes("다이어트")
+  )
+    return "다이어트 중";
+  if (u === "BULK" || u === "BULKING" || s.includes("증량")) return "증량 중";
+  if (
+    u === "MAINTAIN" ||
+    u === "MAINTAINING" ||
+    u === "MAINTENANCE" ||
+    s.includes("유지")
+  )
+    return "유지 중";
   return s; // 이미 라벨일 가능성
 };
 const normBodyType = (v?: string | null) => {
@@ -23,24 +35,71 @@ const normBodyType = (v?: string | null) => {
 const normPrefer = (v?: string | null) => {
   const s = (v ?? "").trim();
   if (!s) return null;
-  if (["한식", "양식", "중식", "일식", "다른나라"].includes(s)) return s;
+  const noSpace = s.replace(/\s+/g, "");
+  if (["한식", "양식", "중식", "일식", "다른나라"].includes(noSpace))
+    return noSpace;
   const u = s.toUpperCase();
   if (u === "KOR") return "한식";
   if (u === "WES" || u === "WESTERN") return "양식";
   if (u === "CHI" || u === "CHINESE") return "중식";
   if (u === "JPN" || u === "JAPANESE") return "일식";
-  if (s.includes("다른나라")) return "다른나라";
+  if (noSpace.includes("다른나라")) return "다른나라";
   return s; // 최대한 보존
 };
+const VALID_ALLERGY_LABELS = new Set([
+  "달걀",
+  "우유",
+  "메밀",
+  "대두",
+  "밀",
+  "땅콩",
+  "호두",
+  "잣",
+  "돼지고기",
+  "소고기",
+  "닭고기",
+  "고등어",
+  "새우",
+  "게",
+  "오징어",
+  "조개류",
+  "복숭아",
+  "토마토",
+  "아황산류",
+  "그 외",
+]);
+
+const ENUM_TO_LABEL: Record<string, string> = {
+  egg: "달걀",
+  milk: "우유",
+  buckwheat: "메밀",
+  soybean: "대두",
+  soy: "대두",
+  wheat: "밀",
+  peanut: "땅콩",
+  walnut: "호두",
+  pine_nut: "잣",
+  pork: "돼지고기",
+  beef: "소고기",
+  chicken: "닭고기",
+  mackerel: "고등어",
+  shrimp: "새우",
+  crab: "게",
+  squid: "오징어",
+  shellfish: "조개류",
+  peach: "복숭아",
+  tomato: "토마토",
+  sulfites: "아황산류",
+  other: "그 외",
+};
+
 const normAllergy = (v?: string | null) => {
-  const s = (v ?? "").replace(/\s+/g, "");
+  const s = (v ?? "").trim();
   if (!s) return null;
-  if (s.includes("달걀") || s.includes("난류")) return "달걀(난류) 알레르기";
-  if (s.includes("우유") || s.includes("유제품")) return "우유 알레르기";
-  if (s.includes("갑각류")) return "갑각류 알레르기";
-  if (s.includes("해산물")) return "해산물 알레르기";
-  if (s.includes("견과")) return "견과류 알레르기";
-  return v ?? null;
+  if (VALID_ALLERGY_LABELS.has(s)) return s;
+  const fromEnum = ENUM_TO_LABEL[s.toLowerCase()];
+  if (fromEnum) return fromEnum;
+  return null;
 };
 const uniq = <T>(arr: T[]) => Array.from(new Set(arr));
 const toArray = (v: unknown): unknown[] =>

@@ -1,15 +1,16 @@
 "use client";
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useTagStore } from "@/entities/tag";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 import { handleLocation, useLocationAnswerStore } from "@/entities/location";
 import { useQuestionAnswerStore } from "@/entities/question";
-import { StartButton } from "@/widgets/mainpage/ui/StartButton";
+import { useTagStore } from "@/entities/tag";
 import { BaseModal, ModalWrapper } from "@/shared";
 import { usePwaEntryModal } from "@/shared/lib/usePwaEntryModal";
+import { StartButton } from "@/widgets/mainpage/ui/StartButton";
 
 type Pick = "start" | "battle" | "random" | null;
 

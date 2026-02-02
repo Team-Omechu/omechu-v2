@@ -34,6 +34,11 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("from") === "401";
 
+    if (isLoggedIn && inAuthSection) {
+      router.replace("/mainpage");
+      return;
+    }
+
     // 이미 로그인 상태거나 세션 조회 에러면 아무것도 하지 않음
     if (isLoggedIn || isError) return;
 
@@ -50,15 +55,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
         router.push("/onboarding");
       }
     }
-  }, [
-    isSuccess,
-    isError,
-    sessionUser,
-    isLoggedIn,
-    router,
-    pathname,
-    inAuthSection,
-  ]);
+  }, [isSuccess, isError, sessionUser, isLoggedIn, router, inAuthSection]);
 
   return <>{children}</>;
 }

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | 오메추",
   },
   description:
-    "당신의 취향과 상황을 분석하여 오늘 딱 맞는 메뉴와 주변 맛집을 추천해드립니다.",
+    "당신의 취향과 상황을 분석하여 오늘 딱 맞는 메뉴와 주변 맛집을 추천해 드립니다.",
   keywords: [
     "메뉴추천",
     "오늘뭐먹지",
@@ -48,16 +48,21 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/logo/logo.png",
-        width: 512,
-        height: 512,
-        alt: "오메추 로고",
+        url: "/og/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "오메추 - 오늘 뭐 먹지? 메뉴 추천 서비스",
       },
     ],
   },
   twitter: {
-    card: "summary",
-    images: [{ url: "/logo/logo.png", alt: "오메추 로고" }],
+    card: "summary_large_image",
+    images: [
+      {
+        url: "/og/og-image.png",
+        alt: "오메추 - 오늘 뭐 먹지? 메뉴 추천 서비스",
+      },
+    ],
   },
   robots: {
     index: true,

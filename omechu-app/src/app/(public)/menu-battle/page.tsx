@@ -336,31 +336,33 @@ export default function MenuBattlePage() {
       </section>
 
       {/* 하단 CTA */}
-      <footer className="fixed right-0 bottom-0 left-0 rounded-t-2xl bg-white px-6 py-5 shadow">
-        <div className="flex items-center justify-between">
-          {/* 왼쪽 텍스트 */}
-          <div>
-            <p className="text-body-4 text-font-high">선택된 메뉴</p>
-            <p className="text-body-4 text-font-placeholder">
-              {selectedMenus.length}개
-            </p>
-          </div>
+      <div className="fixed bottom-0 left-0 w-full">
+        <footer className="mx-auto w-full max-w-120 rounded-t-2xl bg-white px-6 py-5 shadow">
+          <div className="flex items-center justify-between">
+            {/* 왼쪽 텍스트 */}
+            <div>
+              <p className="text-body-4 text-font-high">선택된 메뉴</p>
+              <p className="text-body-4 text-font-placeholder">
+                {selectedMenus.length}개
+              </p>
+            </div>
 
-          {/* 오른쪽 버튼 */}
-          <BattleButton
-            width="md"
-            disabled={selectedMenus.length === 0}
-            onClick={handleCreateBattle}
-            className={`px-6 ${
-              selectedMenus.length === 0
-                ? "bg-statelayer-disabled text-white"
-                : "bg-statelayer-default text-white"
-            }`}
-          >
-            배틀방 생성
-          </BattleButton>
-        </div>
-      </footer>
+            {/* 오른쪽 버튼 */}
+            <BattleButton
+              width="md"
+              disabled={selectedMenus.length === 0}
+              onClick={handleCreateBattle}
+              className={`px-6 ${
+                selectedMenus.length === 0
+                  ? "bg-statelayer-disabled text-white"
+                  : "bg-statelayer-default text-white"
+              }`}
+            >
+              배틀방 생성
+            </BattleButton>
+          </div>
+        </footer>
+      </div>
 
       {/* 생성 완료 모달 */}
       {showCreateModal && (
@@ -408,7 +410,7 @@ export default function MenuBattlePage() {
 
               <Button
                 width="md"
-                className="flex-1 bg-[#FF7A9E] text-white"
+                className="bg-statelayer-default flex-1 text-white"
                 onClick={() => setShowNicknameModal(true)}
               >
                 바로 참여하기
@@ -446,7 +448,7 @@ export default function MenuBattlePage() {
             />
             <Button
               width="xl"
-              className="mt-3 w-full bg-[#FF7A9E] text-white"
+              className="bg-statelayer-default mt-3 w-full text-white"
               onClick={handleJoinRoom}
             >
               입장하기

@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -15,18 +15,11 @@ import { Button } from "@/shared";
 import { fetchJSON } from "@/shared/api/fetchJSON";
 import { menuBattleAPI } from "@/shared/api/menuBattle.api";
 
-// TODO: 실제 API 연동 필요, 전체 메뉴 목록 불러오는 API 필요
-const dummyMenus = [
-  { name: "사케동", image_link: "/sample/sample-pasta.png" },
-  { name: "낙지 볶음", image_link: "/sample/sample-pasta.png" },
-  { name: "규동", image_link: "/sample/sample-pasta.png" },
-  { name: "오므라이스", image_link: "/sample/sample-pasta.png" },
-  { name: "연어 샐러드", image_link: "/sample/sample-pasta.png" },
-  { name: "베이글", image_link: "/sample/sample-pasta.png" },
-  { name: "타코", image_link: "/sample/sample-pasta.png" },
-  { name: "된장찌개", image_link: "/sample/sample-pasta.png" },
-  { name: "샌드위치", image_link: "/sample/sample-pasta.png" },
-];
+interface Menu {
+  id: string;
+  name: string;
+  image_link: string | null;
+}
 
 export default function MenuBattlePage() {
   const router = useRouter();
@@ -48,6 +41,76 @@ export default function MenuBattlePage() {
   /* Toast 상태 */
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+
+  /* =====================
+   * 전체 메뉴 로딩 상태 (API 연동)
+   * menuId 이후부터 16개씩 가져오는 방식이므로 무한스크롤로 처리
+   * ===================== */
+  const [menus, setMenus] = useState<Menu[]>([]);
+  const [lastMenuId, setLastMenuId] = useState<number>(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMenus, setIsLoadingMenus] = useState(false);
+  const observerRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchMenus = async () => {
+    if (isLoadingMenus || !hasMore) return;
+
+    setIsLoadingMenus(true);
+
+    try {
+      // NOTE: fetchJSON이 baseURL을 붙여주는 구조라고 가정하고 상대경로 사용
+      const data = await fetchJSON<Menu[]>(`/menu/allMenu/${lastMenuId}`);
+
+      if (!data || data.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      setMenus((prev) => {
+        const merged = [...prev, ...data];
+
+        const unique = Array.from(
+          new Map(merged.map((menu) => [menu.id, menu])).values(),
+        );
+
+        return unique;
+      });
+
+      // 다음 요청을 위한 마지막 id 갱신
+      const nextLastId = Number(data[data.length - 1].id);
+      setLastMenuId(nextLastId);
+    } catch (e) {
+      console.error(e);
+      // 필요 시 Toast로 노출 가능
+      // setToastMessage("메뉴 목록을 불러오지 못했습니다.");
+      // setShowToast(true);
+    } finally {
+      setIsLoadingMenus(false);
+    }
+  };
+
+  // 최초 1회 로딩
+  useEffect(() => {
+    fetchMenus();
+  }, []);
+
+  // 무한 스크롤 트리거
+  useEffect(() => {
+    if (!observerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          fetchMenus();
+        }
+      },
+      { threshold: 1 },
+    );
+
+    observer.observe(observerRef.current);
+
+    return () => observer.disconnect();
+  }, [observerRef.current, lastMenuId, hasMore, isLoadingMenus]);
 
   /* 방 번호 참여 처리 */
   const handleEnterByCode = async () => {
@@ -75,13 +138,14 @@ export default function MenuBattlePage() {
   /* 메뉴 필터링 */
   const filteredMenus = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return dummyMenus;
-    return dummyMenus.filter((m) => m.name.toLowerCase().includes(q));
-  }, [search]);
+    if (!q) return menus;
+    return menus.filter((m) => m.name.toLowerCase().includes(q));
+  }, [search, menus]);
 
-  const toggleMenu = (name: string) => {
+  // 선택은 menu "id" 기준으로 관리 (이름 중복/변경 대비)
+  const toggleMenu = (id: string) => {
     setSelectedMenus((prev) =>
-      prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name],
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -101,7 +165,7 @@ export default function MenuBattlePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           creatorNickname: nickname || "방장",
-          menuIds: selectedMenus.map((_, i) => i + 1), // 임시
+          menuIds: selectedMenus, // ✅ 실제 메뉴 id로 전송
         }),
       });
 
@@ -252,14 +316,23 @@ export default function MenuBattlePage() {
         <div className="grid grid-cols-3 justify-items-center gap-4">
           {filteredMenus.map((food) => (
             <FoodBox
-              key={food.name}
-              src={food.image_link}
+              key={food.id}
+              src={food.image_link || "/sample/sample-pasta.png"}
               title={food.name}
-              isSelected={selectedMenus.includes(food.name)}
-              onClick={() => toggleMenu(food.name)}
+              isSelected={selectedMenus.includes(food.id)}
+              onClick={() => toggleMenu(food.id)}
             />
           ))}
         </div>
+
+        {/* 무한 스크롤 트리거 */}
+        {hasMore && <div ref={observerRef} className="h-10" />}
+
+        {isLoadingMenus && (
+          <p className="text-caption-2 text-font-placeholder mt-4 text-center">
+            메뉴 불러오는 중…
+          </p>
+        )}
       </section>
 
       {/* 하단 CTA */}

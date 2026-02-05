@@ -18,3 +18,17 @@ export type Menu = {
   centerAngle: number;
   color: string;
 };
+
+export type Winner = {
+  nickname: string;
+  closestMenuName: string;
+  distanceToBoundary: number;
+  rank: number; // 항상 1
+};
+
+export type Ranking = {
+  rank: number;
+  nickname: string;
+  closestMenuName: string;
+  distanceToBoundary: number;
+};

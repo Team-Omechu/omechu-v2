@@ -3,7 +3,7 @@ import { Player } from "@/entities/menubattle/model/types";
 export function BattleBoard({ players }: { players: Player[] }) {
   console.log("PlayerChips players:", players);
   return (
-    <>
+    <div className="mt-10">
       <p className="text-sm text-gray-600">
         &lt;참가자: {players.length}명&gt;
       </p>
@@ -18,6 +18,6 @@ export function BattleBoard({ players }: { players: Player[] }) {
           </span>
         ))}
       </div>
-    </>
+    </div>
   );
 }

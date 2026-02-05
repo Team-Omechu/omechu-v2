@@ -18,7 +18,7 @@ export default function AllergyForm() {
     await updateProfile({
       exercise: (exercise ?? undefined) as ExerciseType | undefined,
       prefer: prefer as PreferType[],
-      allergy: allergy as AllergyType[],
+      allergy: allergy.filter((a) => a !== "없음") as AllergyType[],
     });
   };
 

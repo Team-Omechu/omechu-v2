@@ -40,6 +40,7 @@ export default function EmailLoginPage() {
   const {
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -48,6 +49,10 @@ export default function EmailLoginPage() {
       password: "",
     },
   });
+
+  const emailValue = watch("email");
+  const passwordValue = watch("password");
+  const isFormEmpty = !emailValue?.trim() || !passwordValue?.trim();
 
   const onSubmit = useCallback(
     (data: LoginFormValues) => {
@@ -88,7 +93,6 @@ export default function EmailLoginPage() {
     }
   }, [isSuccess, user, router]);
 
-  // eslint-disable-next-line react-hooks/refs -- handleSubmit is from react-hook-form
   const handleFormSubmit = handleSubmit(onSubmit);
 
   return (
@@ -130,15 +134,7 @@ export default function EmailLoginPage() {
               name="password"
               control={control}
               render={({ field }) => (
-                <FormField
-                  label="비밀번호"
-                  id="password"
-                  helperText={
-                    errors.password?.message ||
-                    "* 대소문자, 숫자 및 특수문자 포함 8자 이상"
-                  }
-                  helperState={errors.password ? "error" : undefined}
-                >
+                <FormField label="비밀번호" id="password">
                   <Input
                     type="password"
                     placeholder="비밀번호를 입력해주세요"
@@ -152,14 +148,20 @@ export default function EmailLoginPage() {
             />
 
             {/* 로그인 상태 유지 체크박스 */}
-            <label className="flex cursor-pointer items-center gap-1.5">
+            <div className="flex cursor-pointer items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setRememberMe(!rememberMe)}
                 className="border-font-high bg-background-secondary flex size-5 items-center justify-center rounded-sm border-[0.5px]"
               >
                 {rememberMe && (
-                  <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                  <svg
+                    width="12"
+                    height="10"
+                    viewBox="0 0 12 10"
+                    fill="none"
+                    aria-hidden="true"
+                  >
                     <path
                       d="M1 5L4.5 8.5L11 1"
                       stroke="#242424"
@@ -173,11 +175,15 @@ export default function EmailLoginPage() {
               <span className="text-caption-1-regular text-font-high">
                 로그인 상태 유지
               </span>
-            </label>
+            </div>
           </div>
 
           {/* 로그인 버튼 */}
-          <Button type="submit" disabled={isPending} className="h-12 w-full">
+          <Button
+            type="submit"
+            disabled={isFormEmpty || isPending}
+            className="h-12 w-full"
+          >
             {isPending ? "로그인 중..." : "로그인"}
           </Button>
         </div>

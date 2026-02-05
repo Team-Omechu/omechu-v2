@@ -45,11 +45,21 @@ type BaseInputProps = React.InputHTMLAttributes<HTMLInputElement> &
 
 const PasswordInput = React.forwardRef<HTMLInputElement, BaseInputProps>(
   (
-    { className, width, height, rounded, disabled, placeholder, ...props },
+    {
+      className,
+      width,
+      height,
+      rounded,
+      disabled,
+      placeholder,
+      onSearch: _onSearch,
+      ...props
+    },
     ref,
   ) => {
     const [isVisible, setIsVisible] = React.useState(false);
     const toggleVisibility = () => setIsVisible((v) => !v);
+    const hasValue = typeof props.value === "string" && props.value.length > 0;
 
     return (
       <div
@@ -70,18 +80,20 @@ const PasswordInput = React.forwardRef<HTMLInputElement, BaseInputProps>(
           onChange={props.onChange}
           {...props}
         />
-        <button
-          type="button"
-          onClick={toggleVisibility}
-          className="absolute right-3 flex items-center"
-          aria-label="비밀번호 보기 전환"
-        >
-          {isVisible ? (
-            <OpenEyeIcon className="w-6" />
-          ) : (
-            <CloseEyeIcon className="w-6" />
-          )}
-        </button>
+        {hasValue && (
+          <button
+            type="button"
+            onClick={toggleVisibility}
+            className="absolute right-3 flex items-center"
+            aria-label="비밀번호 보기 전환"
+          >
+            {isVisible ? (
+              <OpenEyeIcon className="w-6" />
+            ) : (
+              <CloseEyeIcon className="w-6" />
+            )}
+          </button>
+        )}
       </div>
     );
   },

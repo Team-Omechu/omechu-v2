@@ -161,7 +161,7 @@ export default function UserInfoFields() {
               }
             >
               <Input
-                type="password"
+                type="text"
                 placeholder="인증번호 6자리를 입력해주세요"
                 value={field.value || ""}
                 onChange={field.onChange}

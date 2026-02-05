@@ -24,7 +24,7 @@ const authButtonStyles = cva(
     "w-full", // auth 페이지에서는 항상 full width
 
     // 인터랙션
-    "disabled:bg-statelayer-disabled disabled:cursor-not-allowed disabled:active:bg-statelayer-disabled",
+    "disabled:cursor-not-allowed disabled:opacity-60",
   ],
   {
     variants: {

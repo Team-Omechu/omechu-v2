@@ -10,7 +10,7 @@ const battleButtonStyles = cva(
   [
     // 모양
     "h-12",
-    "rounded-[10px]",
+    "rounded-[12px]",
     "flex items-center justify-center",
 
     // 인터랙션
@@ -28,9 +28,9 @@ const battleButtonStyles = cva(
         grey: "bg-brand-tertiary",
       },
       width: {
-        xl: "w-2xs text-body-4-medium",
-        md: "w-[180px] text-body-4-medium",
-        sm: "w-36 text-body-4-medium",
+        xl: "w-2xs text-body-4",
+        md: "w-[180px] text-body-4",
+        sm: "w-36 text-body-4",
         xs: "w-[140px] text-body-2",
       },
     },

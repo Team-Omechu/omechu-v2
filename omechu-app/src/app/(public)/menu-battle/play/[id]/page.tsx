@@ -14,10 +14,9 @@ import {
   SpinCompletedPayload,
   Menu,
 } from "@/entities/menubattle";
-import { ResultPanel } from "@/entities/menubattle";
 import { fetchJSON } from "@/shared/api/fetchJSON";
 import { Header } from "@/shared/ui/header/Header";
-import { BattleBoard } from "@/widgets/menubattle";
+import { BattleBoard, BattleResult } from "@/widgets/menubattle";
 import { Roulette, RouletteHandle } from "@/widgets/menubattle/ui/Roulette";
 
 export default function PlayPage() {
@@ -103,13 +102,13 @@ export default function PlayPage() {
 
   /* STOP 처리 (핵심) */
   const handleStop = () => {
-    if (!socketRef.current || !rouletteRef.current || finished) return;
+    if (!rouletteRef.current || finished) return;
 
     const userAngle = rouletteRef.current.getAngle();
 
     rouletteRef.current.stop();
 
-    socketRef.current.emit("battle:spin", {
+    socketRef.current?.emit("battle:spin", {
       battleId,
       nickname,
       userAngle,
@@ -119,7 +118,7 @@ export default function PlayPage() {
   const isHost = players[0]?.name === nickname;
 
   return (
-    <main className="min-h-screen bg-[#F7D8FF] px-4 text-center">
+    <main className="min-h-screen px-4 text-center">
       <Header
         title="오늘의 메뉴 배틀"
         showProfileButton
@@ -127,6 +126,16 @@ export default function PlayPage() {
       />
 
       <BattleBoard players={players} />
+
+      {results.length > 0 && (
+        <ul className="mt-6 space-y-2">
+          {results.map((r) => (
+            <li key={`${r.playerId}-${r.stoppedAt}`} className="text-sm">
+              {r.name} → {r.menu} ({r.diff}°)
+            </li>
+          ))}
+        </ul>
+      )}
 
       {/* 안내 문구 */}
       <div className="py-10">
@@ -150,7 +159,7 @@ export default function PlayPage() {
           }
         }}
         disabled={finished}
-        className="mt-4 w-40 rounded-xl bg-[#FF7A9E] py-3 font-semibold text-white disabled:opacity-40"
+        className="bg-statelayer-default mt-4 w-40 rounded-xl py-3 font-semibold text-white disabled:opacity-40"
       >
         {hasSpun ? "STOP" : "SPIN"}
       </button>
@@ -160,13 +169,20 @@ export default function PlayPage() {
           onClick={() =>
             socketRef.current?.emit("battle:finish", { battleId, nickname })
           }
-          className="mt-6 rounded-xl bg-[#FF7A9E] px-8 py-3 text-white"
+          className="bg-statelayer-default mt-6 rounded-xl px-8 py-3 text-white"
         >
           배틀 마감하기
         </button>
       )}
 
-      {finished && <ResultPanel results={results} />}
+      {finished && (
+        <BattleResult
+          battleId={battleId}
+          finished={finished}
+          isHost={isHost}
+          nickname={nickname}
+        />
+      )}
     </main>
   );
 }

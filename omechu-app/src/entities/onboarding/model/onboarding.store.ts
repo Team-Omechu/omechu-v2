@@ -66,7 +66,7 @@ const VALID_ALLERGY_LABELS = new Set([
   "복숭아",
   "토마토",
   "아황산류",
-  "그 외",
+  "없음",
 ]);
 
 const ENUM_TO_LABEL: Record<string, string> = {
@@ -90,7 +90,7 @@ const ENUM_TO_LABEL: Record<string, string> = {
   peach: "복숭아",
   tomato: "토마토",
   sulfites: "아황산류",
-  other: "그 외",
+  none: "없음",
 };
 
 const normAllergy = (v?: string | null) => {
@@ -212,10 +212,18 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
       toggleAllergy: (allergy) => {
         const current = get().allergy;
         const exists = current.includes(allergy);
+
+        // "없음" 선택 시 다른 알레르기 모두 해제
+        if (allergy === "없음") {
+          return set({ allergy: exists ? [] : ["없음"] });
+        }
+
+        // 다른 알레르기 선택 시 "없음" 해제
+        const withoutNone = current.filter((a) => a !== "없음");
         return set({
           allergy: exists
-            ? current.filter((a) => a !== allergy)
-            : [...current, allergy],
+            ? withoutNone.filter((a) => a !== allergy)
+            : [...withoutNone, allergy],
         });
       },
 

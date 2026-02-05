@@ -18,5 +18,5 @@ export const ALLERGY_OPTIONS = [
   { label: "복숭아", value: "peach" },
   { label: "토마토", value: "tomato" },
   { label: "아황산류", value: "sulfites" },
-  { label: "그 외", value: "other" },
+  { label: "없음", value: "none" },
 ] as const;

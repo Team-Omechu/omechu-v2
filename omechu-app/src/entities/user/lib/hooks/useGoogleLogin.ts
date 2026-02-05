@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { startGoogleLogin } from "@/entities/user/api/authApi";
 import { useToast } from "@/shared";
@@ -12,6 +12,20 @@ import { useToast } from "@/shared";
 export const useGoogleLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { triggerToast } = useToast();
+
+  // Reset loading state when page is restored from bfcache
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        setIsLoading(false);
+      }
+    };
+
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      window.removeEventListener("pageshow", handlePageShow);
+    };
+  }, []);
 
   const isSafeAuthorizeUrl = (value: string) => {
     try {

@@ -20,7 +20,7 @@ export default function AllergyForm() {
       nickname,
       exercise: exercise as "다이어트 중" | "증량 중" | "유지 중" | null,
       prefer,
-      allergy,
+      allergy: allergy.filter((a) => a !== "없음"),
     });
     queryClient.invalidateQueries({ queryKey: ["user", "profile"] });
   };

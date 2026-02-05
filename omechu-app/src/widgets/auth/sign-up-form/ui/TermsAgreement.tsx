@@ -14,12 +14,7 @@ type TermsAgreementProps = {
 };
 
 const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
-  const {
-    register,
-    setValue,
-    watch,
-    formState: { errors, touchedFields, submitCount },
-  } = useFormContext<SignupFormValues>();
+  const { register, setValue, watch } = useFormContext<SignupFormValues>();
 
   const termNames = [
     "termsService",
@@ -32,21 +27,11 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
   // 이것이 바로 "완벽하고 확실한" 로직입니다.
   const isAllAgreed = watch(termNames).every(Boolean);
 
-  // 에러 메시지는 해당 체크박스를 만졌거나(form touched) 또는 한 번이라도 제출을 시도했을 때만 노출
-  const shouldShowServiceError =
-    !!errors.termsService && (touchedFields.termsService || submitCount > 0);
-  const shouldShowPrivacyError =
-    !!errors.termsPrivacy && (touchedFields.termsPrivacy || submitCount > 0);
-  const shouldShowLocationError =
-    !!errors.termsLocation && (touchedFields.termsLocation || submitCount > 0);
-  const shouldShowAgeError =
-    !!errors.termsAge && (touchedFields.termsAge || submitCount > 0);
-
   const handleAllAgreement = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { checked } = e.target;
-    termNames.forEach((name) =>
-      setValue(name, checked, { shouldValidate: true }),
-    );
+    termNames.forEach((name) => {
+      setValue(name, checked, { shouldValidate: true });
+    });
   };
 
   return (
@@ -91,11 +76,6 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
             보기
           </button>
         </div>
-        {shouldShowServiceError && (
-          <p className="text-caption-2-regular text-status-error ml-6">
-            {errors.termsService?.message}
-          </p>
-        )}
 
         {/* 개인정보 처리방침 */}
         <div className="flex items-center justify-between">
@@ -117,11 +97,6 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
             보기
           </button>
         </div>
-        {shouldShowPrivacyError && (
-          <p className="text-caption-2-regular text-status-error ml-6">
-            {errors.termsPrivacy?.message}
-          </p>
-        )}
 
         {/* 위치 기반 서비스 */}
         <div className="flex items-center justify-between">
@@ -129,7 +104,7 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
             id="termsLocation"
             label={
               <span className="text-caption-1-regular text-font-high">
-                위치 기반 서비스 이용약관 동의(필수)
+                위치 기반 서비스 이용약관 동의(선택)
               </span>
             }
             {...register("termsLocation")}
@@ -143,11 +118,6 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
             보기
           </button>
         </div>
-        {shouldShowLocationError && (
-          <p className="text-caption-2-regular text-status-error ml-6">
-            {errors.termsLocation?.message}
-          </p>
-        )}
 
         {/* 만 14세 이상 */}
         <CheckBox
@@ -160,11 +130,6 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
           {...register("termsAge")}
           variant="round"
         />
-        {shouldShowAgeError && (
-          <p className="text-caption-2-regular text-status-error ml-6">
-            {errors.termsAge?.message}
-          </p>
-        )}
       </div>
     </div>
   );

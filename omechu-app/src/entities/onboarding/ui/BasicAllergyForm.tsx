@@ -5,8 +5,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useOnboardingStore } from "@/entities/onboarding";
-import { ALLERGY_OPTIONS } from "@/shared/constants/mypage";
 import { Toast, useToast } from "@/shared";
+import { ALLERGY_OPTIONS } from "@/shared/constants/mypage";
 import {
   BaseModal,
   BottomButton,

@@ -21,8 +21,7 @@ export type AllergyType =
   | "조개류"
   | "복숭아"
   | "토마토"
-  | "아황산류"
-  | "그 외";
+  | "아황산류";
 
 export interface ProfileType {
   id: string;

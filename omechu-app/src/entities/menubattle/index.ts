@@ -1,5 +1,12 @@
-export { ResultPanel } from "./ui/ResultPanel";
-export type { Menu, Player, PlayerResult } from "./model/types";
+export { WinnerCard } from "./ui/Winnercard";
+export { RankingList } from "./ui/RankingList";
+export type {
+  Menu,
+  Player,
+  PlayerResult,
+  Winner,
+  Ranking,
+} from "./model/types";
 export type {
   ParticipantJoinedPayload,
   SpinCompletedPayload,

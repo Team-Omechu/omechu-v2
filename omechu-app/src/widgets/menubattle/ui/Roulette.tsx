@@ -115,7 +115,7 @@ export const Roulette = forwardRef<RouletteHandle, RouletteProps>(
             <div
               className="absolute inset-0 z-30 flex items-center justify-center"
               style={{
-                transform: `rotate(${angle - 90}deg)`,
+                transform: `rotate(${angle}deg)`,
                 transformOrigin: "50% 50%",
               }}
             >

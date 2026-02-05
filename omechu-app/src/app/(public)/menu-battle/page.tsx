@@ -15,6 +15,7 @@ import { Button } from "@/shared";
 import { fetchJSON } from "@/shared/api/fetchJSON";
 import { menuBattleAPI } from "@/shared/api/menuBattle.api";
 
+// TODO: 실제 API 연동 필요, 전체 메뉴 목록 불러오는 API 필요
 const dummyMenus = [
   { name: "사케동", image_link: "/sample/sample-pasta.png" },
   { name: "낙지 볶음", image_link: "/sample/sample-pasta.png" },
@@ -34,7 +35,7 @@ export default function MenuBattlePage() {
   const [joinCode, setJoinCode] = useState("");
 
   /* 방 상태 */
-  const [battleName, setBattleName] = useState("점심 메뉴 결정전: The Battle");
+  const [battleName, setBattleName] = useState("오늘의 메뉴 배틀");
   const [roomNumber, setRoomNumber] = useState("2134");
   const [search, setSearch] = useState("");
   const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
@@ -191,7 +192,7 @@ export default function MenuBattlePage() {
   }, [showToast]);
 
   return (
-    <main className="min-h-screen bg-[#F7D8FF] pb-32">
+    <main className="min-h-screen pb-32">
       {/* 상단 */}
       <Header title="메뉴 배틀" showProfileButton showHomeButton={false} />
 
@@ -225,7 +226,7 @@ export default function MenuBattlePage() {
 
       {/* 배틀방 이름 */}
       <section className="mt-2 px-4">
-        <p className="mb-2 text-lg font-semibold">배틀방 이름</p>
+        <p className="mb-2 text-lg font-normal">배틀방 이름</p>
         <Input
           value={battleName}
           onChange={(e) => setBattleName(e.target.value)}
@@ -236,7 +237,7 @@ export default function MenuBattlePage() {
 
       {/* 검색 */}
       <section className="mt-6 px-4">
-        <p className="mb-2 text-lg font-semibold">후보 메뉴</p>
+        <p className="mb-2 text-lg font-normal">후보 메뉴</p>
         <Input
           type="search"
           value={search}
@@ -248,7 +249,7 @@ export default function MenuBattlePage() {
 
       {/* 메뉴 리스트 */}
       <section className="mt-6 px-4">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 justify-items-center gap-4">
           {filteredMenus.map((food) => (
             <FoodBox
               key={food.name}
@@ -263,16 +264,29 @@ export default function MenuBattlePage() {
 
       {/* 하단 CTA */}
       <footer className="fixed right-0 bottom-0 left-0 rounded-t-2xl bg-white px-6 py-5 shadow">
-        <p className="mb-2 text-gray-600">
-          선택된 메뉴 {selectedMenus.length}개
-        </p>
-        <BattleButton
-          width="xl"
-          className="w-full"
-          onClick={handleCreateBattle}
-        >
-          배틀방 생성
-        </BattleButton>
+        <div className="flex items-center justify-between">
+          {/* 왼쪽 텍스트 */}
+          <div>
+            <p className="text-body-4 text-font-high">선택된 메뉴</p>
+            <p className="text-body-4 text-font-placeholder">
+              {selectedMenus.length}개
+            </p>
+          </div>
+
+          {/* 오른쪽 버튼 */}
+          <BattleButton
+            width="md"
+            disabled={selectedMenus.length === 0}
+            onClick={handleCreateBattle}
+            className={`px-6 ${
+              selectedMenus.length === 0
+                ? "bg-statelayer-disabled text-white"
+                : "bg-statelayer-default text-white"
+            }`}
+          >
+            배틀방 생성
+          </BattleButton>
+        </div>
       </footer>
 
       {/* 생성 완료 모달 */}

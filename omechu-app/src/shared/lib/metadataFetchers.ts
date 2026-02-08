@@ -1,7 +1,8 @@
 import type { RandomMenu, MenuListResponse } from "@/entities/menu";
 import { MenuDetail } from "@/shared/config/menu";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://omechu-api.log8.kr";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const EMBED_API_URL = process.env.NEXT_PUBLIC_EMBED_API_URL;
 
 export async function fetchMenuDetailForMetadata(
   menuName: string,
@@ -47,7 +48,7 @@ export async function fetchRecommendMenuForMetadata(
   menuName: string,
 ): Promise<MenuListResponse | null> {
   try {
-    const response = await fetch("https://embed.log8.kr/recommend/menu", {
+    const response = await fetch(`${EMBED_API_URL}/recommend/menu`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: menuName.trim() }),

@@ -3,6 +3,8 @@ import { Metadata } from "next";
 import { MenuDetail } from "@/shared/config/menu";
 import { BASE_URL } from "@/shared/constants/url";
 
+const MAX_DISPLAY_MENUS = 5;
+
 export function generateMenuMetadata(
   menuDetail: MenuDetail | null,
   pageType: "랜덤 추천" | "맞춤 추천",
@@ -104,13 +106,13 @@ export function generateSummaryMetadata(
     };
   }
 
-  const displayNames = menuNames.slice(0, 5);
+  const displayNames = menuNames.slice(0, MAX_DISPLAY_MENUS);
   const menuText = displayNames.join(", ");
   const title = `${menuText} ${pageType}`;
 
   const description =
-    menuNames.length > 5
-      ? `${menuText} 외 ${menuNames.length - 5}개 메뉴를 추천합니다.`
+    menuNames.length > MAX_DISPLAY_MENUS
+      ? `${menuText} 외 ${menuNames.length - MAX_DISPLAY_MENUS}개 메뉴를 추천합니다.`
       : `${menuText} 메뉴를 추천합니다.`;
 
   return {

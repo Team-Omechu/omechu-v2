@@ -3,14 +3,14 @@ import { cache } from "react";
 import { Metadata } from "next";
 
 import {
-  fetchMenuDetailForMetadata,
-  fetchRandomMenuForMetadata,
-} from "@/shared/lib/metadataFetchers";
-import {
   generateMenuMetadata,
   generateMinimalMetadata,
   generateRecipeJsonLd,
 } from "@/shared/lib/generateMenuMetadata";
+import {
+  fetchMenuDetailForMetadata,
+  fetchRandomMenuForMetadata,
+} from "@/shared/lib/metadataFetchers";
 
 const getCachedRandomMenu = cache(fetchRandomMenuForMetadata);
 const getCachedMenuDetail = cache(fetchMenuDetailForMetadata);

@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { Metadata } from "next";
 
 import {
@@ -9,6 +11,9 @@ import {
   generateMinimalMetadata,
   generateRecipeJsonLd,
 } from "@/shared/lib/generateMenuMetadata";
+
+const getCachedRandomMenu = cache(fetchRandomMenuForMetadata);
+const getCachedMenuDetail = cache(fetchMenuDetailForMetadata);
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,7 +27,7 @@ export async function generateMetadata({
     const { menuId } = await params;
     const decodedMenuId = decodeURIComponent(menuId);
 
-    const randomMenu = await fetchRandomMenuForMetadata(decodedMenuId);
+    const randomMenu = await getCachedRandomMenu(decodedMenuId);
 
     if (!randomMenu) {
       return {
@@ -32,7 +37,7 @@ export async function generateMetadata({
       };
     }
 
-    const menuDetail = await fetchMenuDetailForMetadata(randomMenu.name);
+    const menuDetail = await getCachedMenuDetail(randomMenu.name);
 
     if (menuDetail) {
       return generateMenuMetadata(
@@ -65,10 +70,10 @@ export default async function Layout({ children, params }: LayoutProps) {
     const { menuId } = await params;
     const decodedMenuId = decodeURIComponent(menuId);
 
-    const randomMenu = await fetchRandomMenuForMetadata(decodedMenuId);
+    const randomMenu = await getCachedRandomMenu(decodedMenuId);
 
     if (randomMenu) {
-      const menuDetail = await fetchMenuDetailForMetadata(randomMenu.name);
+      const menuDetail = await getCachedMenuDetail(randomMenu.name);
 
       if (menuDetail) {
         jsonLd = generateRecipeJsonLd(menuDetail);

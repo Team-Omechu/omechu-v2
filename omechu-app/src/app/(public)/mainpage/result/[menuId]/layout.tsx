@@ -13,12 +13,7 @@ interface LayoutProps {
 
 async function fetchMenuDetail(name: string): Promise<MenuDetail | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (!apiUrl) {
-      throw new Error("NEXT_PUBLIC_API_URL is not defined");
-    }
-
-    const response = await fetch(`${apiUrl}/menu/menu-info`, {
+    const response = await fetch("https://embed.log8.kr/recommend/menu", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: name.trim() }),

@@ -1,8 +1,7 @@
 import type { RandomMenu, MenuListResponse } from "@/entities/menu";
 import { MenuDetail } from "@/shared/config/menu";
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://omechu-api.log8.kr";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://omechu-api.log8.kr";
 
 export async function fetchMenuDetailForMetadata(
   menuName: string,

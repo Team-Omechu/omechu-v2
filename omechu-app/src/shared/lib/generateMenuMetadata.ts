@@ -24,7 +24,7 @@ export function generateMenuMetadata(
   const title = `${name} ${pageType}`;
 
   const metaDescription = description
-    ? `${description.slice(0, 100)} | 칼로리 ${calory}, 단백질 ${protein}g`
+    ? `${description.slice(0, 100)} | 칼로리 ${calory}kcal, 단백질 ${protein}g`
     : `${name} 메뉴 정보와 주변 맛집을 확인하세요. 칼로리 ${calory}kcal`;
 
   const ogImage = image_link || "/og/og-image.png";

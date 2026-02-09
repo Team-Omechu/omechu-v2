@@ -159,16 +159,16 @@ export default function DeleteAccountPage() {
                       setSelectedReason(reason);
                       setShowDropDown(false);
                     }}
-                    className="flex cursor-pointer items-center gap-1.5 py-2"
+                    className="flex cursor-pointer items-center gap-1.5 py-1"
                   >
                     {selectedReason === reason ? (
                       <CheckIcon />
                     ) : (
-                      <div className="h-5.25 w-5.25" />
+                      <div className="h-5.5 w-5.25" />
                     )}
                     <span
                       className={clsx(
-                        "text-caption-1-regular hover:bg-component-default w-full rounded-md px-1",
+                        "text-caption-1-regular hover:bg-component-default h-full w-full rounded-md px-1",
                         selectedReason === reason
                           ? "text-font-high"
                           : "text-font-placeholder",

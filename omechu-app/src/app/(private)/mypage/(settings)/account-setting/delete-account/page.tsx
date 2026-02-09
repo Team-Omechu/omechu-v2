@@ -55,8 +55,8 @@ export default function DeleteAccountPage() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   const nickname = profile?.nickname || "회원";
@@ -151,7 +151,7 @@ export default function DeleteAccountPage() {
             </button>
 
             {showDropDown && (
-              <ul className="border-font-disabled absolute z-50 mt-2 flex h-fit w-full flex-col gap-2 overflow-hidden rounded-[10px] border bg-white p-2.5">
+              <ul className="border-font-disabled absolute z-50 mt-2 flex h-fit w-full flex-col gap-2 rounded-[10px] border bg-white p-2.5">
                 {WITHDRAW_REASONS.map((reason) => (
                   <li
                     key={reason}
@@ -159,7 +159,7 @@ export default function DeleteAccountPage() {
                       setSelectedReason(reason);
                       setShowDropDown(false);
                     }}
-                    className="flex cursor-pointer items-center gap-1.5"
+                    className="flex cursor-pointer items-center gap-1.5 py-2"
                   >
                     {selectedReason === reason ? (
                       <CheckIcon />
@@ -168,7 +168,7 @@ export default function DeleteAccountPage() {
                     )}
                     <span
                       className={clsx(
-                        "text-caption-1-regular hover:bg-background-secondary w-full",
+                        "text-caption-1-regular hover:bg-component-default w-full rounded-md px-1",
                         selectedReason === reason
                           ? "text-font-high"
                           : "text-font-placeholder",

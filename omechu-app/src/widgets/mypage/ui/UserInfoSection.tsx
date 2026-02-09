@@ -54,7 +54,7 @@ export function UserInfoSection({
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
-            <span className="text-font-high text-body-4-regular w-15">
+            <span className="text-font-high text-body-4-regular w-16">
               운동 상태
             </span>
             <span>|</span>
@@ -63,7 +63,7 @@ export function UserInfoSection({
             </span>
           </div>
           <div className="flex gap-2">
-            <span className="text-font-high text-body-4-regular w-15">
+            <span className="text-font-high text-body-4-regular w-16">
               선호 음식
             </span>
             <span>|</span>

@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { THEME_COLOR } from "@/shared/constants/theme";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "오메추 - 오늘 뭐 먹지?",
@@ -8,7 +10,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#F9E4FF",
+    theme_color: THEME_COLOR,
     orientation: "any",
     icons: [
       {

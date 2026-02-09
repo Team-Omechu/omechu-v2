@@ -5,6 +5,7 @@ import { Noto_Sans_KR } from "next/font/google";
 import type { Metadata } from "next";
 
 import { Providers } from "@/app/providers";
+import { THEME_COLOR } from "@/shared/constants/theme";
 import { BASE_URL } from "@/shared/constants/url";
 
 const notoSansKR = Noto_Sans_KR({
@@ -80,7 +81,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#F9E4FF",
+  themeColor: THEME_COLOR,
 };
 
 export default function RootLayout({

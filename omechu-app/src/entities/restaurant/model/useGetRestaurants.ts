@@ -1,18 +1,18 @@
-import { useLocationAnswerStore } from "@/entities/location";
 import {
   useQuery,
   keepPreviousData,
   type UseQueryResult,
 } from "@tanstack/react-query";
+
+import { useLocationAnswerStore } from "@/entities/location";
+import { getRestaurants } from "@/entities/restaurant/api/getRestaurants";
 import type {
   RestaurantListResponse,
   RestaurantRequest,
 } from "@/entities/restaurant/config/RestaurantData";
-import { getRestaurants } from "@/entities/restaurant/api/getRestaurants";
 
 export function useGetRestaurants(
   page: number,
-  pageSize = 3,
 ): UseQueryResult<RestaurantListResponse, Error> {
   const { x, y, radius, keyword } = useLocationAnswerStore();
 
@@ -21,7 +21,6 @@ export function useGetRestaurants(
     longitude: y,
     radius,
     keyword,
-    pageSize,
     page,
   };
 

@@ -1,9 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable react-hooks/exhaustive-deps */
-
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,20 +10,12 @@ import { FoodBox } from "@/shared";
 import { BattleButton } from "@/shared";
 import { Button } from "@/shared";
 import { fetchJSON } from "@/shared/api/fetchJSON";
-import { menuBattleAPI } from "@/shared/api/menuBattle.api";
 
-// TODO: 실제 API 연동 필요, 전체 메뉴 목록 불러오는 API 필요
-const dummyMenus = [
-  { name: "사케동", image_link: "/sample/sample-pasta.png" },
-  { name: "낙지 볶음", image_link: "/sample/sample-pasta.png" },
-  { name: "규동", image_link: "/sample/sample-pasta.png" },
-  { name: "오므라이스", image_link: "/sample/sample-pasta.png" },
-  { name: "연어 샐러드", image_link: "/sample/sample-pasta.png" },
-  { name: "베이글", image_link: "/sample/sample-pasta.png" },
-  { name: "타코", image_link: "/sample/sample-pasta.png" },
-  { name: "된장찌개", image_link: "/sample/sample-pasta.png" },
-  { name: "샌드위치", image_link: "/sample/sample-pasta.png" },
-];
+interface Menu {
+  id: string;
+  name: string;
+  image_link: string | null;
+}
 
 export default function MenuBattlePage() {
   const router = useRouter();
@@ -41,13 +30,74 @@ export default function MenuBattlePage() {
   const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  /* 참여(Join) 관련 상태 */
-  const [showNicknameModal, setShowNicknameModal] = useState(false);
-  const [nickname, setNickname] = useState("");
-
   /* Toast 상태 */
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+
+  /* =====================
+   * 전체 메뉴 로딩 상태 (API 연동)
+   * menuId 이후부터 16개씩 가져오는 방식이므로 무한스크롤로 처리
+   * ===================== */
+  const [menus, setMenus] = useState<Menu[]>([]);
+  const [lastMenuId, setLastMenuId] = useState<number>(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMenus, setIsLoadingMenus] = useState(false);
+  const observerRef = useRef<HTMLDivElement | null>(null);
+
+  const fetchMenus = useCallback(async () => {
+    if (isLoadingMenus || !hasMore) return;
+
+    setIsLoadingMenus(true);
+
+    try {
+      const data = await fetchJSON<Menu[]>(`/menu/allMenu/${lastMenuId}`);
+
+      if (!data || data.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      setMenus((prev) => {
+        const merged = [...prev, ...data];
+
+        const unique = Array.from(
+          new Map(merged.map((menu) => [menu.id, menu])).values(),
+        );
+
+        return unique;
+      });
+
+      const nextLastId = Number(data[data.length - 1].id);
+      setLastMenuId(nextLastId);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingMenus(false);
+    }
+  }, [isLoadingMenus, hasMore, lastMenuId]);
+
+  // 무한 스크롤 트리거
+  useEffect(() => {
+    if (!observerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          fetchMenus();
+        }
+      },
+      { threshold: 1 },
+    );
+
+    observer.observe(observerRef.current);
+
+    return () => observer.disconnect();
+  }, [lastMenuId, hasMore, isLoadingMenus, fetchMenus]);
+
+  // 최초 1회 로딩
+  useEffect(() => {
+    fetchMenus();
+  }, [fetchMenus]);
 
   /* 방 번호 참여 처리 */
   const handleEnterByCode = async () => {
@@ -75,13 +125,14 @@ export default function MenuBattlePage() {
   /* 메뉴 필터링 */
   const filteredMenus = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return dummyMenus;
-    return dummyMenus.filter((m) => m.name.toLowerCase().includes(q));
-  }, [search]);
+    if (!q) return menus;
+    return menus.filter((m) => m.name.toLowerCase().includes(q));
+  }, [search, menus]);
 
-  const toggleMenu = (name: string) => {
+  // 선택은 menu "id" 기준으로 관리 (이름 중복/변경 대비)
+  const toggleMenu = (id: string) => {
     setSelectedMenus((prev) =>
-      prev.includes(name) ? prev.filter((x) => x !== name) : [...prev, name],
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
   };
 
@@ -100,16 +151,21 @@ export default function MenuBattlePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          creatorNickname: nickname || "방장",
-          menuIds: selectedMenus.map((_, i) => i + 1), // 임시
+          creatorNickname: "방장",
+          menuIds: selectedMenus, // ✅ 실제 메뉴 id로 전송
         }),
       });
 
       setRoomNumber(result.battleId);
       setShowCreateModal(true);
-    } catch (e: any) {
-      setToastMessage(e.message);
-      setShowToast(true);
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        setToastMessage(e.message);
+        setShowToast(true);
+      } else {
+        setToastMessage("알 수 없는 오류가 발생했습니다.");
+        setShowToast(true);
+      }
     }
   };
 
@@ -123,59 +179,27 @@ export default function MenuBattlePage() {
     }
   };
 
-  /* =====================
-   * Join 흐름 여부
-   * 지금 페이지에서는 false
-   * TODO: join 페이지 분리 후 true
-   * ===================== */
-  const isJoinFlow = false;
+  /* 공유 처리 */
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/menu-battle/play/${roomNumber}?battleName=${encodeURIComponent(
+      battleName,
+    )}`;
 
-  useEffect(() => {
-    if (!isJoinFlow) return;
-
-    const run = async () => {
-      const exists = await checkRoomExists(roomNumber);
-
-      if (exists) {
-        setShowNicknameModal(true);
-      } else {
-        setToastMessage(
-          "방이 존재하지 않습니다.\n참여 코드를 다시 확인해 주세요.",
-        );
-        setShowToast(true);
+    // Web Share API 지원 브라우저
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "메뉴 배틀 초대",
+          text: `${battleName}에 초대되었어요!`,
+          url: shareUrl,
+        });
+      } catch {
+        // 사용자가 공유 취소한 경우 -> 의도적으로 무시
       }
-    };
-
-    run();
-  }, []);
-
-  /* 닉네임 검증*/
-  const isValidNickname = (value: string) => {
-    const regex = /^[a-zA-Z0-9가-힣]{1,20}$/;
-    return regex.test(value);
-  };
-
-  /* 방 참여 처리 */
-  const handleJoinRoom = async () => {
-    // 1️⃣ 프론트에서 할 수 있는 최소 검증만
-    if (!isValidNickname(nickname)) {
-      setToastMessage("닉네임은 한/영/숫자 1~20자만 가능합니다.");
-      setShowToast(true);
-      return;
-    }
-
-    try {
-      // 2️⃣ 서버에 참가 요청
-      await menuBattleAPI.joinBattle(roomNumber, nickname);
-
-      // 3️⃣ 모달 닫기
-      setShowNicknameModal(false);
-
-      // 4️⃣ play 페이지로 이동 (닉네임 전달 중요)
-      router.push(`/menu-battle/play/${roomNumber}?nickname=${nickname}`);
-    } catch (e: any) {
-      // 5️⃣ 서버 에러 메시지 그대로 UX에 사용
-      setToastMessage(e.message);
+    } else {
+      // fallback: 클립보드 복사
+      await navigator.clipboard.writeText(shareUrl);
+      setToastMessage("링크가 복사되었습니다.");
       setShowToast(true);
     }
   };
@@ -252,42 +276,53 @@ export default function MenuBattlePage() {
         <div className="grid grid-cols-3 justify-items-center gap-4">
           {filteredMenus.map((food) => (
             <FoodBox
-              key={food.name}
-              src={food.image_link}
+              key={food.id}
+              src={food.image_link || "/sample/sample-pasta.png"}
               title={food.name}
-              isSelected={selectedMenus.includes(food.name)}
-              onClick={() => toggleMenu(food.name)}
+              isSelected={selectedMenus.includes(food.id)}
+              onClick={() => toggleMenu(food.id)}
             />
           ))}
         </div>
+
+        {/* 무한 스크롤 트리거 */}
+        {hasMore && <div ref={observerRef} className="h-10" />}
+
+        {isLoadingMenus && (
+          <p className="text-caption-2 text-font-placeholder mt-4 text-center">
+            메뉴 불러오는 중…
+          </p>
+        )}
       </section>
 
       {/* 하단 CTA */}
-      <footer className="fixed right-0 bottom-0 left-0 rounded-t-2xl bg-white px-6 py-5 shadow">
-        <div className="flex items-center justify-between">
-          {/* 왼쪽 텍스트 */}
-          <div>
-            <p className="text-body-4 text-font-high">선택된 메뉴</p>
-            <p className="text-body-4 text-font-placeholder">
-              {selectedMenus.length}개
-            </p>
-          </div>
+      <div className="fixed bottom-0 left-0 w-full">
+        <footer className="mx-auto w-full max-w-120 rounded-t-2xl bg-white px-6 py-5 shadow">
+          <div className="flex items-center justify-between">
+            {/* 왼쪽 텍스트 */}
+            <div>
+              <p className="text-body-4 text-font-high">선택된 메뉴</p>
+              <p className="text-body-4 text-font-placeholder">
+                {selectedMenus.length}개
+              </p>
+            </div>
 
-          {/* 오른쪽 버튼 */}
-          <BattleButton
-            width="md"
-            disabled={selectedMenus.length === 0}
-            onClick={handleCreateBattle}
-            className={`px-6 ${
-              selectedMenus.length === 0
-                ? "bg-statelayer-disabled text-white"
-                : "bg-statelayer-default text-white"
-            }`}
-          >
-            배틀방 생성
-          </BattleButton>
-        </div>
-      </footer>
+            {/* 오른쪽 버튼 */}
+            <BattleButton
+              width="md"
+              disabled={selectedMenus.length === 0}
+              onClick={handleCreateBattle}
+              className={`px-6 ${
+                selectedMenus.length === 0
+                  ? "bg-statelayer-disabled text-white"
+                  : "bg-statelayer-default text-white"
+              }`}
+            >
+              배틀방 생성
+            </BattleButton>
+          </div>
+        </footer>
+      </div>
 
       {/* 생성 완료 모달 */}
       {showCreateModal && (
@@ -329,55 +364,25 @@ export default function MenuBattlePage() {
                 width="md"
                 bgColor="grey"
                 className="text-font-medium flex-1"
+                onClick={handleShare}
               >
                 공유하기
               </Button>
 
               <Button
                 width="md"
-                className="flex-1 bg-[#FF7A9E] text-white"
-                onClick={() => setShowNicknameModal(true)}
+                className="bg-statelayer-default flex-1 text-white"
+                onClick={() =>
+                  router.push(
+                    `/menu-battle/play/${roomNumber}?battleName=${encodeURIComponent(
+                      battleName,
+                    )}`,
+                  )
+                }
               >
                 바로 참여하기
               </Button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* 닉네임 입력 모달 (join 전용) */}
-      {showNicknameModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
-          <div className="relative w-full max-w-sm rounded-2xl bg-white px-3.75 py-3.75 text-center">
-            {/* 닫기 버튼 */}
-            <button
-              type="button"
-              onClick={() => setShowNicknameModal(false)}
-              className="text-font-placeholder absolute top-3.75 right-3.75 text-xl"
-              aria-label="닫기"
-            >
-              <Image src="/x/close_big.svg" alt="닫기" width={20} height={20} />
-            </button>
-
-            <div className="pt-6">
-              <h3 className="text-body-3-medium wrap-break-word">
-                {battleName}
-              </h3>
-            </div>
-
-            <Input
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder="닉네임을 입력하세요"
-              className="mt-4 w-full"
-            />
-            <Button
-              width="xl"
-              className="mt-3 w-full bg-[#FF7A9E] text-white"
-              onClick={handleJoinRoom}
-            >
-              입장하기
-            </Button>
           </div>
         </div>
       )}

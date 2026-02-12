@@ -23,8 +23,6 @@ import {
   type MenuDetail,
 } from "@/shared";
 
-const PAGE_SIZE = 3;
-
 export default function MenuDetailPage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -36,7 +34,10 @@ export default function MenuDetailPage() {
   const [page, setPage] = useState(1);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
 
-  const { data, isLoading, isFetching } = useGetRestaurants(page, PAGE_SIZE);
+  // ✅ 마지막 페이지(더 이상 데이터 없음) 여부
+  const [isEnd, setIsEnd] = useState(false);
+
+  const { data, isLoading, isFetching } = useGetRestaurants(page);
 
   const { menuId } = useParams();
   const { mutate } = usePostMukburim();
@@ -84,29 +85,38 @@ export default function MenuDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decodeMenuId, shouldRecord]);
 
-  // ✅ page 바뀔 때마다 data.items를 누적(append)
+  // ✅ page 바뀔 때마다 data.items 누적 + "데이터 없음이면 마지막 처리"
   useEffect(() => {
-    if (!data?.items) return;
+    // 아직 응답이 없으면 아무것도 안 함
+    if (!data) return;
 
-    setRestaurants((prev) => {
-      const prevIds = new Set(prev.map((r) => r.id));
-      const merged = [...prev];
+    const items = data.items ?? [];
 
-      for (const item of data.items) {
-        if (!prevIds.has(item.id)) merged.push(item);
-      }
-      return merged;
-    });
-  }, [data?.items]);
+    // ✅ 2페이지 이상 요청했는데 items가 비어있다 => 더 이상 없음
+    if (page > 1 && items.length === 0) {
+      setIsEnd(true);
+      return;
+    }
 
-  // ✅ 더보기 가능 여부
-  const canLoadMore = useMemo(() => {
-    if (!data) return false;
-    return page < data.totalPages;
+    // ✅ items가 있으면 누적 append (중복 제거)
+    if (items.length > 0) {
+      setRestaurants((prev) => {
+        const prevIds = new Set(prev.map((r) => r.id));
+        const merged = [...prev];
+
+        for (const item of items) {
+          if (!prevIds.has(item.id)) merged.push(item);
+        }
+        return merged;
+      });
+    }
   }, [data, page]);
 
   const handleLoadMore = () => {
-    if (!canLoadMore || isFetching) return;
+    // ✅ 마지막이면 더보기 막기
+    if (isEnd || isFetching) return;
+
+    // ✅ 다음 페이지 요청
     setPage((p) => p + 1);
   };
 
@@ -179,7 +189,7 @@ export default function MenuDetailPage() {
             key={item.id}
             name={item.displayName.text}
             category={detailMenu?.name || ""}
-            distance={`${Math.round(item.distance / 10) / 100}K`} // 1250 -> 1.25K
+            distance={`${Math.round(item.distance / 10) / 100}K`}
             address={item.formattedAddress}
             price={item.priceLevel}
             onCardClick={() =>
@@ -191,14 +201,10 @@ export default function MenuDetailPage() {
         <button
           type="button"
           onClick={handleLoadMore}
-          disabled={!canLoadMore || isFetching}
+          disabled={isEnd || isFetching}
           className="mr-2 w-full text-center text-[A8A8A8] disabled:opacity-50"
         >
-          {isFetching
-            ? "불러오는 중..."
-            : canLoadMore
-              ? "더보기"
-              : "마지막입니다"}
+          {isFetching ? "불러오는 중..." : isEnd ? "마지막입니다" : "더보기"}
         </button>
       </div>
 

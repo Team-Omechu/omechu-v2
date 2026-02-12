@@ -3,7 +3,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { useParams, useSearchParams } from "next/navigation";
+import Image from "next/image";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 
 import io, { Socket } from "socket.io-client";
 
@@ -14,7 +15,9 @@ import {
   SpinCompletedPayload,
   Menu,
 } from "@/entities/menubattle";
+import { Button, Input, Toast } from "@/shared";
 import { fetchJSON } from "@/shared/api/fetchJSON";
+import { menuBattleAPI } from "@/shared/api/menuBattle.api";
 import { Header } from "@/shared/ui/header/Header";
 import { BattleBoard, BattleResult } from "@/widgets/menubattle";
 import { Roulette, RouletteHandle } from "@/widgets/menubattle/ui/Roulette";
@@ -22,7 +25,24 @@ import { Roulette, RouletteHandle } from "@/widgets/menubattle/ui/Roulette";
 export default function PlayPage() {
   const WS_URL = process.env.NEXT_PUBLIC_API_URL!;
   const { id: battleId } = useParams<{ id: string }>();
-  const nickname = useSearchParams().get("nickname")!;
+
+  const router = useRouter();
+
+  const searchParams = useSearchParams();
+  const battleNameFromQuery = searchParams.get("battleName");
+  const initialNickname = searchParams.get("nickname");
+
+  const [battleName] = useState(
+    battleNameFromQuery
+      ? decodeURIComponent(battleNameFromQuery)
+      : "오늘의 메뉴 배틀",
+  );
+
+  const [nickname, setNickname] = useState<string>(initialNickname ?? "");
+  const [showNicknameModal, setShowNicknameModal] = useState(!initialNickname);
+
+  const [toastMessage, setToastMessage] = useState("");
+  const [showToast, setShowToast] = useState(false);
 
   const [menus, setMenus] = useState<Menu[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -34,6 +54,38 @@ export default function PlayPage() {
   const rouletteRef = useRef<RouletteHandle | null>(null);
 
   const BAR_COLORS = ["#FF9029", "#00A3FF", "#5AD886", "#FDDC3F", "#C48CFD"];
+
+  const isValidNickname = (value: string) => {
+    const regex = /^[a-zA-Z0-9가-힣]{1,20}$/;
+    return regex.test(value);
+  };
+
+  const handleConfirmNickname = async () => {
+    if (!nickname || !isValidNickname(nickname)) {
+      setToastMessage("닉네임은 한/영/숫자 1~20자만 가능합니다.");
+      setShowToast(true);
+      return;
+    }
+
+    try {
+      await menuBattleAPI.joinBattle(battleId, nickname);
+
+      setShowNicknameModal(false);
+
+      // URL에 nickname 붙여서 state 정합성 유지
+      window.history.replaceState(
+        null,
+        "",
+        `/menu-battle/play/${battleId}?nickname=${nickname}&battleName=${encodeURIComponent(battleName)}`,
+      );
+    } catch (e: unknown) {
+      if (e instanceof Error) {
+        alert(e.message);
+      } else {
+        alert("알 수 없는 오류가 발생했습니다.");
+      }
+    }
+  };
 
   /* 초기 데이터 */
   useEffect(() => {
@@ -115,74 +167,131 @@ export default function PlayPage() {
     });
   };
 
+  useEffect(() => {
+    if (!showToast) return;
+
+    const timer = setTimeout(() => {
+      setShowToast(false);
+    }, 2500); // 2.5초 후 사라짐
+
+    return () => clearTimeout(timer);
+  }, [showToast]);
+
   const isHost = players[0]?.name === nickname;
+
+  const ready = !showNicknameModal && !!nickname;
 
   return (
     <main className="min-h-screen px-4 text-center">
-      <Header
-        title="오늘의 메뉴 배틀"
-        showProfileButton
-        showHomeButton={false}
+      <Header title={battleName} showProfileButton showHomeButton={false} />
+
+      {ready && (
+        <>
+          <BattleBoard players={players} />
+
+          {results.length > 0 && (
+            <ul className="mt-6 space-y-2">
+              {results.map((r) => (
+                <li key={`${r.playerId}-${r.stoppedAt}`} className="text-sm">
+                  {r.name} → {r.menu} ({r.diff}°)
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* 안내 문구 */}
+          <div className="py-10">
+            <p className="text-font-high text-lg font-semibold">
+              원하는 메뉴존의
+              <br />
+              타이밍에 맞춰 멈추세요!
+            </p>
+          </div>
+
+          <Roulette ref={rouletteRef} menus={menus} disabled={finished} />
+
+          <button
+            onClick={() => {
+              if (!hasSpun) {
+                rouletteRef.current?.start();
+                setHasSpun(true);
+              } else {
+                handleStop();
+                setHasSpun(false);
+              }
+            }}
+            disabled={finished}
+            className="bg-statelayer-default mt-4 w-40 rounded-xl py-3 font-semibold text-white disabled:opacity-40"
+          >
+            {hasSpun ? "STOP" : "SPIN"}
+          </button>
+
+          {isHost && !finished && (
+            <button
+              onClick={() =>
+                socketRef.current?.emit("battle:finish", { battleId, nickname })
+              }
+              className="bg-statelayer-default mt-6 rounded-xl px-8 py-3 text-white"
+            >
+              배틀 마감하기
+            </button>
+          )}
+
+          {finished && (
+            <BattleResult
+              battleId={battleId}
+              finished={finished}
+              isHost={isHost}
+              nickname={nickname}
+            />
+          )}
+        </>
+      )}
+
+      {/* 닉네임 입력 모달 */}
+      {showNicknameModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+          <div className="relative w-full max-w-sm rounded-2xl bg-white px-3.75 py-3.75 text-center">
+            {/* 닫기 버튼 */}
+            <button
+              type="button"
+              onClick={() => router.push("/menu-battle")}
+              className="text-font-placeholder absolute top-3.75 right-3.75 text-xl"
+              aria-label="닫기"
+            >
+              <Image src="/x/close_big.svg" alt="닫기" width={20} height={20} />
+            </button>
+
+            <div className="pt-6">
+              <h3 className="text-body-3-medium wrap-break-word">
+                {battleName}
+              </h3>
+            </div>
+
+            <Input
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="닉네임을 입력하세요"
+              className="mt-4 w-full"
+            />
+            <Button
+              width="xl"
+              className="bg-statelayer-default mt-3 w-full text-white"
+              onClick={handleConfirmNickname}
+            >
+              입장하기
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      <Toast
+        show={showToast}
+        state="error"
+        message={toastMessage}
+        className="bottom-32"
       />
-
-      <BattleBoard players={players} />
-
-      {results.length > 0 && (
-        <ul className="mt-6 space-y-2">
-          {results.map((r) => (
-            <li key={`${r.playerId}-${r.stoppedAt}`} className="text-sm">
-              {r.name} → {r.menu} ({r.diff}°)
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* 안내 문구 */}
-      <div className="py-10">
-        <p className="text-font-high text-lg font-semibold">
-          원하는 메뉴존의
-          <br />
-          타이밍에 맞춰 멈추세요!
-        </p>
-      </div>
-
-      <Roulette ref={rouletteRef} menus={menus} disabled={finished} />
-
-      <button
-        onClick={() => {
-          if (!hasSpun) {
-            rouletteRef.current?.start();
-            setHasSpun(true);
-          } else {
-            handleStop();
-            setHasSpun(false);
-          }
-        }}
-        disabled={finished}
-        className="bg-statelayer-default mt-4 w-40 rounded-xl py-3 font-semibold text-white disabled:opacity-40"
-      >
-        {hasSpun ? "STOP" : "SPIN"}
-      </button>
-
-      {isHost && !finished && (
-        <button
-          onClick={() =>
-            socketRef.current?.emit("battle:finish", { battleId, nickname })
-          }
-          className="bg-statelayer-default mt-6 rounded-xl px-8 py-3 text-white"
-        >
-          배틀 마감하기
-        </button>
-      )}
-
-      {finished && (
-        <BattleResult
-          battleId={battleId}
-          finished={finished}
-          isHost={isHost}
-          nickname={nickname}
-        />
-      )}
     </main>
   );
 }

@@ -55,8 +55,8 @@ export default function DeleteAccountPage() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   const nickname = profile?.nickname || "회원";
@@ -101,12 +101,12 @@ export default function DeleteAccountPage() {
           <div className="body-3-medium text-font-high">
             {nickname}님, 정말 오메추를 떠나시나요?
           </div>
-          <div className="text-body-4-regular text-font-low flex flex-col gap-4.5 whitespace-pre-line">
-            <span>
-              {`탈퇴하시면 입력하신 개인정보와 메뉴 추천 목록, \n 먹부림 통계 등 모든 활동 정보가 삭제됩니다.`}
+          <div className="text-body-4-regular text-font-low flex flex-col gap-4.5 tracking-tight">
+            <span className="whitespace-pre-line">
+              {`탈퇴하시면 입력하신 개인정보와 메뉴 추천 목록, 먹부림 통계 등 모든 활동 정보가 삭제됩니다.`}
             </span>
-            <span>
-              {`삭제된 데이터는 복구할 수 없으니, 마지막 결정이 \n  맞는지 한 번 더 생각해 주세요.`}
+            <span className="whitespace-pre-line">
+              {`삭제된 데이터는 복구할 수 없으니, 마지막 결정이 맞는지 한 번 더 생각해 주세요.`}
             </span>
           </div>
           <div className="mt-4 flex items-center gap-2.5">
@@ -151,7 +151,7 @@ export default function DeleteAccountPage() {
             </button>
 
             {showDropDown && (
-              <ul className="border-font-disabled absolute z-50 mt-2 flex h-fit w-full flex-col gap-2 overflow-hidden rounded-[10px] border bg-white p-2.5">
+              <ul className="border-font-disabled absolute z-50 mt-2 flex h-fit w-full flex-col gap-2 rounded-[10px] border bg-white p-2.5">
                 {WITHDRAW_REASONS.map((reason) => (
                   <li
                     key={reason}
@@ -159,16 +159,16 @@ export default function DeleteAccountPage() {
                       setSelectedReason(reason);
                       setShowDropDown(false);
                     }}
-                    className="flex cursor-pointer items-center gap-1.5"
+                    className="flex cursor-pointer items-center gap-1.5 py-1"
                   >
                     {selectedReason === reason ? (
                       <CheckIcon />
                     ) : (
-                      <div className="h-5.25 w-5.25" />
+                      <div className="h-5.5 w-5.25" />
                     )}
                     <span
                       className={clsx(
-                        "text-caption-1-regular hover:bg-background-secondary w-full",
+                        "text-caption-1-regular hover:bg-component-default h-full w-full rounded-md px-1",
                         selectedReason === reason
                           ? "text-font-high"
                           : "text-font-placeholder",

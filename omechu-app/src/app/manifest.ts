@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 
+import { THEME_COLOR } from "@/shared/constants/theme";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "오메추 - 오늘 뭐 먹지?",
@@ -8,24 +10,24 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#FF6B35",
+    theme_color: THEME_COLOR,
     orientation: "any",
     icons: [
       {
-        src: "/logo/logo.png",
+        src: "/icons/icon-192x192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/logo/logo.png",
+        src: "/icons/icon-512x512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/logo/logo.png",
-        sizes: "192x192",
+        src: "/icons/icon-maskable-512x512.png",
+        sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
       },

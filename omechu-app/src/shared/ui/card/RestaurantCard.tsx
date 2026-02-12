@@ -10,6 +10,7 @@ interface RestaurantCardProps {
   category: string;
   price: string;
   address: string;
+  image?: string;
   onCardClick?: () => void;
 }
 
@@ -19,6 +20,7 @@ export const RestaurantCard = ({
   category,
   price,
   address,
+  image,
   onCardClick,
 }: RestaurantCardProps) => {
   return (
@@ -48,7 +50,7 @@ export const RestaurantCard = ({
       </div>
       <div className="h-20 w-20">
         <Image
-          src={"/image/image_empty.svg"}
+          src={image || "/image/image_empty.svg"}
           alt={`${name} 이미지`}
           width={80}
           height={80}

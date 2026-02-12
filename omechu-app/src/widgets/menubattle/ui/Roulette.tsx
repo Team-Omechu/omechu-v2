@@ -38,12 +38,14 @@ export const Roulette = forwardRef<RouletteHandle, RouletteProps>(
       getAngle: () => angleRef.current,
     }));
 
+    const SPEED = 20; // 회전 속도
+
     useEffect(() => {
       if (!spinning || disabled) return;
 
       const id = setInterval(() => {
         setAngle((prev) => {
-          const next = (prev + 4) % 360;
+          const next = (prev + SPEED) % 360;
           angleRef.current = next; // 🔥 항상 동기화
           return next;
         });

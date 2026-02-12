@@ -112,7 +112,7 @@ export default function QuestionAnswerPage() {
       </main>
 
       {isQuestionStep && (
-        <footer className="absolute top-[55%] flex w-full items-end justify-between px-4 pb-6">
+        <footer className="absolute top-[50%] flex w-full items-end justify-between px-4 pb-6">
           {showPrev ? (
             <PaginationButton
               direction="left"

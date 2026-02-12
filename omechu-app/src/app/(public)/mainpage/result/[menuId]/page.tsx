@@ -60,7 +60,10 @@ export default function MenuDetailPage() {
   const [page, setPage] = useState(1);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
 
-  const { data, isLoading, isFetching } = useGetRestaurants(page, PAGE_SIZE);
+  const { data, isLoading, isFetching } = useGetRestaurants(page);
+
+  console.log("음식 이미지", menuDetailData?.image_link);
+  console.log("레스토랑 데이터", data);
 
   // ✅ page 바뀔 때마다 data.items 누적(append)
   useEffect(() => {
@@ -247,20 +250,27 @@ export default function MenuDetailPage() {
             ))}
           </div>
         )}
-
-        {restaurants.map((item) => (
-          <RestaurantCard
-            key={item.id}
-            name={item.displayName.text}
-            category={detailMenu?.name || ""}
-            distance={`${Math.round(item.distance / 10) / 100}K`}
-            address={item.formattedAddress}
-            price={item.priceLevel}
-            onCardClick={() =>
-              router.push(`/restaurant/restaurant-detail/${item.id}`)
-            }
-          />
-        ))}
+        {/* TODO: media get api 연결하기
+        https://places.googleapis.com/v1/{리소스_경로}/media?key=YOUR_API_KEY&maxHeightPx=1000&maxWidthPx=1000   */}
+        {restaurants.map((item) => {
+          const authorPhotoUri =
+            item.photo?.authorAttributions?.[2]?.photoUri ?? "";
+          console.log("식당이미지", authorPhotoUri);
+          return (
+            <RestaurantCard
+              key={item.id}
+              name={item.displayName.text}
+              category={detailMenu?.name || ""}
+              distance={`${Math.round(item.distance / 10) / 100}K`}
+              address={item.formattedAddress}
+              price={item.priceLevel}
+              image={item.photo?.name}
+              onCardClick={() =>
+                router.push(`/restaurant/restaurant-detail/${item.id}`)
+              }
+            />
+          );
+        })}
 
         <button
           type="button"

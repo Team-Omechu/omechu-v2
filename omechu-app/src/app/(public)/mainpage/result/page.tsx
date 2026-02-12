@@ -1,4 +1,3 @@
-// src/app/mainpage/result/page.tsx (ResultPage)
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -150,10 +149,9 @@ export default function ResultPage() {
       );
       if (openMenu === excludeMenu) setOpenMenu(null);
 
-      // 서버 제외 요청
       // exceptMenu({ menuName: excludeMenu }).catch(() => {
-      //   triggerToast("메뉴 제외에 실패했습니다.");
-      // });
+      // triggerToast("메뉴 제외에 실패했습니다.");
+      //  });
     }
 
     setShowExcludeConfirmModal(false);
@@ -173,7 +171,7 @@ export default function ResultPage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <Header title="맞춤 추천" onBackClick={handleHeaderBack} />
+      <Header title="맞춤 추천" onBackClick={() => router.back()} />
 
       <div className="mt-3 ml-2.5 flex flex-col gap-4 px-4">
         {menus.map((menu) => (

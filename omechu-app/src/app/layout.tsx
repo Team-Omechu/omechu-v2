@@ -5,6 +5,7 @@ import { Noto_Sans_KR } from "next/font/google";
 import type { Metadata } from "next";
 
 import { Providers } from "@/app/providers";
+import { THEME_COLOR } from "@/shared/constants/theme";
 import { BASE_URL } from "@/shared/constants/url";
 
 const notoSansKR = Noto_Sans_KR({
@@ -35,11 +36,10 @@ export const metadata: Metadata = {
   creator: "OMECHU Team",
   icons: {
     icon: [
-      { url: "/logo/logo.png", sizes: "32x32", type: "image/png" },
-      { url: "/logo/logo.png", sizes: "192x192", type: "image/png" },
-      { url: "/logo/logo.png", sizes: "512x512", type: "image/png" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
-    apple: "/logo/logo.png",
+    apple: "/icons/icon-192x192.png",
   },
   openGraph: {
     url: BASE_URL,
@@ -81,7 +81,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#ffffff",
+  themeColor: THEME_COLOR,
 };
 
 export default function RootLayout({
@@ -93,7 +93,7 @@ export default function RootLayout({
     <html lang="ko" className={notoSansKR.variable}>
       <body className="bg-gray-200">
         {/* 모바일 앱 컨테이너 - max-width 제한, 중앙 정렬 */}
-        <div className="bg-background-primary relative mx-auto flex min-h-screen w-full max-w-[480px] min-w-[375px] flex-col overflow-x-hidden shadow-xl">
+        <div className="bg-background-primary relative mx-auto flex min-h-screen w-full max-w-120 min-w-93.75 flex-col overflow-x-hidden shadow-xl">
           <Providers>
             <main className="bg-background-primary scrollbar-hide flex flex-1 flex-col overflow-y-scroll">
               {children}

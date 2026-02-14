@@ -5,6 +5,7 @@ export {
   getMukburimByDate,
 } from "./api/mukburimApi";
 export { usePostMukburim } from "./model/usePostMukburim";
+export { MUKBURIM_ERROR_CODE } from "./config/mukburim";
 export type { mukburimResponse } from "./config/mukburim";
 export type {
   MukburimPeriod,

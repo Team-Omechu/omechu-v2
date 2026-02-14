@@ -10,6 +10,7 @@ import { format } from "date-fns";
 
 import {
   getMukburimStatistics,
+  MUKBURIM_ERROR_CODE,
   type GetMukburimStatisticsResponse,
   type MukburimPeriod,
   type MukburimSortBy,
@@ -80,8 +81,8 @@ export default function MukburimLogPage() {
           const { status, data } = error.response ?? {};
           const code = data?.error?.errorCode;
           if (
-            (status === 404 && code === "MK001") ||
-            (status === 500 && code === "MK005")
+            (status === 404 && code === MUKBURIM_ERROR_CODE.NOT_FOUND) ||
+            (status === 500 && code === MUKBURIM_ERROR_CODE.STATISTICS_FAILED)
           ) {
             return data as GetMukburimStatisticsResponse;
           }

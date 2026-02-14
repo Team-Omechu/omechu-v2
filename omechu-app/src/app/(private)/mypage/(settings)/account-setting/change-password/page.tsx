@@ -91,7 +91,9 @@ export default function ChangePasswordPage() {
         : "error";
 
   const newPasswordHelperState =
-    newPasswordBlurred && newPassword.length > 0 && hasPasswordError(newPassword)
+    newPasswordBlurred &&
+    newPassword.length > 0 &&
+    hasPasswordError(newPassword)
       ? "error"
       : "default";
 

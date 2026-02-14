@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -29,11 +29,6 @@ export default function EmailInquiryPage() {
       setToastMessage("문의가 정상적으로 접수되었습니다.");
       setToastState("success");
       setShowToast(true);
-
-      setTimeout(() => {
-        setShowToast(false);
-        router.back();
-      }, 3000);
     } catch (error) {
       const message =
         error instanceof ApiClientError
@@ -43,14 +38,23 @@ export default function EmailInquiryPage() {
       setToastMessage(message);
       setToastState("error");
       setShowToast(true);
-
-      setTimeout(() => {
-        setShowToast(false);
-      }, 3000);
     } finally {
       setIsPending(false);
     }
   };
+
+  useEffect(() => {
+    if (!showToast) return;
+
+    const timer = setTimeout(() => {
+      setShowToast(false);
+      if (toastState === "success") {
+        router.back();
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [showToast, toastState, router]);
 
   return (
     <>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { cva, type VariantProps } from "class-variance-authority";
+
 import { cn } from "@/shared/lib/cn.util";
 
 const headerStyles = cva(
@@ -13,8 +14,8 @@ const headerStyles = cva(
   {
     variants: {
       variant: {
-        default: "", // 뒤로가기 + 타이틀 + (공유) + 홈/프로필
-        mypage: "justify-end", // 프로필 아이콘만 (우측)
+        default: "",
+        mypage: "justify-end",
       },
     },
     defaultVariants: {
@@ -33,7 +34,10 @@ type HeaderProps = VariantProps<typeof headerStyles> & {
   showShareButton?: boolean;
   onShareClick?: () => void;
 
+  // ✅ 뒤로/홈 버튼을 “선택적으로” 가로채기 위한 핸들러
   onBackClick?: () => void;
+  onHomeClick?: () => void;
+
   className?: string;
 };
 
@@ -48,6 +52,7 @@ export const Header = ({
   onShareClick,
 
   onBackClick,
+  onHomeClick,
   className,
 }: HeaderProps) => {
   const router = useRouter();
@@ -93,7 +98,7 @@ export const Header = ({
         )}
       </div>
 
-      {/* ✅ 오른쪽: 공유 + 홈/프로필 (나란히) */}
+      {/* 오른쪽: 공유 + 홈/프로필 */}
       <div className="flex shrink-0 items-center gap-3">
         {showShareButton && (
           <button
@@ -107,9 +112,20 @@ export const Header = ({
         )}
 
         {showHomeButton ? (
-          <Link href="/mainpage" aria-label="홈으로" className="shrink-0">
-            <Image src="/header/home.svg" alt="" width={24} height={24} />
-          </Link>
+          onHomeClick ? (
+            <button
+              type="button"
+              onClick={onHomeClick}
+              aria-label="홈으로"
+              className="shrink-0"
+            >
+              <Image src="/header/home.svg" alt="" width={24} height={24} />
+            </button>
+          ) : (
+            <Link href="/mainpage" aria-label="홈으로" className="shrink-0">
+              <Image src="/header/home.svg" alt="" width={24} height={24} />
+            </Link>
+          )
         ) : showProfileButton ? (
           <Link href="/mypage" aria-label="마이페이지" className="shrink-0">
             <Image src="/header/person.svg" alt="" width={24} height={24} />

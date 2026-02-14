@@ -31,6 +31,12 @@ export {
 } from "./api/profileApi";
 
 export {
+  fetchRecommendManagement,
+  exceptMenu,
+  removeExceptMenu,
+} from "./api/recommendApi";
+
+export {
   useLoginMutation,
   useSignupMutation,
   useLogoutMutation,
@@ -41,6 +47,12 @@ export {
 } from "./lib/hooks/useAuth";
 
 export { useProfile, useUpdateProfileMutation } from "./lib/hooks/useProfile";
+
+export {
+  useRecommendManagement,
+  useExceptMenuMutation,
+  useRemoveExceptMenuMutation,
+} from "./lib/hooks/useRecommendManagement";
 
 export { useKakaoLogin } from "./lib/hooks/useKakaoLogin";
 
@@ -76,3 +88,13 @@ export type {
   PreferType,
   AllergyType,
 } from "./model/profile.types";
+
+export type {
+  RecommendMenuItem,
+  RecommendManagementSummary,
+  RecommendManagementResponse,
+  ExceptMenuRequest,
+  ExceptMenuResponse,
+  RemoveExceptMenuRequest,
+  RemoveExceptMenuResponse,
+} from "./model/recommend.types";

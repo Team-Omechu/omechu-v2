@@ -24,7 +24,6 @@ export {
 } from "./api/authApi";
 
 export {
-  ProfileApiError,
   fetchProfile,
   updateProfile,
   withdrawAccount,

@@ -25,6 +25,8 @@ type QuestionAnswerActions = {
   addAddition: (addition: string) => void;
   removeAddition: (addition: string) => void;
 
+  clearStepValue: (step: number) => void;
+
   questionReset: () => void;
 };
 
@@ -71,6 +73,31 @@ export const useQuestionAnswerStore = create<
   removeAddition: (addition) => {
     const { addition: currentAddition } = get();
     set({ addition: currentAddition.filter((a) => a !== addition) });
+  },
+
+  //현재 step의 값만 지움
+  // step: 1~5 (현재 보고 있는 페이지 step)
+  clearStepValue: (step) => {
+    if (step === 1) {
+      set({ mealTime: null });
+      return;
+    }
+    if (step === 2) {
+      set({ purpose: null });
+      return;
+    }
+    if (step === 3) {
+      set({ mood: null });
+      return;
+    }
+    if (step === 4) {
+      set({ who: null });
+      return;
+    }
+    if (step === 5) {
+      set({ budget: null });
+      return;
+    }
   },
 
   questionReset: () => set(initialState),

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 import { useQuestionAnswerStore } from "@/entities/question";
+import { useTagStore } from "@/entities/tag";
 import {
   BaseModal,
   Header,
@@ -28,7 +29,8 @@ export default function QuestionAnswerPage() {
   const params = useParams();
 
   const store = useQuestionAnswerStore();
-  const { setCurrentStep, questionReset, currentStep } = store;
+  const { setCurrentStep, questionReset, currentStep, clearStepValue } = store;
+  const { clearStepTag } = useTagStore();
 
   const [showModal, setShowModal] = useState(false);
 
@@ -63,7 +65,17 @@ export default function QuestionAnswerPage() {
     setCurrentStep(step);
   }, [isResult, step, router, setCurrentStep]);
 
-  const handlePrev = () => router.back();
+  const handlePrev = () => {
+    if (!isQuestionStep) return;
+    if (step <= 1) return;
+
+    //지금 step의 값 지우고
+    clearStepValue(step - 1);
+    clearStepTag(step - 1);
+
+    //이전 step으로 이동(히스토리 의존 X)
+    router.push(`/mainpage/question-answer/${step - 1}`);
+  };
 
   const handleNext = () => {
     // 1~4 -> 다음 step

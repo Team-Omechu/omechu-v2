@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import Image from "next/image";
 import {
@@ -15,8 +15,10 @@ import { usePostMukburim } from "@/entities/mukburim";
 import type { Restaurant } from "@/entities/restaurant";
 import { useGetRestaurants } from "@/entities/restaurant";
 import {
+  BaseModal,
   Header,
   IngredientCard,
+  ModalWrapper,
   RestaurantCard,
   SkeletonUIFoodBox,
   Toast,
@@ -28,23 +30,41 @@ export default function MenuDetailPage() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  const { menuId } = useParams();
+  const decodeMenuId = decodeURIComponent(menuId as string);
+
+  const { data: menuDetailData } = useGetMenuDetail(decodeMenuId);
+  const detailMenu: MenuDetail | undefined = menuDetailData;
+
+  const { mutate } = usePostMukburim();
+
+  // ✅ 홈 버튼 모달
+  const [showHomeModal, setShowHomeModal] = useState(false);
+
+  // ✅ 토스트(공유/기록) 통합
+  const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
+  const toastTimerRef = useRef<number | null>(null);
+
+  const openToast = (msg: string, ms = 2000) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = window.setTimeout(() => setShowToast(false), ms);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
+    };
+  }, []);
 
   // ✅ 페이지네이션 상태 + 누적 리스트
   const [page, setPage] = useState(1);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-
-  // ✅ 마지막 페이지(더 이상 데이터 없음) 여부
   const [isEnd, setIsEnd] = useState(false);
 
   const { data, isLoading, isFetching } = useGetRestaurants(page);
-
-  const { menuId } = useParams();
-  const { mutate } = usePostMukburim();
-
-  const decodeMenuId = decodeURIComponent(menuId as string);
-  const { data: menuDetailData } = useGetMenuDetail(decodeMenuId);
-  const detailMenu: MenuDetail | undefined = menuDetailData;
 
   const shouldRecord = searchParams.get("record") === "1";
 
@@ -74,31 +94,24 @@ export default function MenuDetailPage() {
 
     mutate(decodeMenuId, {
       onSuccess: () => {
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000);
+        openToast("먹부림 기록에 등록되었습니다.", 2000);
         sessionStorage.setItem(key, "done");
       },
-      onError: () => {
-        console.log(decodeMenuId);
-      },
+      onError: () => {},
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decodeMenuId, shouldRecord]);
 
-  // ✅ page 바뀔 때마다 data.items 누적 + "데이터 없음이면 마지막 처리"
   useEffect(() => {
-    // 아직 응답이 없으면 아무것도 안 함
     if (!data) return;
 
     const items = data.items ?? [];
 
-    // ✅ 2페이지 이상 요청했는데 items가 비어있다 => 더 이상 없음
     if (page > 1 && items.length === 0) {
       setIsEnd(true);
       return;
     }
 
-    // ✅ items가 있으면 누적 append (중복 제거)
     if (items.length > 0) {
       setRestaurants((prev) => {
         const prevIds = new Set(prev.map((r) => r.id));
@@ -113,11 +126,64 @@ export default function MenuDetailPage() {
   }, [data, page]);
 
   const handleLoadMore = () => {
-    // ✅ 마지막이면 더보기 막기
     if (isEnd || isFetching) return;
-
-    // ✅ 다음 페이지 요청
     setPage((p) => p + 1);
+  };
+
+  // ✅ 공유 로직 (Web Share -> Clipboard fallback)
+  const handleShare = async () => {
+    try {
+      const url = typeof window !== "undefined" ? window.location.href : "";
+      if (!url) return;
+
+      const nav = typeof window !== "undefined" ? window.navigator : null;
+
+      if (
+        nav &&
+        typeof (nav as Navigator & { share?: unknown }).share === "function"
+      ) {
+        await (
+          nav as Navigator & {
+            share: (data: {
+              title?: string;
+              text?: string;
+              url?: string;
+            }) => Promise<void>;
+          }
+        ).share({
+          title: detailMenu?.name ? `${detailMenu.name} 추천!` : "오늘의 메뉴",
+          text: detailMenu?.name
+            ? `오늘은 ${detailMenu.name} 어때?`
+            : "오늘의 메뉴 확인해봐!",
+          url,
+        });
+        return;
+      }
+
+      if (
+        nav &&
+        nav.clipboard &&
+        typeof nav.clipboard.writeText === "function"
+      ) {
+        await nav.clipboard.writeText(url);
+        openToast("링크가 복사됐어요.", 2000);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = url;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+
+      openToast("링크가 복사됐어요.", 2000);
+    } catch {
+      alert("공유에 실패했어요. 다시 시도해 주세요.");
+    }
   };
 
   return (
@@ -126,6 +192,8 @@ export default function MenuDetailPage() {
         title="오늘의 메뉴"
         showHomeButton={true}
         showShareButton={true}
+        onShareClick={handleShare}
+        onHomeClick={() => setShowHomeModal(true)}
       />
 
       <div className="mt-4 flex-col items-center justify-center p-4">
@@ -133,7 +201,7 @@ export default function MenuDetailPage() {
           {detailMenu?.name}
         </p>
         <Image
-          src={detailMenu?.image_link || "/image/image_empty.svg"}
+          src={"/image/image_empty.svg"}
           alt={detailMenu?.name || "메뉴 이미지"}
           className="mx-auto h-24 w-24 rounded-md"
           width={96}
@@ -208,8 +276,24 @@ export default function MenuDetailPage() {
         </button>
       </div>
 
+      {showHomeModal && (
+        <ModalWrapper>
+          <BaseModal
+            title="메뉴추천을 중단하시겠어요?"
+            leftButtonText="그만하기"
+            rightButtonText="계속하기"
+            onCloseClick={() => setShowHomeModal(false)}
+            onLeftButtonClick={() => {
+              setShowHomeModal(false);
+              router.push("/mainpage");
+            }}
+            onRightButtonClick={() => setShowHomeModal(false)}
+          />
+        </ModalWrapper>
+      )}
+
       <Toast
-        message="먹부림 기록에 등록되었습니다."
+        message={toastMessage}
         show={showToast}
         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform"
       />

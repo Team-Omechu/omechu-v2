@@ -15,8 +15,10 @@ import { usePostMukburim } from "@/entities/mukburim";
 import type { Restaurant } from "@/entities/restaurant";
 import { useGetRestaurants } from "@/entities/restaurant";
 import {
+  BaseModal,
   Header,
   IngredientCard,
+  ModalWrapper,
   RestaurantCard,
   SkeletonUIFoodBox,
   Toast,
@@ -37,6 +39,8 @@ export default function MenuDetailPage() {
   const detailMenu: MenuDetail | undefined = menuDetailData;
 
   const { mutate } = usePostMukburim();
+
+  const [showHomeModal, setShowHomeModal] = useState(false);
 
   // ✅ 토스트(공유/기록) 통합
   const [toastMessage, setToastMessage] = useState("");
@@ -193,6 +197,8 @@ export default function MenuDetailPage() {
         showBackButton={false}
         showShareButton={true}
         onShareClick={handleShare}
+        showHomeButton={true}
+        onHomeClick={() => setShowHomeModal(true)}
       />
 
       <div className="mt-4 ml-4 flex-col items-center justify-center p-4">
@@ -200,7 +206,7 @@ export default function MenuDetailPage() {
           {detailMenu?.name}
         </p>
         <Image
-          src={detailMenu?.image_link || "/image/image_empty.svg"}
+          src={"/image/image_empty.svg"} //detailMenu?.image_link ||
           alt={detailMenu?.name || "메뉴 이미지"}
           className="mx-auto h-24 w-24 rounded-md"
           width={96}
@@ -264,7 +270,6 @@ export default function MenuDetailPage() {
               distance={`${Math.round(item.distance / 10) / 100}K`}
               address={item.formattedAddress}
               price={item.priceLevel}
-              image={item.photo?.name}
               onCardClick={() =>
                 router.push(`/restaurant/restaurant-detail/${item.id}`)
               }
@@ -285,6 +290,22 @@ export default function MenuDetailPage() {
               : "마지막입니다"}
         </button>
       </div>
+
+      {showHomeModal && (
+        <ModalWrapper>
+          <BaseModal
+            title="메뉴추천을 중단하시겠어요?"
+            leftButtonText="그만하기"
+            rightButtonText="계속하기"
+            onCloseClick={() => setShowHomeModal(false)}
+            onLeftButtonClick={() => {
+              setShowHomeModal(false);
+              router.push("/mainpage");
+            }}
+            onRightButtonClick={() => setShowHomeModal(false)}
+          />
+        </ModalWrapper>
+      )}
 
       <Toast
         message={toastMessage}

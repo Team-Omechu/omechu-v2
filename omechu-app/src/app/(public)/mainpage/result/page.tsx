@@ -46,6 +46,7 @@ export default function ResultPage() {
   // 1) 로그인 상태에서 "제외하시겠어요?" 확인 모달
   const [showExcludeConfirmModal, setShowExcludeConfirmModal] = useState(false);
   const [excludeMenu, setExcludeMenu] = useState<string | null>(null);
+  const [showHomeModal, setShowHomeModal] = useState(false);
 
   // 2) 비로그인: 다시추천 3번 눌렀을 때 로그인 유도 모달 (A)
   const [reshuffleAttemptCount, setReshuffleAttemptCount] = useState(0);
@@ -171,7 +172,12 @@ export default function ResultPage() {
 
   return (
     <div className="flex h-screen flex-col">
-      <Header title="맞춤 추천" onBackClick={() => router.back()} />
+      <Header
+        title="맞춤 추천"
+        onBackClick={() => router.back()}
+        showHomeButton={true}
+        onHomeClick={() => setShowHomeModal(true)}
+      />
 
       <div className="mt-3 ml-2.5 flex flex-col gap-4 px-4">
         {menus.map((menu) => (
@@ -269,7 +275,21 @@ export default function ResultPage() {
           />
         </ModalWrapper>
       )}
-
+      {showHomeModal && (
+        <ModalWrapper>
+          <BaseModal
+            title="메뉴추천을 중단하시겠어요?"
+            leftButtonText="그만하기"
+            rightButtonText="계속하기"
+            onCloseClick={() => setShowHomeModal(false)}
+            onLeftButtonClick={() => {
+              setShowHomeModal(false);
+              router.push("/mainpage");
+            }}
+            onRightButtonClick={() => setShowHomeModal(false)}
+          />
+        </ModalWrapper>
+      )}
       <Toast message={toastMessage} show={showToast} className="bottom-20" />
     </div>
   );

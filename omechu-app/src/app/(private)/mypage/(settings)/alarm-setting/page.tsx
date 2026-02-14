@@ -95,40 +95,6 @@ export default function AlarmSettingPage() {
   const activeAlert: MealAlertItem | undefined =
     activeMealType && alerts ? alerts[activeMealType] : undefined;
 
-  if (isLoading) {
-    return (
-      <>
-        <Header
-          title="알림 설정"
-          onBackClick={() => router.push("/mypage")}
-          showHomeButton={false}
-        />
-        <main className="mt-2 flex h-[80dvh] w-full items-center justify-center">
-          <span className="text-font-low text-body-3-regular">
-            불러오는 중...
-          </span>
-        </main>
-      </>
-    );
-  }
-
-  if (isError || !alerts) {
-    return (
-      <>
-        <Header
-          title="알림 설정"
-          onBackClick={() => router.push("/mypage")}
-          showHomeButton={false}
-        />
-        <main className="mt-2 flex h-[80dvh] w-full items-center justify-center">
-          <span className="text-font-low text-body-3-regular">
-            알림 설정을 불러올 수 없습니다.
-          </span>
-        </main>
-      </>
-    );
-  }
-
   return (
     <>
       <Header
@@ -137,48 +103,62 @@ export default function AlarmSettingPage() {
         showHomeButton={false}
       />
 
-      <main className="relative mt-2 flex h-[80dvh] w-full flex-col pr-6 pl-8">
-        <section className="mt-10 flex w-full flex-col items-start justify-start gap-3">
-          <div className="flex w-full items-center justify-between">
-            <span>식사 시간 알림</span>
-            <ToggleSwitch
-              checked={masterEnabled}
-              onChange={(value) => toggleMutation.mutate(value)}
-            />
-          </div>
-          <div className="text-caption-1-regular text-font-extra-low">
-            매일 식사 시간마다 메뉴를 결정해 드려요.
-          </div>
-          {MEAL_ORDER.map((type) => {
-            const alarm = alerts[type];
-            return (
-              <button
-                key={type}
-                disabled={!masterEnabled}
-                onClick={() => handleOpenTimeModal(type, alarm.time)}
-                className={clsx(
-                  "flex w-full items-center justify-between",
-                  !masterEnabled && "cursor-not-allowed",
-                )}
-              >
-                <span>{MEAL_LABELS[type]}</span>
-                <div className="flex items-center gap-4">
-                  <span
-                    className={
-                      masterEnabled && alarm.enabled
-                        ? "text-brand-primary"
-                        : "text-font-extra-low"
-                    }
-                  >
-                    {masterEnabled && alarm.enabled ? alarm.time : "OFF"}
-                  </span>
-                  <ArrowIcon currentColor="#707070" />
-                </div>
-              </button>
-            );
-          })}
-        </section>
-      </main>
+      {isLoading ? (
+        <main className="mt-2 flex h-[80dvh] w-full items-center justify-center">
+          <span className="text-font-low text-body-3-regular">
+            불러오는 중...
+          </span>
+        </main>
+      ) : isError || !alerts ? (
+        <main className="mt-2 flex h-[80dvh] w-full items-center justify-center">
+          <span className="text-font-low text-body-3-regular">
+            알림 설정을 불러올 수 없습니다.
+          </span>
+        </main>
+      ) : (
+        <main className="relative mt-2 flex h-[80dvh] w-full flex-col pr-6 pl-8">
+          <section className="mt-10 flex w-full flex-col items-start justify-start gap-3">
+            <div className="flex w-full items-center justify-between">
+              <span>식사 시간 알림</span>
+              <ToggleSwitch
+                checked={masterEnabled}
+                onChange={(value) => toggleMutation.mutate(value)}
+              />
+            </div>
+            <div className="text-caption-1-regular text-font-extra-low">
+              매일 식사 시간마다 메뉴를 결정해 드려요.
+            </div>
+            {MEAL_ORDER.map((type) => {
+              const alarm = alerts[type];
+              return (
+                <button
+                  key={type}
+                  disabled={!masterEnabled}
+                  onClick={() => handleOpenTimeModal(type, alarm.time)}
+                  className={clsx(
+                    "flex w-full items-center justify-between",
+                    !masterEnabled && "cursor-not-allowed",
+                  )}
+                >
+                  <span>{MEAL_LABELS[type]}</span>
+                  <div className="flex items-center gap-4">
+                    <span
+                      className={
+                        masterEnabled && alarm.enabled
+                          ? "text-brand-primary"
+                          : "text-font-extra-low"
+                      }
+                    >
+                      {masterEnabled && alarm.enabled ? alarm.time : "OFF"}
+                    </span>
+                    <ArrowIcon currentColor="#707070" />
+                  </div>
+                </button>
+              );
+            })}
+          </section>
+        </main>
+      )}
 
       {isTimeModalOpen && (
         <ModalWrapper>

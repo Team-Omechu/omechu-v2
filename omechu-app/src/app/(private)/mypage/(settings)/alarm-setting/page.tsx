@@ -45,8 +45,10 @@ export default function AlarmSettingPage() {
     refetchOnWindowFocus: false,
   });
 
-  const masterEnabled = data?.success?.enabled ?? false;
-  const alerts = data?.success?.alerts;
+  const alerts = data?.success;
+  const masterEnabled = alerts
+    ? Object.values(alerts).some((a) => a.enabled)
+    : false;
 
   const toggleMutation = useMutation({
     mutationFn: (enabled: boolean) => toggleMealAlerts(enabled),

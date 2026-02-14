@@ -10,10 +10,7 @@ export interface MealAlertItem {
 export interface MealAlertsResponse {
   resultType: "SUCCESS" | "FAIL";
   error: { errorCode: string; reason: string; data: unknown } | null;
-  success: {
-    enabled: boolean;
-    alerts: Record<MealType, MealAlertItem>;
-  } | null;
+  success: Record<MealType, MealAlertItem> | null;
 }
 
 export interface MealAlertToggleResponse {

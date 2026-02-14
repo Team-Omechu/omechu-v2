@@ -18,7 +18,10 @@ export function SetAlarmSection() {
     refetchOnWindowFocus: false,
   });
 
-  const isAlarmOn = data?.success?.enabled ?? false;
+  const alerts = data?.success;
+  const isAlarmOn = alerts
+    ? Object.values(alerts).some((a) => a.enabled)
+    : false;
 
   return (
     <section

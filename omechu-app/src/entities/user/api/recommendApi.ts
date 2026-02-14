@@ -78,9 +78,10 @@ export async function removeExceptMenu(
   data: RemoveExceptMenuRequest,
 ): Promise<RemoveExceptMenuResponse> {
   try {
-    const res = await axiosInstance.post<
-      ApiResponse<RemoveExceptMenuResponse>
-    >("/user/recommend/except/remove", data);
+    const res = await axiosInstance.post<ApiResponse<RemoveExceptMenuResponse>>(
+      "/user/recommend/except/remove",
+      data,
+    );
 
     const apiResponse = res.data;
     if (apiResponse.resultType === "FAIL" || !apiResponse.success) {

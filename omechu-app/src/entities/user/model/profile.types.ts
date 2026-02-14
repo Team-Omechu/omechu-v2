@@ -48,3 +48,13 @@ export interface WithdrawResponse {
   success: boolean;
   message: string;
 }
+
+export interface InquiryRequestBody {
+  title: string;
+  content: string;
+}
+
+export interface InquiryResponse {
+  success: boolean;
+  message: string;
+}

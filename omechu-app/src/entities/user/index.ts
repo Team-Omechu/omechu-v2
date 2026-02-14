@@ -28,6 +28,7 @@ export {
   fetchProfile,
   updateProfile,
   withdrawAccount,
+  submitInquiry,
 } from "./api/profileApi";
 
 export {
@@ -72,6 +73,8 @@ export type {
   UpdateProfileBody,
   WithdrawRequestBody,
   WithdrawResponse,
+  InquiryRequestBody,
+  InquiryResponse,
   ExerciseType,
   PreferType,
   AllergyType,

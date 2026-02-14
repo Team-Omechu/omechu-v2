@@ -2,6 +2,8 @@ import axios from "axios";
 
 import { ApiClientError } from "@/entities/user/api/authApi";
 import type {
+  InquiryRequestBody,
+  InquiryResponse,
   ProfileType,
   UpdateProfileBody,
   WithdrawRequestBody,
@@ -118,6 +120,43 @@ export async function withdrawAccount(
       const api = error.response?.data as ApiResponse<unknown> | undefined;
       throw new ApiClientError(
         api?.error?.reason ?? error.message ?? "회원 탈퇴에 실패했습니다.",
+        api?.error?.errorCode,
+        error.response?.status,
+        api?.error?.data,
+      );
+    }
+
+    throw new ApiClientError("알 수 없는 오류가 발생했습니다.");
+  }
+}
+
+export async function submitInquiry(
+  data: InquiryRequestBody,
+): Promise<InquiryResponse> {
+  try {
+    const res = await axiosInstance.post<ApiResponse<InquiryResponse>>(
+      "/user/inquiry",
+      data,
+    );
+
+    const apiResponse = res.data;
+    if (apiResponse.resultType === "FAIL" || !apiResponse.success) {
+      throw new ApiClientError(
+        apiResponse.error?.reason ?? "문의 접수에 실패했습니다.",
+        apiResponse.error?.errorCode,
+        res.status,
+        apiResponse.error?.data,
+      );
+    }
+
+    return apiResponse.success;
+  } catch (error: unknown) {
+    if (error instanceof ApiClientError) throw error;
+
+    if (axios.isAxiosError(error)) {
+      const api = error.response?.data as ApiResponse<unknown> | undefined;
+      throw new ApiClientError(
+        api?.error?.reason ?? error.message ?? "문의 접수에 실패했습니다.",
         api?.error?.errorCode,
         error.response?.status,
         api?.error?.data,

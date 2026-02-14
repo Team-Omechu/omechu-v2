@@ -90,6 +90,11 @@ export default function ChangePasswordPage() {
         ? "success"
         : "error";
 
+  const newPasswordHelperState =
+    newPasswordBlurred && newPassword.length > 0 && hasPasswordError(newPassword)
+      ? "error"
+      : "default";
+
   return (
     <>
       <Header
@@ -113,13 +118,7 @@ export default function ChangePasswordPage() {
             label="새 비밀번호"
             id="new-password"
             helperText="* 대소문자, 숫자 및 특수문자 포함 8자 이상"
-            helperState={
-              newPasswordBlurred &&
-              newPassword.length > 0 &&
-              hasPasswordError(newPassword)
-                ? "error"
-                : "default"
-            }
+            helperState={newPasswordHelperState}
           >
             <Input
               type="password"

@@ -14,7 +14,6 @@ export {
   HANGUL_CHO_SEONG,
 } from "./config/choSeong";
 export type { MenuDetail, Menu } from "./config/menu";
-export { suggestionList } from "./config/suggestionList";
 export {
   type StepKey,
   stepOrder,

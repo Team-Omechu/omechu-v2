@@ -17,6 +17,11 @@ import {
   SelectTab,
 } from "@/widgets/mypage/ui";
 
+const TAB = {
+  RECOMMEND: 0,
+  EXCEPT: 1,
+} as const;
+
 export default function RecommendedListPage() {
   const router = useRouter();
   const mainRef = useRef<HTMLDivElement>(null);
@@ -30,7 +35,7 @@ export default function RecommendedListPage() {
 
   const currentMenus = useMemo(() => {
     const menus =
-      selectedIndex === 0
+      selectedIndex === TAB.RECOMMEND
         ? (data?.recommendMenus ?? [])
         : (data?.exceptedMenus ?? []);
 
@@ -41,7 +46,7 @@ export default function RecommendedListPage() {
   }, [data, selectedIndex, searchTerm]);
 
   const handleToggle = (menuId: string) => {
-    if (selectedIndex === 0) {
+    if (selectedIndex === TAB.RECOMMEND) {
       exceptMutation.mutate({ menuId });
     } else {
       removeExceptMutation.mutate({ menuId });
@@ -91,7 +96,7 @@ export default function RecommendedListPage() {
           <div className="text-font-low flex h-40 items-center justify-center">
             {searchTerm.trim()
               ? "검색 결과가 없습니다."
-              : selectedIndex === 0
+              : selectedIndex === TAB.RECOMMEND
                 ? "추천 메뉴가 없습니다."
                 : "제외된 메뉴가 없습니다."}
           </div>
@@ -103,7 +108,7 @@ export default function RecommendedListPage() {
                 title={menu.name}
                 src={menu.image_link}
                 onClick={() => handleToggle(menu.id)}
-                isToggled={selectedIndex === 1}
+                isToggled={selectedIndex === TAB.EXCEPT}
               />
             ))}
           </section>

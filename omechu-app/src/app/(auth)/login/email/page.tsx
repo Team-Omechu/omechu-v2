@@ -52,7 +52,14 @@ export default function EmailLoginPage() {
 
   const emailValue = watch("email");
   const passwordValue = watch("password");
-  const isFormEmpty = !emailValue?.trim() || !passwordValue?.trim();
+  const trimmedEmailValue = emailValue?.trim();
+  const trimmedPasswordValue = passwordValue?.trim();
+
+  const isEmailFormatInvalid =
+    Boolean(trimmedEmailValue) &&
+    !loginSchema.shape.email.safeParse(trimmedEmailValue).success;
+
+  const isFormEmpty = !trimmedEmailValue || !trimmedPasswordValue;
 
   const onSubmit = useCallback(
     (data: LoginFormValues) => {
@@ -193,7 +200,7 @@ export default function EmailLoginPage() {
           {/* 로그인 버튼 */}
           <Button
             type="submit"
-            disabled={isFormEmpty || isPending}
+            disabled={isFormEmpty || isEmailFormatInvalid || isPending}
             className="h-12 w-full"
           >
             {isPending ? "로그인 중..." : "로그인"}

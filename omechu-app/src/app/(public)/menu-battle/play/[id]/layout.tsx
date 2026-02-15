@@ -33,10 +33,7 @@ export async function generateMetadata({
     const menuDetail = await fetchMenuDetailForMetadata(winner.menuName);
 
     if (menuDetail) {
-      return generateMenuMetadata(
-        menuDetail,
-        `/menu-battle/play/${battleId}`,
-      );
+      return generateMenuMetadata(menuDetail, `/menu-battle/play/${battleId}`);
     }
 
     return generateMinimalMetadata(

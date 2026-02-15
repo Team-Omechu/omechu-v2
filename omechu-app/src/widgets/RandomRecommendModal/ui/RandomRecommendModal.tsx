@@ -49,7 +49,7 @@ export function RandomRecommendModal({
       </div>
       <div className="flex flex-col items-center">
         <Image
-          src={"/image/image_empty.svg"} // menu?.image_link || 추후에 추가
+          src={menu?.image_link || "/image/image_empty.svg"} // menu?.image_link || 추후에 추가
           alt="랜덤추천메뉴"
           width={120}
           height={120}

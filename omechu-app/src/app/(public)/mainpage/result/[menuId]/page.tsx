@@ -221,7 +221,7 @@ export default function MenuDetailPage() {
           {detailMenu?.name}
         </p>
         <Image
-          src={"/image/image_empty.svg"} //detailMenu?.image_link ||
+          src={detailMenu?.image_link || "/image/image_empty.svg"}
           alt={detailMenu?.name || "메뉴 이미지"}
           className="mx-auto h-24 w-24 rounded-md"
           width={96}

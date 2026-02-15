@@ -1,4 +1,5 @@
 import type { RandomMenu, MenuListResponse } from "@/entities/menu";
+import type { BattleResponse } from "@/entities/menubattle";
 import { MenuDetail } from "@/shared/config/menu";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -60,6 +61,56 @@ export async function fetchRecommendMenuForMetadata(
     return data;
   } catch (error) {
     console.error("Failed to fetch recommend menu:", error);
+    return null;
+  }
+}
+
+export type BattleWinnerMenu = {
+  menuName: string;
+  imageLink: string | null;
+};
+
+export async function fetchBattleWinnerForMetadata(
+  battleId: string,
+): Promise<BattleWinnerMenu | null> {
+  try {
+    const response = await fetch(`${API_URL}/menu/battles/${battleId}`, {
+      next: { revalidate: 60 },
+    });
+
+    if (!response.ok) return null;
+
+    const raw: unknown = await response.json();
+    let battle: BattleResponse;
+
+    if (
+      typeof raw === "object" &&
+      raw !== null &&
+      "resultType" in raw &&
+      "success" in raw
+    ) {
+      battle = (raw as { success: BattleResponse }).success;
+    } else {
+      battle = raw as BattleResponse;
+    }
+
+    if (battle.status !== "finished" || battle.spinResults.length === 0) {
+      return null;
+    }
+
+    const winner = battle.spinResults.find((r) => r.rank === 1);
+    if (!winner) return null;
+
+    const winnerMenu = battle.menus.find(
+      (m) => m.menuName === winner.closestMenuName,
+    );
+
+    return {
+      menuName: winner.closestMenuName,
+      imageLink: winnerMenu?.imageLink ?? null,
+    };
+  } catch (error) {
+    console.error("Failed to fetch battle data:", error);
     return null;
   }
 }

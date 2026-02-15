@@ -7,40 +7,28 @@ const MAX_DISPLAY_MENUS = 5;
 
 export function generateMenuMetadata(
   menuDetail: MenuDetail | null,
-  pageType: "랜덤 추천" | "맞춤 추천",
   currentPath: string,
 ): Metadata {
   if (!menuDetail) {
     return {
-      title: `${pageType} | 오메추`,
-      description: "오늘 뭐 먹지? 오메추에서 메뉴를 추천받아보세요.",
+      title: "오메추 | 오늘 뭐 먹지?",
+      description:
+        "취향에 딱 맞는 메뉴를 추천 받았어요! 오늘 식사는 이 메뉴로 정해볼까요?",
       robots: { index: false, follow: true },
     };
   }
 
-  const { name, description, image_link, allergic, calory, protein } =
-    menuDetail;
+  const { name, image_link } = menuDetail;
 
-  const title = `${name} ${pageType}`;
-
-  const metaDescription = description
-    ? `${description.slice(0, 100)} | 칼로리 ${calory}kcal, 단백질 ${protein}g`
-    : `${name} 메뉴 정보와 주변 맛집을 확인하세요. 칼로리 ${calory}kcal`;
-
+  const title = `오메추 | 오늘의 메뉴는 [${name}]`;
+  const metaDescription =
+    "취향에 딱 맞는 메뉴를 추천 받았어요! 오늘 식사는 이 메뉴로 정해볼까요?";
   const ogImage = image_link || "/og/og-image.png";
-
-  const keywords = [
-    name,
-    "메뉴추천",
-    "맛집",
-    "오늘뭐먹지",
-    ...(allergic || []),
-  ];
 
   return {
     title,
     description: metaDescription,
-    keywords,
+    keywords: [name, "메뉴추천", "맛집", "오늘뭐먹지"],
     openGraph: {
       title,
       description: metaDescription,
@@ -152,18 +140,19 @@ export function generateSummaryMetadata(
 }
 
 export function generateMinimalMetadata(
-  randomMenu: { name: string; image_link: string | null },
-  pageType: "랜덤 추천",
+  menuName: string,
+  imageLink: string | null,
   currentPath: string,
 ): Metadata {
-  const { name, image_link } = randomMenu;
-  const title = `${name} ${pageType}`;
-  const description = `${name} 메뉴를 추천받아보세요.`;
+  const title = `오메추 | 오늘의 메뉴는 [${menuName}]`;
+  const description =
+    "취향에 딱 맞는 메뉴를 추천 받았어요! 오늘 식사는 이 메뉴로 정해볼까요?";
+  const ogImage = imageLink || "/og/og-image.png";
 
   return {
     title,
     description,
-    keywords: [name, "메뉴추천", "맛집", "오늘뭐먹지"],
+    keywords: [menuName, "메뉴추천", "맛집", "오늘뭐먹지"],
     openGraph: {
       title,
       description,
@@ -173,10 +162,10 @@ export function generateMinimalMetadata(
       type: "website",
       images: [
         {
-          url: image_link || "/og/og-image.png",
+          url: ogImage,
           width: 800,
           height: 600,
-          alt: `${name} 이미지`,
+          alt: `${menuName} 이미지`,
         },
       ],
     },
@@ -184,7 +173,7 @@ export function generateMinimalMetadata(
       card: "summary_large_image",
       title,
       description,
-      images: [image_link || "/og/og-image.png"],
+      images: [ogImage],
     },
     robots: {
       index: true,

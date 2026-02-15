@@ -70,7 +70,19 @@ export default function EmailLoginPage() {
         },
         onError: (error: unknown) => {
           const e = error as ApiClientError;
-          const msg = getAuthErrorMessage(e?.code, "로그인에 실패했습니다.");
+
+          const trimmedEmail = data.email.trim();
+          const trimmedPassword = data.password.trim();
+
+          const isBackendEmailNotFoundLike =
+            e?.code === "C001" && trimmedEmail && trimmedPassword;
+
+          const msg = isBackendEmailNotFoundLike
+            ? getAuthErrorMessage(
+                "E002",
+                "이메일이 올바르지 않습니다. 입력한 내용을 다시 확인해 주세요.",
+              )
+            : getAuthErrorMessage(e?.code, "로그인에 실패했습니다.");
           triggerToast(msg);
         },
       });

@@ -39,7 +39,7 @@ const TERMS_CONFIG: Record<TermsType, TermsConfig> = {
     data: [...termsForServiceMain, ...termsForServiceServe],
   },
   "personal-info": {
-    title: "개인정보 처리방침",
+    title: "개인정보 수집 및 이용 동의",
     data: [...termsForPersonalInfoMain, ...termsForPersonalInfoServe],
   },
   "location-info": {
@@ -90,7 +90,13 @@ export default function SignupPage() {
       },
       onError: (error: unknown) => {
         const e = error as ApiClientError;
-        const msg = getAuthErrorMessage(e?.code, "회원가입에 실패했습니다.");
+
+        const isDuplicatedEmailLike =
+          e?.code === "C006" && e.message === "이미 가입된 이메일입니다.";
+
+        const msg = isDuplicatedEmailLike
+          ? "이미 가입된 이메일입니다."
+          : getAuthErrorMessage(e?.code, "회원가입에 실패했습니다.");
         triggerToast(msg);
       },
     });

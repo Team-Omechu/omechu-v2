@@ -27,7 +27,7 @@ export const signupSchema = z
       message: "서비스 이용약관에 동의해주세요.",
     }),
     termsPrivacy: z.boolean().refine((val) => val === true, {
-      message: "개인정보 처리방침에 동의해주세요.",
+      message: "개인정보 수집 및 이용에 동의해주세요.",
     }),
     termsLocation: z.boolean(),
     termsAge: z.boolean().refine((val) => val === true, {

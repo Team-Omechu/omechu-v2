@@ -52,7 +52,14 @@ export default function EmailLoginPage() {
 
   const emailValue = watch("email");
   const passwordValue = watch("password");
-  const isFormEmpty = !emailValue?.trim() || !passwordValue?.trim();
+  const trimmedEmailValue = emailValue?.trim();
+  const trimmedPasswordValue = passwordValue?.trim();
+
+  const isEmailFormatInvalid =
+    Boolean(trimmedEmailValue) &&
+    !loginSchema.shape.email.safeParse(trimmedEmailValue).success;
+
+  const isFormEmpty = !trimmedEmailValue || !trimmedPasswordValue;
 
   const onSubmit = useCallback(
     (data: LoginFormValues) => {
@@ -70,7 +77,24 @@ export default function EmailLoginPage() {
         },
         onError: (error: unknown) => {
           const e = error as ApiClientError;
-          const msg = getAuthErrorMessage(e?.code, "로그인에 실패했습니다.");
+
+          const MISSING_INPUT_ERROR_CODE = "C001";
+          const USER_NOT_FOUND_ERROR_CODE = "E002";
+
+          const trimmedEmail = data.email.trim();
+          const trimmedPassword = data.password.trim();
+
+          const resolvedCode =
+            e?.code === MISSING_INPUT_ERROR_CODE &&
+            trimmedEmail &&
+            trimmedPassword
+              ? USER_NOT_FOUND_ERROR_CODE
+              : e?.code;
+
+          const msg = getAuthErrorMessage(
+            resolvedCode,
+            "로그인에 실패했습니다.",
+          );
           triggerToast(msg);
         },
       });
@@ -181,7 +205,7 @@ export default function EmailLoginPage() {
           {/* 로그인 버튼 */}
           <Button
             type="submit"
-            disabled={isFormEmpty || isPending}
+            disabled={isFormEmpty || isEmailFormatInvalid || isPending}
             className="h-12 w-full"
           >
             {isPending ? "로그인 중..." : "로그인"}

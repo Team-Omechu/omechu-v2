@@ -220,30 +220,10 @@ export default function MenuDetailPage() {
         />
       </div>
 
-      <div className="mt-5 ml-4 flex items-center justify-between">
-        <h3 className="text-[1.125rem] font-semibold whitespace-nowrap">
+      <div className="mt-3 ml-4 items-center justify-center space-y-3.5 px-4">
+        <h3 className="text-font-high text-body-3-medium text-[1.125rem] font-semibold whitespace-nowrap">
           취향 저격! 추천 메뉴 있는 맛집
         </h3>
-        <button
-          className="flex items-center justify-center gap-1 px-4"
-          onClick={() =>
-            router.push(
-              `/restaurant?query=${encodeURIComponent(detailMenu?.name || "")}`,
-            )
-          }
-        >
-          <Image
-            src={"/map/mage_location-fill.svg"}
-            alt="현위치"
-            width={20}
-            height={20}
-            className="h-4 w-4"
-          />
-          <p className="text-sm whitespace-nowrap text-[5E5E5E]">현위치로</p>
-        </button>
-      </div>
-
-      <div className="mt-3 ml-4 items-center justify-center space-y-3.5 px-4">
         {(isLoading || (isFetching && restaurants.length === 0)) && (
           <div className="flex flex-col gap-4">
             {Array.from({ length: 3 }).map((_, i) => (

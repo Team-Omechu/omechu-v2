@@ -335,8 +335,3 @@ export default function MenuDetailPage() {
     </div>
   );
 }
-
-{
-  /* TODO: media get api 연결하기
-        https://places.googleapis.com/v1/{리소스_경로}/media?key=YOUR_API_KEY&maxHeightPx=1000&maxWidthPx=1000   */
-}

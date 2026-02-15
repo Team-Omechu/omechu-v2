@@ -44,22 +44,22 @@ export const moodOptions = [
   {
     label: "🌤️ 맑음",
     value: 1,
-    description: "기분 좋은 에너지를 더해줄, 즐겁고 신나는 음식",
+    description: "산뜻한 분위기 속 가볍게 즐기기 좋은 음식",
   },
   {
     label: "❄️ 추움",
     value: 2,
-    description: "지친 몸과 마음을 달래줄 따뜻하고 든든한 메뉴",
+    description: "몸을 따뜻하게 녹여주는 온기 가득한 음식",
   },
   {
     label: "🔥 더움",
     value: 3,
-    description: "우울한 기분을 달래줄 위로가 되는 한 끼",
+    description: "시원하게 입맛을 살려주는 음식",
   },
   {
     label: "🌧️ 비",
     value: 4,
-    description: "답답함을 날려줄, 개운하고 스트레스 해소에 좋은 음식",
+    description: "촉촉한 감성과 어울리는 음식",
   },
 ];
 

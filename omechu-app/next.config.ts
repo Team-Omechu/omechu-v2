@@ -9,6 +9,16 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "omechu-s3-bucket.s3.ap-northeast-2.amazonaws.com",
       },
+      {
+        protocol: "https",
+        hostname: "places.googleapis.com",
+        pathname: "/v1/**",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+        pathname: "/**",
+      },
     ],
   },
 };

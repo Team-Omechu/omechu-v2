@@ -48,12 +48,12 @@ export const RestaurantCard = ({
           <span className="text-left whitespace-pre-line">{address}</span>
         </div>
       </div>
-      <div className="h-20 w-20">
+      <div className="relative h-20 w-20 overflow-hidden">
         <Image
           src={image || "/image/image_empty.svg"}
           alt={`${name} 이미지`}
-          width={80}
-          height={80}
+          fill
+          sizes="80px"
           priority
           className="rounded-xl object-cover"
         />

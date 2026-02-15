@@ -14,7 +14,10 @@ import { useLocationAnswerStore } from "@/entities/location";
 import { useGetMenuDetail } from "@/entities/menu";
 import { usePostMukburim } from "@/entities/mukburim";
 import type { Restaurant } from "@/entities/restaurant";
-import { useGetRestaurants } from "@/entities/restaurant";
+import {
+  buildGooglePlacePhotoUrl,
+  useGetRestaurants,
+} from "@/entities/restaurant";
 import {
   BaseModal,
   Header,
@@ -263,19 +266,34 @@ export default function MenuDetailPage() {
               </div>
             )}
 
-            {restaurants.map((item) => (
-              <RestaurantCard
-                key={item.id}
-                name={item.displayName.text}
-                category={detailMenu?.name || ""}
-                distance={`${Math.round(item.distance / 10) / 100}K`}
-                address={item.formattedAddress}
-                price={item.priceLevel}
-                onCardClick={() =>
-                  router.push(`/restaurant/restaurant-detail/${item.id}`)
-                }
-              />
-            ))}
+            {restaurants.map((item) => {
+              const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+
+              const imageSrc =
+                apiKey && item.photo?.name
+                  ? buildGooglePlacePhotoUrl({
+                      photoName: item.photo.name,
+                      apiKey,
+                      maxWidthPx: 360,
+                      maxHeightPx: 360,
+                    })
+                  : "/image/image_empty.svg";
+
+              return (
+                <RestaurantCard
+                  key={item.id}
+                  name={item.displayName.text}
+                  category={detailMenu?.name || ""}
+                  distance={`${Math.round(item.distance / 10) / 100}K`}
+                  address={item.formattedAddress}
+                  price={item.priceLevel}
+                  image={imageSrc}
+                  onCardClick={() =>
+                    router.push(`/restaurant/restaurant-detail/${item.id}`)
+                  }
+                />
+              );
+            })}
 
             <button
               type="button"

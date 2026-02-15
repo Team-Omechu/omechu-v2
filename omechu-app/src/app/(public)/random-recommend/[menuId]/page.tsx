@@ -10,6 +10,7 @@ import {
   usePathname,
 } from "next/navigation";
 
+import { useLocationAnswerStore } from "@/entities/location";
 import { useGetMenuDetail } from "@/entities/menu";
 import { usePostMukburim } from "@/entities/mukburim";
 import type { Restaurant } from "@/entities/restaurant";
@@ -41,7 +42,7 @@ export default function MenuDetailPage() {
   // ✅ 홈 버튼 모달
   const [showHomeModal, setShowHomeModal] = useState(false);
 
-  // ✅ 토스트(공유/기록) 통합
+  // 토스트(공유/기록) 통합
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
   const toastTimerRef = useRef<number | null>(null);
@@ -59,12 +60,23 @@ export default function MenuDetailPage() {
     };
   }, []);
 
-  // ✅ 페이지네이션 상태 + 누적 리스트
+  //페이지네이션 상태 + 누적 리스트
   const [page, setPage] = useState(1);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [isEnd, setIsEnd] = useState(false);
 
-  const { data, isLoading, isFetching } = useGetRestaurants(page);
+  const { locationDenied } = useLocationAnswerStore();
+
+  const { data, isLoading, isFetching, error } = useGetRestaurants(page);
+
+  const isRestaurant404 =
+    !!error &&
+    typeof error === "object" &&
+    "response" in (error as any) &&
+    (error as any).response?.status === 404;
+
+  // 위치 허용 여부
+  const showRestaurantLoadFail = locationDenied || isRestaurant404;
 
   const shouldRecord = searchParams.get("record") === "1";
 
@@ -130,7 +142,7 @@ export default function MenuDetailPage() {
     setPage((p) => p + 1);
   };
 
-  // ✅ 공유 로직 (Web Share -> Clipboard fallback)
+  //공유 로직 (Web Share -> Clipboard fallback)
   const handleShare = async () => {
     try {
       const url = typeof window !== "undefined" ? window.location.href : "";
@@ -224,36 +236,61 @@ export default function MenuDetailPage() {
         <h3 className="text-font-high text-body-3-medium text-[1.125rem] font-semibold whitespace-nowrap">
           취향 저격! 추천 메뉴 있는 맛집
         </h3>
-        {(isLoading || (isFetching && restaurants.length === 0)) && (
-          <div className="flex flex-col gap-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonUIFoodBox key={i} />
-            ))}
+        {/* 404 or 위치 차단 */}
+        {showRestaurantLoadFail ? (
+          <div className="flex w-full flex-col items-center justify-center rounded-2xl border border-neutral-200 bg-white/60 px-4 py-10">
+            <p className="text-[0.95rem] font-semibold text-neutral-800">
+              맛집 정보를 불러올 수 없습니다.
+            </p>
+            {locationDenied ? (
+              <p className="mt-2 text-center text-[0.875rem] text-neutral-600">
+                위치 권한이 꺼져 있어요. 브라우저/기기 설정에서 위치 권한을
+                허용해 주세요.
+              </p>
+            ) : (
+              <p className="mt-2 text-center text-[0.875rem] text-neutral-600">
+                해당 위치 또는 키워드 조건에 맞는 맛집이 없어요.
+              </p>
+            )}
           </div>
+        ) : (
+          <>
+            {(isLoading || (isFetching && restaurants.length === 0)) && (
+              <div className="flex flex-col gap-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <SkeletonUIFoodBox key={i} />
+                ))}
+              </div>
+            )}
+
+            {restaurants.map((item) => (
+              <RestaurantCard
+                key={item.id}
+                name={item.displayName.text}
+                category={detailMenu?.name || ""}
+                distance={`${Math.round(item.distance / 10) / 100}K`}
+                address={item.formattedAddress}
+                price={item.priceLevel}
+                onCardClick={() =>
+                  router.push(`/restaurant/restaurant-detail/${item.id}`)
+                }
+              />
+            ))}
+
+            <button
+              type="button"
+              onClick={handleLoadMore}
+              disabled={isEnd || isFetching}
+              className="mr-2 mb-5 w-full text-center text-[A8A8A8] disabled:opacity-50"
+            >
+              {isFetching
+                ? "불러오는 중..."
+                : isEnd
+                  ? "마지막입니다"
+                  : "더보기"}
+            </button>
+          </>
         )}
-
-        {restaurants.map((item) => (
-          <RestaurantCard
-            key={item.id}
-            name={item.displayName.text}
-            category={detailMenu?.name || ""}
-            distance={`${Math.round(item.distance / 10) / 100}K`}
-            address={item.formattedAddress}
-            price={item.priceLevel}
-            onCardClick={() =>
-              router.push(`/restaurant/restaurant-detail/${item.id}`)
-            }
-          />
-        ))}
-
-        <button
-          type="button"
-          onClick={handleLoadMore}
-          disabled={isEnd || isFetching}
-          className="mr-2 w-full text-center text-[A8A8A8] disabled:opacity-50"
-        >
-          {isFetching ? "불러오는 중..." : isEnd ? "마지막입니다" : "더보기"}
-        </button>
       </div>
 
       {showHomeModal && (
@@ -279,4 +316,9 @@ export default function MenuDetailPage() {
       />
     </div>
   );
+}
+
+{
+  /* TODO: media get api 연결하기
+        https://places.googleapis.com/v1/{리소스_경로}/media?key=YOUR_API_KEY&maxHeightPx=1000&maxWidthPx=1000   */
 }

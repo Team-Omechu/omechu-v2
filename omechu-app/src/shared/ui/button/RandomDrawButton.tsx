@@ -19,7 +19,7 @@ const RandomDrawButtonStyles = cva(
     variants: {
       width: {
         md: "w-[125px]",
-        sm: "w-[58px]",
+        sm: "w-[50px]",
       },
       selected: {
         true: "bg-brand-primary text-brand-secondary border-none",

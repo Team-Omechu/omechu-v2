@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 type LocationAnswerState = {
   x: number;
@@ -14,7 +15,6 @@ type LocationAnswerActions = {
   setRadius: (radius: number) => void;
   setKeyword: (keyword: string) => void;
   setLocationDenied: (v: boolean) => void;
-
   locationReset: () => void;
 };
 
@@ -28,13 +28,27 @@ const initialState: LocationAnswerState = {
 
 export const useLocationAnswerStore = create<
   LocationAnswerState & LocationAnswerActions
->((set) => ({
-  ...initialState,
-  setX: (x) => set({ x }),
-  setY: (y) => set({ y }),
-  setRadius: (radius) => set({ radius }),
-  setKeyword: (keyword) => set({ keyword }),
-  setLocationDenied: (v) => set({ locationDenied: v }),
-
-  locationReset: () => set(initialState),
-}));
+>()(
+  persist(
+    (set) => ({
+      ...initialState,
+      setX: (x) => set({ x }),
+      setY: (y) => set({ y }),
+      setRadius: (radius) => set({ radius }),
+      setKeyword: (keyword) => set({ keyword }),
+      setLocationDenied: (v) => set({ locationDenied: v }),
+      locationReset: () => set(initialState),
+    }),
+    {
+      name: "location-answer-storage",
+      storage: createJSONStorage(() => localStorage),
+      partialize: (s) => ({
+        x: s.x,
+        y: s.y,
+        radius: s.radius,
+        keyword: s.keyword,
+        locationDenied: s.locationDenied,
+      }),
+    },
+  ),
+);

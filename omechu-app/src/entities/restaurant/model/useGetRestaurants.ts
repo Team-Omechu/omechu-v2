@@ -29,6 +29,8 @@ export function useGetRestaurants(
     queryFn: () => getRestaurants(payload),
     staleTime: 1000 * 60 * 5,
     enabled: x !== 0 && y !== 0 && !!keyword,
-    placeholderData: keepPreviousData, // ✅ v5 방식 (이전 데이터 유지)
+    placeholderData: keepPreviousData,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }

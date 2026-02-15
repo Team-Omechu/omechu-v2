@@ -27,6 +27,7 @@ export async function generateMetadata({
         title: "오메추 | 메뉴 배틀",
         description:
           "취향에 딱 맞는 메뉴를 추천 받았어요! 오늘 식사는 이 메뉴로 정해볼까요?",
+        robots: { index: false, follow: true },
       };
     }
 
@@ -48,6 +49,7 @@ export async function generateMetadata({
       title: "오메추 | 메뉴 배틀",
       description:
         "취향에 딱 맞는 메뉴를 추천 받았어요! 오늘 식사는 이 메뉴로 정해볼까요?",
+      robots: { index: false, follow: true },
     };
   }
 }

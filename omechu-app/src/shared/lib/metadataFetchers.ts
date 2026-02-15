@@ -70,6 +70,18 @@ export type BattleWinnerMenu = {
   imageLink: string | null;
 };
 
+function isBattleResponse(data: unknown): data is BattleResponse {
+  return (
+    typeof data === "object" &&
+    data !== null &&
+    "status" in data &&
+    "spinResults" in data &&
+    "menus" in data &&
+    Array.isArray((data as BattleResponse).spinResults) &&
+    Array.isArray((data as BattleResponse).menus)
+  );
+}
+
 export async function fetchBattleWinnerForMetadata(
   battleId: string,
 ): Promise<BattleWinnerMenu | null> {
@@ -81,7 +93,7 @@ export async function fetchBattleWinnerForMetadata(
     if (!response.ok) return null;
 
     const raw: unknown = await response.json();
-    let battle: BattleResponse;
+    let battle: BattleResponse | null = null;
 
     if (
       typeof raw === "object" &&
@@ -89,10 +101,15 @@ export async function fetchBattleWinnerForMetadata(
       "resultType" in raw &&
       "success" in raw
     ) {
-      battle = (raw as { success: BattleResponse }).success;
-    } else {
-      battle = raw as BattleResponse;
+      const wrapped = raw as { success: unknown };
+      if (isBattleResponse(wrapped.success)) {
+        battle = wrapped.success;
+      }
+    } else if (isBattleResponse(raw)) {
+      battle = raw;
     }
+
+    if (!battle) return null;
 
     if (battle.status !== "finished" || battle.spinResults.length === 0) {
       return null;

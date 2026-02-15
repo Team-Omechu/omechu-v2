@@ -83,7 +83,7 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
             id="termsPrivacy"
             label={
               <span className="text-caption-1-regular text-font-high">
-                개인정보 처리방침 동의(필수)
+                개인정보 수집 및 이용 동의(필수)
               </span>
             }
             {...register("termsPrivacy")}

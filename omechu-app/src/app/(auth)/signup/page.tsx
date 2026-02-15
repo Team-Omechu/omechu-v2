@@ -39,7 +39,7 @@ const TERMS_CONFIG: Record<TermsType, TermsConfig> = {
     data: [...termsForServiceMain, ...termsForServiceServe],
   },
   "personal-info": {
-    title: "개인정보 처리방침",
+    title: "개인정보 수집 및 이용 동의",
     data: [...termsForPersonalInfoMain, ...termsForPersonalInfoServe],
   },
   "location-info": {

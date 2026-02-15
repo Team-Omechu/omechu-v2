@@ -13,7 +13,7 @@ export function TermForPersonalInfo() {
   return (
     <>
       <Header
-        title="개인정보 처리방침"
+        title="개인정보 수집 및 이용 동의"
         onBackClick={() => router.push("/mypage")}
         showHomeButton={false}
       />

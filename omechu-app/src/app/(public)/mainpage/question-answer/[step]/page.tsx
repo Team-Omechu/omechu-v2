@@ -69,10 +69,6 @@ export default function QuestionAnswerPage() {
     if (!isQuestionStep) return;
     if (step <= 1) return;
 
-    //지금 step의 값 지우고
-    clearStepValue(step - 1);
-    clearStepTag(step - 1);
-
     //이전 step으로 이동(히스토리 의존 X)
     router.push(`/mainpage/question-answer/${step - 1}`);
   };
@@ -81,10 +77,16 @@ export default function QuestionAnswerPage() {
     // 1~4 -> 다음 step
     // 5 -> result
     if (step >= 1 && step < QUESTION_STEPS) {
+      //지금 step의 값 지우고
+      clearStepValue(step);
+      clearStepTag(step);
       router.push(`/mainpage/question-answer/${step + 1}`);
       return;
     }
     if (step === QUESTION_STEPS) {
+      //지금 step의 값 지우고
+      clearStepValue(step);
+      clearStepTag(step);
       router.push(RESULT_PATH);
     }
   };

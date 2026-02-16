@@ -1,20 +1,27 @@
-//! 26.01.12 작업 중
-// TODO : onClick 수정
-
 "use client";
-
-import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 
+import { getMealAlerts } from "@/entities/alarm";
 import { ArrowIcon } from "@/shared/assets/icons/index";
 
 export function SetAlarmSection() {
   const router = useRouter();
 
-  const [isAlarmOn, setIsAlarmOn] = useState(true);
+  const { data } = useQuery({
+    queryKey: ["user", "meal-alerts"],
+    queryFn: getMealAlerts,
+    retry: 1,
+    refetchOnWindowFocus: false,
+  });
+
+  const alerts = data?.success;
+  const isAlarmOn = alerts
+    ? Object.values(alerts).some((a) => a.enabled)
+    : false;
 
   return (
     <section

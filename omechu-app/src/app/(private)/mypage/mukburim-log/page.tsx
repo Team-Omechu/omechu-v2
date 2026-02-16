@@ -5,11 +5,13 @@ import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useQuery } from "@tanstack/react-query";
-import clsx from "clsx";
+import { isAxiosError } from "axios";
 import { format } from "date-fns";
 
 import {
   getMukburimStatistics,
+  MUKBURIM_ERROR_CODE,
+  type GetMukburimStatisticsResponse,
   type MukburimPeriod,
   type MukburimSortBy,
 } from "@/entities/mukburim";
@@ -31,7 +33,7 @@ const SORT_ORDER_MAP: Record<SortOrder, MukburimSortBy> = {
 };
 
 const periodToApiPeriod = (period: Period): MukburimPeriod | undefined => {
-  if (period === "직접입력") return undefined;
+  if (period === "전체" || period === "직접입력") return undefined;
   return period as MukburimPeriod;
 };
 
@@ -71,7 +73,23 @@ export default function MukburimLogPage() {
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["mukburim-statistics", apiParams],
-    queryFn: () => getMukburimStatistics(apiParams),
+    queryFn: async () => {
+      try {
+        return await getMukburimStatistics(apiParams);
+      } catch (error) {
+        if (isAxiosError(error)) {
+          const { status, data } = error.response ?? {};
+          const code = data?.error?.errorCode;
+          if (
+            (status === 404 && code === MUKBURIM_ERROR_CODE.NOT_FOUND) ||
+            (status === 500 && code === MUKBURIM_ERROR_CODE.STATISTICS_FAILED)
+          ) {
+            return data as GetMukburimStatisticsResponse;
+          }
+        }
+        throw error;
+      }
+    },
     staleTime: 1000 * 60 * 5,
   });
 

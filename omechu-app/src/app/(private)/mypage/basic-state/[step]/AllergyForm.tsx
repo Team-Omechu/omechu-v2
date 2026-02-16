@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 
 import { BasicAllergyForm, useOnboardingStore } from "@/entities/onboarding";
-import { updateProfile } from "@/entities/user/api/profileApi";
+import { useUpdateProfileMutation } from "@/entities/user";
 import type {
   AllergyType,
   ExerciseType,
@@ -13,9 +13,10 @@ import type {
 export default function AllergyForm() {
   const router = useRouter();
   const { exercise, prefer, allergy } = useOnboardingStore();
+  const { mutateAsync } = useUpdateProfileMutation();
 
   const handleSave = async () => {
-    await updateProfile({
+    await mutateAsync({
       exercise: (exercise ?? undefined) as ExerciseType | undefined,
       prefer: prefer as PreferType[],
       allergy: allergy.filter((a) => a !== "없음") as AllergyType[],

@@ -1,7 +1,9 @@
-import axios from "axios";
+import axios, { type AxiosResponse } from "axios";
 
 import { ApiClientError } from "@/entities/user/api/authApi";
 import type {
+  InquiryRequestBody,
+  InquiryResponse,
   ProfileType,
   UpdateProfileBody,
   WithdrawRequestBody,
@@ -10,120 +12,74 @@ import type {
 import type { ApiResponse } from "@/shared/config/api.types";
 import { axiosInstance } from "@/shared/lib/axiosInstance";
 
-export class ProfileApiError extends Error {
-  constructor(
-    public code: number,
-    public info?: unknown,
-  ) {
-    super("Profile API Error");
-    this.name = "ProfileApiError";
-  }
-}
-
-export async function fetchProfile(): Promise<ProfileType> {
+async function handleApiResponse<T>(
+  request: Promise<AxiosResponse<ApiResponse<T>>>,
+  fallbackMessage: string,
+): Promise<T> {
   try {
-    const res = await axiosInstance.get<ApiResponse<ProfileType>>(
-      "/user/profile",
-      {
-        validateStatus: (s) => s === 200,
-        timeout: 5000,
-      },
-    );
-
+    const res = await request;
     const apiResponse = res.data;
+
     if (apiResponse.resultType === "FAIL" || !apiResponse.success) {
-      throw new ProfileApiError(
+      throw new ApiClientError(
+        apiResponse.error?.reason ?? fallbackMessage,
+        apiResponse.error?.errorCode,
         res.status,
-        apiResponse.error?.reason ?? "프로필 조회에 실패했습니다.",
+        apiResponse.error?.data,
       );
     }
 
     return apiResponse.success;
   } catch (error: unknown) {
-    if (error instanceof ProfileApiError) throw error;
+    if (error instanceof ApiClientError) throw error;
 
     if (axios.isAxiosError(error)) {
-      const status = error.response?.status ?? 500;
-      const reason =
-        (error.response?.data as ApiResponse<unknown>)?.error?.reason ??
-        error.message;
-      throw new ProfileApiError(status, reason);
+      const api = error.response?.data as ApiResponse<unknown> | undefined;
+      throw new ApiClientError(
+        api?.error?.reason ?? error.message ?? fallbackMessage,
+        api?.error?.errorCode,
+        error.response?.status,
+        api?.error?.data,
+      );
     }
 
-    throw new ProfileApiError(500, "알 수 없는 오류가 발생했습니다.");
+    throw new ApiClientError("알 수 없는 오류가 발생했습니다.");
   }
+}
+
+export async function fetchProfile(): Promise<ProfileType> {
+  return handleApiResponse(
+    axiosInstance.get<ApiResponse<ProfileType>>("/user/profile", {
+      validateStatus: (s) => s === 200,
+      timeout: 5000,
+    }),
+    "프로필 조회에 실패했습니다.",
+  );
 }
 
 export async function updateProfile(
   data: UpdateProfileBody,
 ): Promise<ProfileType> {
-  try {
-    const res = await axiosInstance.patch<ApiResponse<ProfileType>>(
-      "/user/profile",
-      data,
-    );
-
-    const apiResponse = res.data;
-    if (apiResponse.resultType === "FAIL" || !apiResponse.success) {
-      throw new ApiClientError(
-        apiResponse.error?.reason ?? "프로필 수정에 실패했습니다.",
-        apiResponse.error?.errorCode,
-        res.status,
-        apiResponse.error?.data,
-      );
-    }
-
-    return apiResponse.success;
-  } catch (error: unknown) {
-    if (error instanceof ApiClientError) throw error;
-
-    if (axios.isAxiosError(error)) {
-      const api = error.response?.data as ApiResponse<unknown> | undefined;
-      throw new ApiClientError(
-        api?.error?.reason ?? error.message ?? "프로필 수정에 실패했습니다.",
-        api?.error?.errorCode,
-        error.response?.status,
-        api?.error?.data,
-      );
-    }
-
-    throw new ApiClientError("알 수 없는 오류가 발생했습니다.");
-  }
+  return handleApiResponse(
+    axiosInstance.patch<ApiResponse<ProfileType>>("/user/profile", data),
+    "프로필 수정에 실패했습니다.",
+  );
 }
 
 export async function withdrawAccount(
   data: WithdrawRequestBody,
 ): Promise<WithdrawResponse> {
-  try {
-    const res = await axiosInstance.post<ApiResponse<WithdrawResponse>>(
-      "/user/withdraw",
-      data,
-    );
+  return handleApiResponse(
+    axiosInstance.post<ApiResponse<WithdrawResponse>>("/user/withdraw", data),
+    "회원 탈퇴에 실패했습니다.",
+  );
+}
 
-    const apiResponse = res.data;
-    if (apiResponse.resultType === "FAIL" || !apiResponse.success) {
-      throw new ApiClientError(
-        apiResponse.error?.reason ?? "회원 탈퇴에 실패했습니다.",
-        apiResponse.error?.errorCode,
-        res.status,
-        apiResponse.error?.data,
-      );
-    }
-
-    return apiResponse.success;
-  } catch (error: unknown) {
-    if (error instanceof ApiClientError) throw error;
-
-    if (axios.isAxiosError(error)) {
-      const api = error.response?.data as ApiResponse<unknown> | undefined;
-      throw new ApiClientError(
-        api?.error?.reason ?? error.message ?? "회원 탈퇴에 실패했습니다.",
-        api?.error?.errorCode,
-        error.response?.status,
-        api?.error?.data,
-      );
-    }
-
-    throw new ApiClientError("알 수 없는 오류가 발생했습니다.");
-  }
+export async function submitInquiry(
+  data: InquiryRequestBody,
+): Promise<InquiryResponse> {
+  return handleApiResponse(
+    axiosInstance.post<ApiResponse<InquiryResponse>>("/user/inquiry", data),
+    "문의 접수에 실패했습니다.",
+  );
 }

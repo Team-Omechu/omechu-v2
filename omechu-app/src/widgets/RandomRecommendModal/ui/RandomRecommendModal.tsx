@@ -1,8 +1,9 @@
 import Image from "next/image";
-import { MainLoading } from "@/shared";
 import { useRouter } from "next/navigation";
-import { useGetRandomMenu } from "@/entities/menu";
+
 import { useLocationAnswerStore } from "@/entities/location";
+import { useGetRandomMenu } from "@/entities/menu";
+import { MainLoading } from "@/shared";
 
 type ModalProps = {
   confirmText: string;
@@ -48,7 +49,7 @@ export function RandomRecommendModal({
       </div>
       <div className="flex flex-col items-center">
         <Image
-          src={menu?.image_link || "/image/image_empty.svg"}
+          src={menu?.image_link || "/image/image_empty.svg"} // menu?.image_link || 추후에 추가
           alt="랜덤추천메뉴"
           width={120}
           height={120}

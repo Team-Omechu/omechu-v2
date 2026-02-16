@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { handleLocation, useLocationAnswerStore } from "@/entities/location";
 import { useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
-import { BaseModal, ModalWrapper } from "@/shared";
+import { BaseModal, Header, ModalWrapper } from "@/shared"; // ✅ Header 추가
 import { usePwaEntryModal } from "@/shared/lib/usePwaEntryModal";
 import { StartButton } from "@/widgets/mainpage/ui/StartButton";
 
@@ -17,7 +17,8 @@ type Pick = "start" | "battle" | "random" | null;
 export default function MainPage() {
   const router = useRouter();
   const { tagDataReset } = useTagStore();
-  const { locationReset, setX, setY } = useLocationAnswerStore();
+  const { locationReset, setX, setY, setLocationDenied } =
+    useLocationAnswerStore();
   const { questionReset } = useQuestionAnswerStore();
 
   const { open, skip, agree } = usePwaEntryModal();
@@ -28,7 +29,7 @@ export default function MainPage() {
     tagDataReset();
     locationReset();
     questionReset();
-    handleLocation(setX, setY);
+    handleLocation(setX, setY, setLocationDenied);
   };
 
   const go = (next: string, pick: Exclude<Pick, null>) => {
@@ -36,7 +37,6 @@ export default function MainPage() {
     setIsNavigating(true);
     setPicked(pick);
 
-    // 선택 효과(커짐/보더/투명) 잠깐 보여준 뒤 이동
     window.setTimeout(() => {
       resetAll();
       router.push(next);
@@ -45,6 +45,9 @@ export default function MainPage() {
 
   return (
     <div className="scrollbar-hide relative flex h-screen w-full justify-center overflow-hidden bg-linear-to-b from-pink-200 to-purple-300">
+      {/* ✅ 헤더: 마이페이지 아이콘만 */}
+      <Header variant="mypage" className="absolute top-0 left-0 z-20" />
+
       {/* 어두운 오버레이 */}
       <div className="pointer-events-none absolute inset-0 bg-black/65" />
 
@@ -58,7 +61,7 @@ export default function MainPage() {
         />
       </div>
 
-      {/* 버튼이 오버레이 위로 올라오게 */}
+      {/* 버튼 */}
       <div className="absolute top-[45%] left-1/2 z-10 flex -translate-x-1/2 -translate-y-1/2 flex-col gap-5">
         <Image
           src="/logo/logo.svg"
@@ -91,6 +94,7 @@ export default function MainPage() {
           />
         </section>
       </div>
+
       {open && (
         <ModalWrapper>
           <BaseModal

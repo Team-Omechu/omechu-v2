@@ -1,9 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
+import {
+  useRecommendManagement,
+  useExceptMenuMutation,
+  useRemoveExceptMenuMutation,
+} from "@/entities/user";
 import { MENU_SUGGESTIONS } from "@/shared/constants/mypage";
 import { Header, SearchBar } from "@/shared/index";
 import {
@@ -12,37 +17,45 @@ import {
   SelectTab,
 } from "@/widgets/mypage/ui";
 
+const TAB = {
+  RECOMMEND: 0,
+  EXCEPT: 1,
+} as const;
+
 export default function RecommendedListPage() {
   const router = useRouter();
-
   const mainRef = useRef<HTMLDivElement>(null);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
-  const [excludedSet, setExcludedSet] = useState<Set<number>>(new Set());
+
+  const { data, isLoading } = useRecommendManagement();
+  const exceptMutation = useExceptMenuMutation();
+  const removeExceptMutation = useRemoveExceptMenuMutation();
+
+  const currentMenus = useMemo(() => {
+    const menus =
+      selectedIndex === TAB.RECOMMEND
+        ? (data?.recommendMenus ?? [])
+        : (data?.exceptedMenus ?? []);
+
+    if (!searchTerm.trim()) return menus;
+
+    const term = searchTerm.trim().toLowerCase();
+    return menus.filter((menu) => menu.name.toLowerCase().includes(term));
+  }, [data, selectedIndex, searchTerm]);
+
+  const handleToggle = (menuId: string) => {
+    if (selectedIndex === TAB.RECOMMEND) {
+      exceptMutation.mutate({ menuId });
+    } else {
+      removeExceptMutation.mutate({ menuId });
+    }
+  };
 
   const handleSearch = (term: string) => {
     setSearchTerm(term);
-    console.log("검색 실행:", term);
   };
-
-  const toggleExclude = (index: number) => {
-    setExcludedSet((prev) => {
-      const next = new Set(prev);
-      if (next.has(index)) {
-        next.delete(index);
-      } else {
-        next.add(index);
-      }
-      return next;
-    });
-  };
-
-  const allItems = Array.from({ length: 30 }).map((_, i) => i);
-
-  const filteredItems = allItems.filter((i) =>
-    selectedIndex === 0 ? !excludedSet.has(i) : excludedSet.has(i),
-  );
 
   const scrollToTop = () => {
     if (mainRef.current) {
@@ -75,17 +88,31 @@ export default function RecommendedListPage() {
           suggestionList={MENU_SUGGESTIONS}
         />
 
-        <section className="grid w-84 grid-cols-3 gap-3 pb-15">
-          {filteredItems.map((i) => (
-            <RecommendedFoodBox
-              key={i}
-              title={`타코 ${i}`}
-              src=""
-              onClick={() => toggleExclude(i)}
-              isToggled={excludedSet.has(i)}
-            />
-          ))}
-        </section>
+        {isLoading ? (
+          <div className="text-font-low flex h-40 items-center justify-center">
+            불러오는 중...
+          </div>
+        ) : currentMenus.length === 0 ? (
+          <div className="text-font-low flex h-40 items-center justify-center">
+            {searchTerm.trim()
+              ? "검색 결과가 없습니다."
+              : selectedIndex === TAB.RECOMMEND
+                ? "추천 메뉴가 없습니다."
+                : "제외된 메뉴가 없습니다."}
+          </div>
+        ) : (
+          <section className="grid w-84 grid-cols-3 gap-3 pb-15">
+            {currentMenus.map((menu) => (
+              <RecommendedFoodBox
+                key={menu.id}
+                title={menu.name}
+                src={menu.image_link}
+                onClick={() => handleToggle(menu.id)}
+                isToggled={selectedIndex === TAB.EXCEPT}
+              />
+            ))}
+          </section>
+        )}
 
         <FloatingActionButton onClick={scrollToTop} />
       </main>

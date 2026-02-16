@@ -24,6 +24,7 @@ export default function ChangePasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isPending, setIsPending] = useState(false);
 
+  const [newPasswordBlurred, setNewPasswordBlurred] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
 
@@ -89,6 +90,13 @@ export default function ChangePasswordPage() {
         ? "success"
         : "error";
 
+  const newPasswordHelperState =
+    newPasswordBlurred &&
+    newPassword.length > 0 &&
+    hasPasswordError(newPassword)
+      ? "error"
+      : "default";
+
   return (
     <>
       <Header
@@ -98,7 +106,7 @@ export default function ChangePasswordPage() {
       />
 
       <main className="relative mt-12 flex h-[80dvh] w-full flex-col items-center justify-between gap-8 px-6">
-        <section className="flex w-full flex-col gap-5">
+        <section className="flex w-fit flex-col gap-5">
           <FormField label="기존 비밀번호" id="current-password">
             <Input
               type="password"
@@ -112,12 +120,14 @@ export default function ChangePasswordPage() {
             label="새 비밀번호"
             id="new-password"
             helperText="* 대소문자, 숫자 및 특수문자 포함 8자 이상"
+            helperState={newPasswordHelperState}
           >
             <Input
               type="password"
               placeholder="새 비밀번호를 입력해주세요"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              onBlur={() => setNewPasswordBlurred(true)}
             />
           </FormField>
 

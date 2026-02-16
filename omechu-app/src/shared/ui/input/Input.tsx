@@ -75,7 +75,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, BaseInputProps>(
           placeholder={placeholder}
           disabled={disabled}
           autoComplete="off"
-          className="w-full bg-transparent pr-8 outline-none"
+          className="w-full bg-transparent pr-8 outline-none [&::-ms-reveal]:hidden [&::-webkit-credentials-auto-fill-button]:hidden"
           value={props.value}
           onChange={props.onChange}
           {...props}

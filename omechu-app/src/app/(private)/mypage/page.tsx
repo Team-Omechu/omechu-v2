@@ -79,7 +79,8 @@ export default function MypageMain() {
             setIsModalOpen(true);
           }}
         />
-        <SetAlarmSection />
+        {/* 임시 주석 처리! */}
+        {/* <SetAlarmSection /> */}
         <CustomerSupportSection />
       </main>
 

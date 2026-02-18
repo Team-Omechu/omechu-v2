@@ -14,6 +14,7 @@ export interface RouletteHandle {
   start: () => void;
   stop: () => void;
   getAngle: () => number;
+  setAngle: (nextAngle: number) => void;
 }
 
 type RouletteProps = {
@@ -36,6 +37,11 @@ export const Roulette = forwardRef<RouletteHandle, RouletteProps>(
       start: () => setSpinning(true),
       stop: () => setSpinning(false),
       getAngle: () => angleRef.current,
+      setAngle: (nextAngle: number) => {
+        const normalized = ((nextAngle % 360) + 360) % 360;
+        angleRef.current = normalized;
+        setAngle(normalized);
+      },
     }));
 
     const SPEED = 20; // 회전 속도

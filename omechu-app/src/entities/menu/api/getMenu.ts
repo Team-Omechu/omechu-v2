@@ -17,7 +17,7 @@ function joinUrl(base: string, path: string) {
 export const getMenu = async (
   request: RecommendMenuRequest,
 ): Promise<MenuListResponse> => {
-  const url = joinUrl(BASE_URL, "/recommend/menu");
+  const url = joinUrl(BASE_URL, "recommend/menu");
 
   const { data } = await axios.post<MenuListResponse>(url, request);
   return data;

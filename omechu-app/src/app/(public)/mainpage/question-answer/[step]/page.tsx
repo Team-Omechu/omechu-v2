@@ -126,12 +126,13 @@ export default function QuestionAnswerPage() {
       </main>
 
       {isQuestionStep && (
-        <footer className="absolute top-[50%] flex w-full items-end justify-between px-4 pb-6">
+        <footer className="pointer-events-none fixed inset-x-0 top-[55%] z-50 flex -translate-y-1/2 items-center justify-between px-4">
           {showPrev ? (
             <PaginationButton
               direction="left"
               onClick={handlePrev}
               alt="previous page"
+              className="pointer-events-auto"
             />
           ) : (
             <div className="h-14 w-12" aria-hidden="true" />
@@ -142,6 +143,7 @@ export default function QuestionAnswerPage() {
               direction="right"
               onClick={handleNext}
               alt="next page"
+              className="pointer-events-auto"
             />
           )}
         </footer>

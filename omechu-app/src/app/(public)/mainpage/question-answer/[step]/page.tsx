@@ -126,7 +126,7 @@ export default function QuestionAnswerPage() {
       </main>
 
       {isQuestionStep && (
-        <footer className="pointer-events-none fixed inset-x-0 top-[55%] z-50 flex -translate-y-1/2 items-center justify-between px-4">
+        <nav className="pointer-events-none fixed inset-x-0 top-[55%] z-50 flex -translate-y-1/2 items-center justify-between px-4">
           {showPrev ? (
             <PaginationButton
               direction="left"
@@ -146,7 +146,7 @@ export default function QuestionAnswerPage() {
               className="pointer-events-auto"
             />
           )}
-        </footer>
+        </nav>
       )}
       {showModal && (
         <ModalWrapper>

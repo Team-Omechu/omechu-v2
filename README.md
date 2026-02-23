@@ -7,7 +7,7 @@
 <img src="https://img.shields.io/badge/TypeScript_5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
 <img src="https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
 <img src="https://img.shields.io/badge/TanStack_Query_5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" />
-<img src="https://img.shields.io/badge/Zustand_5-FF6B35?style=for-the-badge&logo=react&logoColor=white" />
+<img src="https://img.shields.io/badge/Zustand_5-ff7676?style=for-the-badge&logo=react&logoColor=white" />
 
 <br/>
 
@@ -194,7 +194,7 @@ src/
     <th align="left">State Management</th>
     <td>
       <img src="https://img.shields.io/badge/TanStack_Query_5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" />
-      <img src="https://img.shields.io/badge/Zustand_5-FF6B35?style=for-the-badge" />
+      <img src="https://img.shields.io/badge/Zustand_5-ff7676?style=for-the-badge" />
       <img src="https://img.shields.io/badge/Zod_4-3E67B1?style=for-the-badge&logo=zod&logoColor=white" />
     </td>
   </tr>
@@ -308,9 +308,9 @@ fix: 로그인 실패 시 에러 메시지 출력 오류 수정 #7
     <td align="center" width="150">
       <a href="https://github.com/IISweetHeartII"><img src="https://github.com/IISweetHeartII.png" width="100" alt="김덕환"/></a><br/>
       <b>김덕환</b><br/>
-      <sub>FE · BE</sub><br/>
+      <sub>FE</sub><br/>
       <a href="https://github.com/IISweetHeartII"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
-      <a href="https://log8.kr/portfolio/"><img src="https://img.shields.io/badge/-Portfolio-FF6B35?style=flat-square&logoColor=white" alt="Portfolio"/></a>
+      <a href="https://log8.kr/portfolio/"><img src="https://img.shields.io/badge/-Portfolio-ff7676?style=flat-square&logoColor=white" alt="Portfolio"/></a>
     </td>
     <td align="center" width="150">
       <a href="https://github.com/jeonbinggu"><img src="https://github.com/jeonbinggu.png" width="100" alt="전병국"/></a><br/>

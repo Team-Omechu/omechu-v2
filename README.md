@@ -1,23 +1,25 @@
-# 🍽️ 오메추 (오늘 뭐 먹지?)
-
 <div align="center">
-  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" height="32" />
-  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" height="32" />
-  <img src="https://img.shields.io/badge/Tailwind-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" height="32" />
-  <img src="https://img.shields.io/badge/TanStack%20Query-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" height="32" />
-  <img src="https://img.shields.io/badge/Zustand-444444?style=for-the-badge&logo=react&logoColor=white" height="32" />
-  <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" height="32" />
-  <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" height="32" />
+
+# 🍽️ 오메추 — 오늘 뭐 먹지?
+
+<img src="https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
+<img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+<img src="https://img.shields.io/badge/TypeScript_5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+<img src="https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
+<img src="https://img.shields.io/badge/TanStack_Query_5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" />
+<img src="https://img.shields.io/badge/Zustand_5-FF6B35?style=for-the-badge&logo=react&logoColor=white" />
+
+<br/>
+
+**사용자 상태와 취향을 바탕으로 상황 맞춤 메뉴/맛집을 추천하는 웹 서비스**
+
+*Context-aware menu & restaurant recommendation service*
+
+<br/>
+
+<a href="https://omechu.log8.kr/">🐥 배포 URL</a> · 데모 계정: <code>user@example.com / User1234!</code>
+
 </div>
-
-<p align="center">
-  사용자 기본 상태와 취향을 바탕으로 <b>상황 맞춤 메뉴/맛집을 추천</b>하는 웹 서비스
-</p>
-
-<p align="center">
-  <a href="https://omechu.log8.kr/">🐥 배포 URL</a> ·
-  데모 계정: <code>user@example.com / User1234!</code>
-</p>
 
 ---
 
@@ -27,7 +29,7 @@
 
 ### 문제 인식
 
-* 반복되는 “오늘 뭐 먹지?”에서 오는 **의사결정 피로**
+* 반복되는 "오늘 뭐 먹지?"에서 오는 **의사결정 피로**
 * 광고/검색 중심 리스트로 인한 **정보 과잉**과 **개인 맥락 미반영**
 * **새로고침/이탈 시 상태 유실**, 느린 응답, 빈약한 폴백 등 UX 끊김
 
@@ -44,15 +46,13 @@
 
 ## 🧭 빠른 링크
 
-* [아키텍처](#-아키텍처)
-* [주요 기능](#-주요-기능)
-* [설치 및 실행](#-설치-및-실행)
-* [폴더 구조](#-폴더-구조)
-* [기술 스택](#-기술-스택)
-* [협업 규칙/커밋 컨벤션](#-협업-규칙)
-* [트러블슈팅](#-트러블슈팅--해결-과정)
-* [AI 활용](#-ai-활용-내역)
-* [로드맵](#-로드맵)
+| | |
+|---|---|
+| [🧩 아키텍처](#-아키텍처) | [✨ 주요 기능](#-주요-기능) |
+| [🛠 설치 및 실행](#-설치-및-실행) | [📁 폴더 구조](#-폴더-구조) |
+| [⚒️ 기술 스택](#%EF%B8%8F-기술-스택) | [🤝 협업 규칙](#-협업-규칙) |
+| [🧯 트러블슈팅](#-트러블슈팅--해결-과정) | [🧠 AI 활용](#-ai-활용-내역) |
+| [🗺 로드맵](#-로드맵) | [👥 기여자](#-기여자) |
 
 ---
 
@@ -127,14 +127,14 @@ flowchart LR
 
 ```bash
 # 1) 클론
-git clone <your-repo-url>
-cd Omechu/web/omechu-app
+git clone https://github.com/Team-Omechu/Omechu-web.git
+cd Omechu-web/omechu-app
 
 # 2) 패키지 설치
 pnpm install
 
 # 3) 개발 서버
-pnpm dev # http://localhost:3000
+pnpm dev          # http://localhost:3000
 
 # 4) 빌드/미리보기
 pnpm build
@@ -160,44 +160,76 @@ SENTRY_PROJECT=omechu-fe
 
 ## 📁 폴더 구조
 
+> **Feature-Sliced Design (FSD)** 아키텍처를 기반으로 레이어를 분리합니다.
+
 ```text
-.
-├── (auth)             # 인증 전용 라우트 그룹(실제 URL 노출 없음)
-├── api/               # Next.js Route Handler: 서버 API 프록시/유틸(예: 지오코드)
-├── auth/              # 인증 관련 페이지 묶음(콜백, 재설정 등)
-├── components/        # 공용 UI 컴포넌트(모달/입력/스켈레톤/헤더 등)
-├── constant/          # 더미 데이터·상수·옵션
-├── fullmenu/          # 전체 메뉴 탐색(필터/검색/리스트)
-├── lib/               # API 인스턴스, 공용 훅, 프로바이더, 상태 스토어, 타입
-├── mainpage/          # 질문 기반 추천 플로우(예산/목적/무드 등)
-├── mypage/            # 프로필/기본 상태/먹부림 기록/설정
-├── onboarding/        # 5단계 온보딩 UI/훅
-├── restaurant/        # 맛집 리스트·상세·지도(카카오 지도 포함)
-├── globals.css        # 전역 스타일
-├── layout.tsx         # 루트 레이아웃(App Router)
-├── ClientLayout.tsx   # 클라이언트 전용 레이아웃
-└── page.tsx           # 루트 페이지 엔트리
+src/
+├── app/              # Next.js App Router (pages, layouts, route groups)
+│   ├── (auth)/       # 인증 페이지 (로그인, 회원가입)
+│   ├── (public)/     # 비로그인 접근 가능 (메인, 메뉴, 맛집)
+│   ├── (private)/    # 로그인 필수 (마이페이지, 온보딩)
+│   └── api/          # Next.js Route Handlers
+├── widgets/          # Complex UI blocks (여러 entities 조합)
+├── entities/         # Business entities (user, menu, restaurant)
+└── shared/           # Reusable code (ui, api, lib, config, store)
 ```
 
-> 원칙: **Server State=React Query**, **Client State=Zustand**, **공용 로직=lib**, **공용 UI=components**.
+> 원칙: **app → widgets → entities → shared** (상위→하위만 import 가능)
 
 ---
 
-## 🧰 기술 스택
+## ⚒️ 기술 스택
 
-**Core** <img src="https://img.shields.io/badge/Next.js-000000?style=flat&logo=nextdotjs&logoColor=white" /> <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white" /> <img src="https://img.shields.io/badge/Tailwind-06B6D4?style=flat&logo=tailwindcss&logoColor=white" />
-
-**State** <img src="https://img.shields.io/badge/TanStack%20Query-FF4154?style=flat&logo=reactquery&logoColor=white" /> <img src="https://img.shields.io/badge/Zustand-444444?style=flat" />
-
-**Network** <img src="https://img.shields.io/badge/Axios-5A29E4?style=flat&logo=axios&logoColor=white" />
-
-**Tooling/Deploy** <img src="https://img.shields.io/badge/ESLint-4B32C3?style=flat&logo=eslint&logoColor=white" /> <img src="https://img.shields.io/badge/Prettier-F7B93E?style=flat&logo=prettier&logoColor=black" /> <img src="https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white" /> (Vercel Analytics, Speed Insights)
+<table>
+  <tr>
+    <th align="left">Core</th>
+    <td>
+      <img src="https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
+      <img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+      <img src="https://img.shields.io/badge/TypeScript_5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+      <img src="https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
+    </td>
+  </tr>
+  <tr>
+    <th align="left">State Management</th>
+    <td>
+      <img src="https://img.shields.io/badge/TanStack_Query_5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" />
+      <img src="https://img.shields.io/badge/Zustand_5-FF6B35?style=for-the-badge" />
+      <img src="https://img.shields.io/badge/Zod_4-3E67B1?style=for-the-badge&logo=zod&logoColor=white" />
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Network</th>
+    <td>
+      <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=axios&logoColor=white" />
+      <img src="https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge&logo=socketdotio&logoColor=white" />
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Tooling & Deploy</th>
+    <td>
+      <img src="https://img.shields.io/badge/pnpm_10-F69220?style=for-the-badge&logo=pnpm&logoColor=white" />
+      <img src="https://img.shields.io/badge/ESLint_9-4B32C3?style=for-the-badge&logo=eslint&logoColor=white" />
+      <img src="https://img.shields.io/badge/Prettier-F7B93E?style=for-the-badge&logo=prettier&logoColor=black" />
+      <img src="https://img.shields.io/badge/Husky-000000?style=for-the-badge&logo=git&logoColor=white" />
+      <img src="https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" />
+    </td>
+  </tr>
+  <tr>
+    <th align="left">Monitoring</th>
+    <td>
+      <img src="https://img.shields.io/badge/Sentry-362D59?style=for-the-badge&logo=sentry&logoColor=white" />
+      <img src="https://img.shields.io/badge/Vercel_Analytics-000000?style=for-the-badge&logo=vercel&logoColor=white" />
+      <img src="https://img.shields.io/badge/Speed_Insights-000000?style=for-the-badge&logo=vercel&logoColor=white" />
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## 🤝 협업 규칙
 
-협업 규칙 상세는 `omechu-app/docs/CONVENTIONS.md`를 참고하세요.
+> 협업 규칙 상세는 [`omechu-app/docs/CONVENTIONS.md`](./omechu-app/docs/CONVENTIONS.md)를 참고하세요.
 
 태그 기반 커밋 컨벤션을 사용합니다.
 
@@ -257,14 +289,40 @@ fix: 로그인 실패 시 에러 메시지 출력 오류 수정 #7
 
 ---
 
-## 🙌 기여자
+## 👥 기여자
 
-* [@theSnackOverflow](https://github.com/theSnackOverflow) - theSnackOverflow 2ssac
-* [@Head-ddy](https://github.com/Head-ddy) - Head-ddy 라희수
-* [@IISweetHeartII](https://github.com/IISweetHeartII) - IISweetHeartII 김덕환
-* [@jeonbinggu](https://github.com/jeonbinggu) - jeonbinggu Jeonbyeongguk
+<table>
+  <tr>
+    <td align="center" width="150">
+      <a href="https://github.com/theSnackOverflow"><img src="https://github.com/theSnackOverflow.png" width="100" alt="2ssac"/></a><br/>
+      <b>2ssac</b><br/>
+      <sub>FE</sub><br/>
+      <a href="https://github.com/theSnackOverflow"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
+    </td>
+    <td align="center" width="150">
+      <a href="https://github.com/Head-ddy"><img src="https://github.com/Head-ddy.png" width="100" alt="라희수"/></a><br/>
+      <b>라희수</b><br/>
+      <sub>FE</sub><br/>
+      <a href="https://github.com/Head-ddy"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
+    </td>
+    <td align="center" width="150">
+      <a href="https://github.com/IISweetHeartII"><img src="https://github.com/IISweetHeartII.png" width="100" alt="김덕환"/></a><br/>
+      <b>김덕환</b><br/>
+      <sub>FE · BE</sub><br/>
+      <a href="https://github.com/IISweetHeartII"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
+      <a href="https://log8.kr/portfolio/"><img src="https://img.shields.io/badge/-Portfolio-FF6B35?style=flat-square&logoColor=white" alt="Portfolio"/></a>
+    </td>
+    <td align="center" width="150">
+      <a href="https://github.com/jeonbinggu"><img src="https://github.com/jeonbinggu.png" width="100" alt="전병국"/></a><br/>
+      <b>전병국</b><br/>
+      <sub>FE</sub><br/>
+      <a href="https://github.com/jeonbinggu"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
+    </td>
+  </tr>
+</table>
 
 ---
 
-> Made with ❤️
-> © 2025 OMECHU Team
+<p align="center">
+  <sub>UMC 8th · Omechu · 2025</sub>
+</p>

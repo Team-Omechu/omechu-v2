@@ -148,6 +148,10 @@ NEXT_PUBLIC_API_URL=https://api.example.com
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
 GOOGLE_MAP_SERVER_API_KEY=...
 NEXT_PUBLIC_EMBED_API_URL=https://embed.example.com
+NEXT_PUBLIC_SENTRY_DSN=...
+SENTRY_AUTH_TOKEN=...
+SENTRY_ORG=omechu
+SENTRY_PROJECT=omechu-fe
 ```
 
 > 이미지 최적화를 위해 `sharp`가 자동으로 설치됩니다.
@@ -187,7 +191,7 @@ NEXT_PUBLIC_EMBED_API_URL=https://embed.example.com
 
 **Network** <img src="https://img.shields.io/badge/Axios-5A29E4?style=flat&logo=axios&logoColor=white" />
 
-**Tooling/Deploy** <img src="https://img.shields.io/badge/ESLint-4B32C3?style=flat&logo=eslint&logoColor=white" /> <img src="https://img.shields.io/badge/Prettier-F7B93E?style=flat&logo=prettier&logoColor=black" /> <img src="https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white" />
+**Tooling/Deploy** <img src="https://img.shields.io/badge/ESLint-4B32C3?style=flat&logo=eslint&logoColor=white" /> <img src="https://img.shields.io/badge/Prettier-F7B93E?style=flat&logo=prettier&logoColor=black" /> <img src="https://img.shields.io/badge/Vercel-000000?style=flat&logo=vercel&logoColor=white" /> (Vercel Analytics, Speed Insights)
 
 ---
 

@@ -1,6 +1,11 @@
+import Script from "next/script";
+
 import { Metadata } from "next";
 
-import { generateMenuMetadata } from "@/shared/lib/generateMenuMetadata";
+import {
+  generateMenuMetadata,
+  generateRecipeJsonLd,
+} from "@/shared/lib/generateMenuMetadata";
 import { fetchMenuDetailForMetadata } from "@/shared/lib/metadataFetchers";
 
 interface LayoutProps {
@@ -30,6 +35,29 @@ export async function generateMetadata({
   }
 }
 
-export default function Layout({ children }: LayoutProps) {
-  return <>{children}</>;
+export default async function Layout({ children, params }: LayoutProps) {
+  let jsonLd: Record<string, unknown> | null = null;
+
+  try {
+    const { menuId } = await params;
+    const decodedMenuId = decodeURIComponent(menuId);
+    const menuDetail = await fetchMenuDetailForMetadata(decodedMenuId);
+
+    if (menuDetail) {
+      jsonLd = generateRecipeJsonLd(menuDetail);
+    }
+  } catch (error) {
+    console.error("Failed to generate JSON-LD:", error);
+  }
+
+  return (
+    <>
+      {jsonLd && (
+        <Script id="mainpage-result-jsonld" type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </Script>
+      )}
+      {children}
+    </>
+  );
 }

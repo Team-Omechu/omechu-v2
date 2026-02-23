@@ -117,7 +117,13 @@ export default function QuestionAnswerPage() {
   return (
     <div className="relative flex h-screen w-auto flex-col">
       {/* header: 질문 스텝에서만 표시 */}
-      <Header title="맞춤 추천" showBackButton={false} />
+      <Header
+        title="맞춤 추천"
+        showBackButton={false}
+        homeModalTitle="메뉴 추천을 중단하시겠어요?"
+        homeModalLeftText="그만하기"
+        homeModalRightText="계속하기"
+      />
       <ProgressBar currentStep={currentStep} totalSteps={5} />
 
       <main className="flex min-h-[calc(100vh-9rem)] w-full flex-col items-center px-4 py-6">

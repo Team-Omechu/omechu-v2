@@ -186,7 +186,13 @@ ${shareUrl}`;
 
   return (
     <main className="min-h-screen pb-32">
-      <Header title="메뉴 배틀" showProfileButton showHomeButton={false} />
+      <Header
+        title="오늘의 메뉴 배틀"
+        showBackButton={false}
+        homeModalTitle="메뉴 배틀을 중단하시겠어요?"
+        homeModalLeftText="그만하기"
+        homeModalRightText="계속하기"
+      />
 
       <section className="mt-2 px-4">
         <div className="rounded-2xl bg-white px-4 py-4 shadow-sm">

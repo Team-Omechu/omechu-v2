@@ -396,7 +396,13 @@ export default function PlayPage() {
 
   return (
     <main className="min-h-screen px-4 text-center">
-      <Header title={battleName} showProfileButton showHomeButton={false} />
+      <Header
+        title={battleName}
+        showBackButton={false}
+        homeModalTitle="메뉴 배틀을 중단하시겠어요?"
+        homeModalLeftText="그만하기"
+        homeModalRightText="계속하기"
+      />
 
       {ready && (
         <>

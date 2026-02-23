@@ -1,8 +1,20 @@
-"use client";
-
 import Image from "next/image";
 
+import type { Metadata } from "next";
+
 import { Header } from "@/shared/ui/header/Header";
+
+export const metadata: Metadata = {
+  title: "로그인",
+  description:
+    "카카오, 구글, 이메일 로그인을 통해 오메추에서 맞춤 메뉴 추천을 시작해 보세요.",
+  alternates: {
+    canonical: "/login",
+  },
+  openGraph: {
+    url: "/login",
+  },
+};
 
 /**
  * 로그인 관련 페이지 레이아웃

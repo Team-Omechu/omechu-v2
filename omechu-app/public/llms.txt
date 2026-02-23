@@ -1,0 +1,34 @@
+# Omechu (오메추)
+
+> Personalized food and restaurant recommendation web app for Korean users.
+
+## Summary
+- Recommends menus based on user preference, mood, budget, and context.
+- Provides random recommendation and menu battle flows for quick decision making.
+- Shows nearby restaurant context through map-assisted search.
+
+## Key URLs
+- https://omechu.log8.kr/mainpage
+- https://omechu.log8.kr/mainpage/question-answer/1
+- https://omechu.log8.kr/mainpage/result
+- https://omechu.log8.kr/random-recommend
+- https://omechu.log8.kr/menu-battle
+
+## Dynamic URL templates
+- Result detail template: https://omechu.log8.kr/mainpage/result/{menuId}
+- Random detail template: https://omechu.log8.kr/random-recommend/{menuId}
+- Battle play template: https://omechu.log8.kr/menu-battle/play/{id}
+
+## Machine-readable resources
+- OpenAPI: https://omechu.log8.kr/openapi.json
+- AI Plugin manifest: https://omechu.log8.kr/.well-known/ai-plugin.json
+- Sitemap: https://omechu.log8.kr/sitemap.xml
+- Robots: https://omechu.log8.kr/robots.txt
+
+## Auth and access
+- End-user features may require login.
+- No public write API is provided for anonymous clients.
+
+## Contact
+- Site: https://omechu.log8.kr
+- Team: OMECHU Team

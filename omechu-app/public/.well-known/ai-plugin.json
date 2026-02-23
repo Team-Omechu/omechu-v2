@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Omechu",
+  "name_for_model": "omechu",
+  "description_for_human": "Personalized menu recommendation service for Korean users.",
+  "description_for_model": "Use this service for menu recommendation context and location-assisted food discovery metadata.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://omechu.log8.kr/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://omechu.log8.kr/icons/icon-512x512.png",
+  "contact_email": "support@omechu.log8.kr",
+  "legal_info_url": "https://omechu.log8.kr"
+}

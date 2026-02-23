@@ -28,6 +28,7 @@ pnpm prepare      # Install Husky hooks
 - **State**: Zustand (client), TanStack React Query (server)
 - **Forms**: React Hook Form + Zod
 - **API**: Axios with JWT auth interceptors
+- **Monitoring**: Sentry + Vercel Analytics + Vercel Speed Insights
 - **Package Manager**: pnpm (see `omechu-app/package.json`)
 
 ## Project Architecture (FSD)
@@ -116,8 +117,13 @@ CSS-first configuration in `omechu-app/src/app/globals.css`:
 
 ```bash
 NEXT_PUBLIC_API_URL=<backend-api-url>
-NEXT_PUBLIC_KAKAO_MAP_API_KEY=...
-NEXT_PUBLIC_GOOGLE_PLACE_API_KEY=...
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=<google-maps-api-key>
+GOOGLE_MAP_SERVER_API_KEY=<google-map-server-api-key>
+NEXT_PUBLIC_EMBED_API_URL=<embed-api-url>
+NEXT_PUBLIC_SENTRY_DSN=<sentry-dsn>
+SENTRY_AUTH_TOKEN=<sentry-auth-token>
+SENTRY_ORG=omechu
+SENTRY_PROJECT=omechu-fe
 ```
 
 ## Important Notes

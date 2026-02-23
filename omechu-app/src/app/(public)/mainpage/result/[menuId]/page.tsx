@@ -293,9 +293,6 @@ export default function MenuDetailPage() {
                   address={item.formattedAddress}
                   price={item.priceLevel}
                   image={imageSrc}
-                  onCardClick={() =>
-                    router.push(`/restaurant/restaurant-detail/${item.id}`)
-                  }
                 />
               );
             })}

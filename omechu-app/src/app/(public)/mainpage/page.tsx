@@ -8,8 +8,7 @@ import { useRouter } from "next/navigation";
 import { handleLocation, useLocationAnswerStore } from "@/entities/location";
 import { useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
-import { BaseModal, Header, ModalWrapper } from "@/shared"; // ✅ Header 추가
-import { usePwaEntryModal } from "@/shared/lib/usePwaEntryModal";
+import { Header } from "@/shared";
 import { StartButton } from "@/widgets/mainpage/ui/StartButton";
 
 type Pick = "start" | "battle" | "random" | null;
@@ -20,8 +19,6 @@ export default function MainPage() {
   const { locationReset, setX, setY, setLocationDenied } =
     useLocationAnswerStore();
   const { questionReset } = useQuestionAnswerStore();
-
-  const { open, skip, agree } = usePwaEntryModal();
   const [picked, setPicked] = useState<Pick>(null);
   const [isNavigating, setIsNavigating] = useState(false);
 
@@ -94,21 +91,6 @@ export default function MainPage() {
           />
         </section>
       </div>
-
-      {open && (
-        <ModalWrapper>
-          <BaseModal
-            isLogoShow
-            isCloseButtonShow={false}
-            title={`“오늘 뭐 먹지” 고민, 끝내드릴게요`}
-            desc={`식사 시간에 맞춰 딱 맞는 메뉴를 추천받을 수 있도록\n림을 보내드릴게요.\n\n* 광고성 정보 수신 동의가 포함되며, 마이페이지에서\n언제든지 변경할 수 있습니다.`}
-            leftButtonText="다음에요"
-            rightButtonText="동의하기"
-            onLeftButtonClick={skip}
-            onRightButtonClick={agree}
-          />
-        </ModalWrapper>
-      )}
     </div>
   );
 }

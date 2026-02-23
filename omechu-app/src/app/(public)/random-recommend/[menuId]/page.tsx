@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 import {
@@ -19,10 +19,8 @@ import {
   useGetRestaurants,
 } from "@/entities/restaurant";
 import {
-  BaseModal,
   Header,
   IngredientCard,
-  ModalWrapper,
   RestaurantCard,
   SkeletonUIFoodBox,
   Toast,
@@ -41,9 +39,6 @@ export default function MenuDetailPage() {
   const detailMenu: MenuDetail | undefined = menuDetailData;
 
   const { mutate } = usePostMukburim();
-
-  // ✅ 홈 버튼 모달
-  const [showHomeModal, setShowHomeModal] = useState(false);
 
   // 토스트(공유/기록) 통합
   const [toastMessage, setToastMessage] = useState("");
@@ -208,7 +203,7 @@ export default function MenuDetailPage() {
         showHomeButton={true}
         showShareButton={true}
         onShareClick={handleShare}
-        onHomeClick={() => setShowHomeModal(true)}
+        onHomeClick={() => router.push("/mainpage")}
       />
 
       <div className="mt-4 flex-col items-center justify-center p-4">
@@ -307,22 +302,6 @@ export default function MenuDetailPage() {
           </>
         )}
       </div>
-
-      {showHomeModal && (
-        <ModalWrapper>
-          <BaseModal
-            title="메뉴추천을 중단하시겠어요?"
-            leftButtonText="그만하기"
-            rightButtonText="계속하기"
-            onCloseClick={() => setShowHomeModal(false)}
-            onLeftButtonClick={() => {
-              setShowHomeModal(false);
-              router.push("/mainpage");
-            }}
-            onRightButtonClick={() => setShowHomeModal(false)}
-          />
-        </ModalWrapper>
-      )}
 
       <Toast
         message={toastMessage}

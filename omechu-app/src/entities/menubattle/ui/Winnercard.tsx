@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { useLocationAnswerStore } from "@/entities/location";
+import { handleLocation, useLocationAnswerStore } from "@/entities/location";
 import { fetchJSON } from "@/shared/api/fetchJSON";
 
 type WinnerCardProps = {
@@ -16,7 +16,8 @@ type WinnerCardProps = {
 
 export function WinnerCard({ winner }: WinnerCardProps) {
   const router = useRouter();
-  const { setKeyword } = useLocationAnswerStore();
+  const { setKeyword, setX, setY, setLocationDenied } =
+    useLocationAnswerStore();
   const [menuImage, setMenuImage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function WinnerCard({ winner }: WinnerCardProps) {
       type="button"
       onClick={() => {
         setKeyword(winner.closestMenuName);
+        handleLocation(setX, setY, setLocationDenied);
         router.push(
           `/mainpage/result/${encodeURIComponent(winner.closestMenuName)}`,
         );

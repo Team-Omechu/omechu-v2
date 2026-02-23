@@ -18,7 +18,6 @@ import { BattleBoard, BattleResult } from "@/widgets/menubattle";
 import { Roulette, RouletteHandle } from "@/widgets/menubattle/ui/Roulette";
 
 const BAR_COLORS = ["#FF9029", "#00A3FF", "#5AD886", "#FDDC3F", "#C48CFD"];
-const STOP_PAUSE_MS = 1000;
 
 type SpinResult = BattleResponse["spinResults"][number];
 
@@ -70,7 +69,6 @@ export default function PlayPage() {
   const [isCreator, setIsCreator] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   const [isSubmittingSpin, setIsSubmittingSpin] = useState(false);
-  const [isPauseAfterStop, setIsPauseAfterStop] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
   const [winner, setWinner] = useState<Winner | null>(null);
   const [rankings, setRankings] = useState<Ranking[]>([]);
@@ -176,6 +174,11 @@ export default function PlayPage() {
     [spinHistory],
   );
 
+  const hasMyStopped = useMemo(
+    () => !!nickname && spinHistory.some((item) => item.nickname === nickname),
+    [nickname, spinHistory],
+  );
+
   const fetchRankings = useCallback(async () => {
     if (!battleId) return;
     try {
@@ -255,12 +258,12 @@ export default function PlayPage() {
   }, [showToast]);
 
   useEffect(() => {
-    if (showNicknameModal || finished || isPauseAfterStop || menus.length === 0)
+    if (showNicknameModal || finished || hasMyStopped || menus.length === 0)
       return;
     if (isSpinning) return;
     rouletteRef.current?.start();
     setIsSpinning(true);
-  }, [finished, isPauseAfterStop, isSpinning, menus.length, showNicknameModal]);
+  }, [finished, hasMyStopped, isSpinning, menus.length, showNicknameModal]);
 
   const isValidNickname = (value: string) =>
     /^[a-zA-Z0-9가-힣]{1,20}$/.test(value);
@@ -294,7 +297,7 @@ export default function PlayPage() {
   };
 
   const handleStop = async () => {
-    if (!battleId || !nickname || finished || isPauseAfterStop) return;
+    if (!battleId || !nickname || finished || hasMyStopped) return;
 
     if (!isSpinning) {
       rouletteRef.current?.start();
@@ -311,7 +314,6 @@ export default function PlayPage() {
       rouletteRef.current?.setAngle(result.stoppedAngle);
       rouletteRef.current?.stop();
       setIsSpinning(false);
-      setIsPauseAfterStop(true);
       setSpinHistory((prev) =>
         mergeSpinResults(prev, [
           {
@@ -325,16 +327,6 @@ export default function PlayPage() {
         ]),
       );
       await syncBattle();
-
-      if (!finished) {
-        window.setTimeout(() => {
-          rouletteRef.current?.start();
-          setIsSpinning(true);
-          setIsPauseAfterStop(false);
-        }, STOP_PAUSE_MS);
-      } else {
-        setIsPauseAfterStop(false);
-      }
     } catch {
       if (hasMyHistory && menus.length > 0) {
         let closest = menus[0];
@@ -360,23 +352,14 @@ export default function PlayPage() {
         rouletteRef.current?.setAngle(localResult.stoppedAngle);
         rouletteRef.current?.stop();
         setIsSpinning(false);
-        setIsPauseAfterStop(true);
         setSpinHistory((prev) => mergeSpinResults(prev, [localResult]));
-
-        window.setTimeout(() => {
-          rouletteRef.current?.start();
-          setIsSpinning(true);
-          setIsPauseAfterStop(false);
-        }, STOP_PAUSE_MS);
       } else {
         openToast("스핀에 실패했습니다. 잠시 후 다시 시도해주세요.");
-        setIsPauseAfterStop(false);
       }
     } finally {
       setIsSubmittingSpin(false);
     }
   };
-
   const handleFinish = async () => {
     if (!battleId || !nickname || !isCreator || finished) return;
     try {
@@ -412,16 +395,18 @@ export default function PlayPage() {
 
           <Roulette ref={rouletteRef} menus={menus} disabled={finished} />
 
-          <button
-            type="button"
-            onClick={handleStop}
-            disabled={finished || isSubmittingSpin || isPauseAfterStop}
-            className="bg-statelayer-default mt-4 w-40 rounded-xl py-3 font-semibold text-white disabled:opacity-40"
-          >
-            STOP
-          </button>
+          {!finished && !hasMyStopped && (
+            <button
+              type="button"
+              onClick={handleStop}
+              disabled={isSubmittingSpin}
+              className="bg-statelayer-default mt-4 w-40 rounded-xl py-3 font-semibold text-white disabled:opacity-40"
+            >
+              STOP
+            </button>
+          )}
 
-          {isCreator && !finished && (
+          {!finished && isCreator && hasMyStopped && (
             <button
               type="button"
               onClick={handleFinish}

@@ -116,8 +116,9 @@ CSS-first configuration in `omechu-app/src/app/globals.css`:
 
 ```bash
 NEXT_PUBLIC_API_URL=<backend-api-url>
-NEXT_PUBLIC_KAKAO_MAP_API_KEY=...
-NEXT_PUBLIC_GOOGLE_PLACE_API_KEY=...
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=<google-maps-api-key>
+GOOGLE_MAP_SERVER_API_KEY=<google-map-server-api-key>
+NEXT_PUBLIC_EMBED_API_URL=<embed-api-url>
 ```
 
 ## Important Notes

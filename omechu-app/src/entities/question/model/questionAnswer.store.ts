@@ -118,7 +118,15 @@ export const useQuestionAnswerStore = create<
         }
       },
 
-      questionReset: () => set(initialState),
+      questionReset: () =>
+        set({
+          mealTime: initialState.mealTime,
+          purpose: initialState.purpose,
+          mood: initialState.mood,
+          who: initialState.who,
+          budget: initialState.budget,
+          currentStep: initialState.currentStep,
+        }),
     }),
     {
       name: "question-answer-storage",

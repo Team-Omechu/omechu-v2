@@ -1,7 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { mukburimResponse } from "@/entities/mukburim/config/mukburim";
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { postMukburim } from "@/entities/mukburim/api/postMukburim";
+import { mukburimResponse } from "@/entities/mukburim/config/mukburim";
 
 export function usePostMukburim() {
   const queryClient = useQueryClient();
@@ -13,6 +15,7 @@ export function usePostMukburim() {
     onSuccess: (data, menu_name) => {
       // 관련된 쿼리만 새로고침! (예시로 "mukburim" 지정)
       queryClient.invalidateQueries({ queryKey: ["mukburim"] });
+      queryClient.invalidateQueries({ queryKey: ["mukburim-statistics"] });
     },
   });
 }

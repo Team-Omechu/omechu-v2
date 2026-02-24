@@ -179,7 +179,7 @@ export default function MukburimLogPage() {
                 <MukburimFoodBox
                   key={item.menu_name}
                   frequency={String(item.count)}
-                  src="/image/image_empty.svg"
+                  src={item.image_link}
                   title={item.menu_name}
                 />
               ))}

@@ -96,22 +96,14 @@ export default function MenuDetailPage() {
   useEffect(() => {
     if (!decodeMenuId || !shouldRecord) return;
 
-    const key = `mukburim-recorded:${decodeMenuId}`;
-    const already = sessionStorage.getItem(key);
-
-    if (already) {
-      cleanQuery();
-      return;
-    }
-
-    cleanQuery();
-
     mutate(decodeMenuId, {
       onSuccess: () => {
         openToast("먹부림 기록에 등록되었습니다.", 2000);
-        sessionStorage.setItem(key, "done");
       },
       onError: () => {},
+      onSettled: () => {
+        cleanQuery();
+      },
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decodeMenuId, shouldRecord]);

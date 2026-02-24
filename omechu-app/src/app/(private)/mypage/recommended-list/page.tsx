@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -11,6 +11,8 @@ import {
 } from "@/entities/user";
 import { MENU_SUGGESTIONS } from "@/shared/constants/mypage";
 import { Header, SearchBar } from "@/shared/index";
+import { useToast } from "@/shared/lib/useToast";
+import { Toast } from "@/shared/ui/toast/Toast";
 import {
   FloatingActionButton,
   RecommendedFoodBox,
@@ -28,6 +30,21 @@ export default function RecommendedListPage() {
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showFAB, setShowFAB] = useState(false);
+  const [toastState, setToastState] = useState<"success" | "error">("success");
+  const { show, message, triggerToast } = useToast();
+
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      setShowFAB(el.scrollTop > 200);
+    };
+
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const { data, isLoading } = useRecommendManagement();
   const exceptMutation = useExceptMenuMutation();
@@ -46,10 +63,25 @@ export default function RecommendedListPage() {
   }, [data, selectedIndex, searchTerm]);
 
   const handleToggle = (menuId: string) => {
+    const callbacks = {
+      onSuccess: () => {
+        setToastState("success");
+        triggerToast(
+          selectedIndex === TAB.RECOMMEND
+            ? "제외 목록에 추가되었습니다."
+            : "추천 목록으로 복원되었습니다.",
+        );
+      },
+      onError: () => {
+        setToastState("error");
+        triggerToast("처리 중 오류가 발생했습니다.");
+      },
+    };
+
     if (selectedIndex === TAB.RECOMMEND) {
-      exceptMutation.mutate({ menuId });
+      exceptMutation.mutate({ menuId }, callbacks);
     } else {
-      removeExceptMutation.mutate({ menuId });
+      removeExceptMutation.mutate({ menuId }, callbacks);
     }
   };
 
@@ -114,8 +146,21 @@ export default function RecommendedListPage() {
           </section>
         )}
 
-        <FloatingActionButton onClick={scrollToTop} />
+        <FloatingActionButton
+          onClick={scrollToTop}
+          className={
+            showFAB
+              ? "opacity-100 transition-opacity duration-300"
+              : "pointer-events-none opacity-0 transition-opacity duration-300"
+          }
+        />
       </main>
+      <Toast
+        message={message}
+        show={show}
+        state={toastState}
+        className="bottom-20"
+      />
     </>
   );
 }

@@ -9,13 +9,11 @@ interface RecommendedFoodCardProps {
   menuTitle: string;
   selected?: boolean;
   src?: string;
-  onMinusButtonClick: () => void;
   onCardClick: () => void;
 }
 
 export const RecommendedFoodCard = ({
   selected,
-  onMinusButtonClick,
   onCardClick,
   menuTitle,
   menuDesc,
@@ -24,26 +22,6 @@ export const RecommendedFoodCard = ({
   RecommendedFoodCardProps) => {
   return (
     <div className="relative">
-      <button
-        className="absolute -top-3.5 left-2 cursor-pointer"
-        onClick={(e) => {
-          e.stopPropagation();
-          onMinusButtonClick();
-        }}
-        aria-label="추천 카드 삭제"
-        aria-pressed={false}
-        type="button"
-      >
-        <Image
-          src={"/circle/circle_minus.svg"}
-          width={28}
-          height={28}
-          alt="삭제 아이콘"
-          className="object-contain"
-          priority
-        />
-      </button>
-
       <button
         onClick={onCardClick}
         className={cn(

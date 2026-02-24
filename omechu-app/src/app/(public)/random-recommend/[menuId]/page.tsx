@@ -22,7 +22,7 @@ import {
   Header,
   IngredientCard,
   RestaurantCard,
-  SkeletonUIFoodBox,
+  SkeletonRecommendedFoodCard,
   Toast,
   type MenuDetail,
 } from "@/shared";
@@ -197,7 +197,7 @@ export default function MenuDetailPage() {
   };
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex flex-col items-center">
       <Header
         title="오늘의 메뉴"
         showHomeButton={true}
@@ -207,19 +207,19 @@ export default function MenuDetailPage() {
       />
 
       <div className="mt-4 flex-col items-center justify-center p-4">
-        <p className="text-brand-primary mb-3 text-center text-[1.5rem] font-semibold">
+        <p className="text-brand-primary text-body-1 mb-3 text-center font-semibold">
           {detailMenu?.name}
         </p>
         <Image
           src={detailMenu?.image_link || "/image/image_empty.svg"}
           alt={detailMenu?.name || "메뉴 이미지"}
-          className="mx-auto h-24 w-24 rounded-md"
+          className="mx-auto h-32 w-32 rounded-md"
           width={96}
           height={96}
         />
       </div>
 
-      <div className="mt-10 ml-4 w-full p-4">
+      <div className="ml-4 w-fit p-4">
         <IngredientCard
           kcal={detailMenu?.calory}
           carbohydrate={detailMenu?.carbo}
@@ -231,7 +231,7 @@ export default function MenuDetailPage() {
       </div>
 
       <div className="mt-3 ml-4 items-center justify-center space-y-3.5 px-4">
-        <h3 className="text-font-high text-body-3-medium text-[1.125rem] font-semibold whitespace-nowrap">
+        <h3 className="text-font-high text-body-3-medium text-body-3 font-semibold whitespace-nowrap">
           취향 저격! 추천 메뉴 있는 맛집
         </h3>
         {/* 404 or 위치 차단 */}
@@ -241,12 +241,12 @@ export default function MenuDetailPage() {
               맛집 정보를 불러올 수 없습니다.
             </p>
             {locationDenied ? (
-              <p className="mt-2 text-center text-[0.875rem] text-neutral-600">
+              <p className="text-caption-1 mt-2 text-center text-neutral-600">
                 위치 권한이 꺼져 있어요. 브라우저/기기 설정에서 위치 권한을
                 허용해 주세요.
               </p>
             ) : (
-              <p className="mt-2 text-center text-[0.875rem] text-neutral-600">
+              <p className="text-caption-1 mt-2 text-center text-neutral-600">
                 해당 위치 또는 키워드 조건에 맞는 맛집이 없어요.
               </p>
             )}
@@ -256,7 +256,7 @@ export default function MenuDetailPage() {
             {(isLoading || (isFetching && restaurants.length === 0)) && (
               <div className="flex flex-col gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <SkeletonUIFoodBox key={i} />
+                  <SkeletonRecommendedFoodCard key={i} />
                 ))}
               </div>
             )}

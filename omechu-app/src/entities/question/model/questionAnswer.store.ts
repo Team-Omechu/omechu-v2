@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 type QuestionAnswerState = {
   mealTime: string | null;
@@ -21,13 +22,13 @@ type QuestionAnswerActions = {
 
   addException: (exception: string) => void;
   removeException: (exception: string) => void;
+  resetExceptions: () => void;
 
   addAddition: (addition: string) => void;
   removeAddition: (addition: string) => void;
+  resetAddition: () => void;
 
   clearStepValue: (step: number) => void;
-
-  resetExceptions: () => void;
 
   questionReset: () => void;
 };
@@ -45,63 +46,83 @@ const initialState: QuestionAnswerState = {
 
 export const useQuestionAnswerStore = create<
   QuestionAnswerState & QuestionAnswerActions
->((set, get) => ({
-  ...initialState,
+>()(
+  persist(
+    (set, get) => ({
+      ...initialState,
 
-  setMealTime: (mealTime) => set({ mealTime }),
-  setPurpose: (purpose) => set({ purpose }),
-  setMood: (mood) => set({ mood }),
-  setWho: (who) => set({ who }),
-  setBudget: (budget) => set({ budget }),
-  setCurrentStep: (step) => set({ currentStep: step }),
+      setMealTime: (mealTime) => set({ mealTime }),
+      setPurpose: (purpose) => set({ purpose }),
+      setMood: (mood) => set({ mood }),
+      setWho: (who) => set({ who }),
+      setBudget: (budget) => set({ budget }),
+      setCurrentStep: (step) => set({ currentStep: step }),
 
-  addException: (exception) => {
-    const { exceptions } = get();
-    if (!exceptions.includes(exception)) {
-      set({ exceptions: [...exceptions, exception] });
-    }
-  },
-  removeException: (exception) => {
-    const { exceptions } = get();
-    set({ exceptions: exceptions.filter((e) => e !== exception) });
-  },
+      addException: (exception) => {
+        const v = exception.trim();
+        if (v.length === 0) return;
 
-  addAddition: (addition) => {
-    const { addition: currentAddition } = get();
-    if (!currentAddition.includes(addition)) {
-      set({ addition: [...currentAddition, addition] });
-    }
-  },
-  removeAddition: (addition) => {
-    const { addition: currentAddition } = get();
-    set({ addition: currentAddition.filter((a) => a !== addition) });
-  },
+        const { exceptions } = get();
+        if (!exceptions.includes(v)) {
+          set({ exceptions: [...exceptions, v] });
+        }
+      },
 
-  //현재 step의 값만 지움
-  // step: 1~5 (현재 보고 있는 페이지 step)
-  clearStepValue: (step) => {
-    if (step === 1) {
-      set({ mealTime: null });
-      return;
-    }
-    if (step === 2) {
-      set({ purpose: null });
-      return;
-    }
-    if (step === 3) {
-      set({ mood: null });
-      return;
-    }
-    if (step === 4) {
-      set({ who: null });
-      return;
-    }
-    if (step === 5) {
-      set({ budget: null });
-      return;
-    }
-  },
-  resetExceptions: () => set({ exceptions: [] }),
+      removeException: (exception) => {
+        const v = exception.trim();
+        const { exceptions } = get();
+        set({ exceptions: exceptions.filter((e) => e !== v) });
+      },
 
-  questionReset: () => set(initialState),
-}));
+      resetExceptions: () => set({ exceptions: [] }),
+
+      addAddition: (addition) => {
+        const v = addition.trim();
+        if (v.length === 0) return;
+
+        const { addition: currentAddition } = get();
+        if (!currentAddition.includes(v)) {
+          set({ addition: [...currentAddition, v] });
+        }
+      },
+
+      removeAddition: (addition) => {
+        const v = addition.trim();
+        const { addition: currentAddition } = get();
+        set({ addition: currentAddition.filter((a) => a !== v) });
+      },
+
+      resetAddition: () => set({ addition: [] }),
+
+      // step: 1~5
+      clearStepValue: (step) => {
+        if (step === 1) {
+          set({ mealTime: null });
+          return;
+        }
+        if (step === 2) {
+          set({ purpose: null });
+          return;
+        }
+        if (step === 3) {
+          set({ mood: null });
+          return;
+        }
+        if (step === 4) {
+          set({ who: null });
+          return;
+        }
+        if (step === 5) {
+          set({ budget: null });
+          return;
+        }
+      },
+
+      questionReset: () => set(initialState),
+    }),
+    {
+      name: "question-answer-storage",
+      storage: createJSONStorage(() => localStorage),
+    },
+  ),
+);

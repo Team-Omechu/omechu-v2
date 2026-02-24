@@ -80,11 +80,9 @@ export default function MainPage() {
     // 기존 exceptions를 한번 비우고 최신 목록으로 다시 채우는 게 안전
     resetExceptions();
 
-    for (const m of exceptedMenus) {
-      if (m && typeof m.name === "string" && m.name.trim().length > 0) {
-        addException(m.name.trim());
-      }
-    }
+    exceptedMenus
+      .filter((m) => m && typeof m.name === "string" && m.name.trim())
+      .forEach((m) => addException(m.name.trim()));
   }, [data, addException, resetExceptions]);
 
   return (

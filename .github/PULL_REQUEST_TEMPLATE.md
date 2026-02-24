@@ -1,8 +1,5 @@
-## PR Title Format
-
-> **[FEAT/FIX/REFACTOR/CHORE] PR 제목**
->
-> 예시: `[FEAT] 로그인 페이지 UI 구현` 또는 `feat: 로그인 페이지 UI 구현 (#12)`
+<!-- PR 제목 형식: [FEAT/FIX/REFACTOR/CHORE] 간결한 설명 -->
+<!-- 예시: [FEAT] 로그인 페이지 UI 구현 또는 feat: 로그인 페이지 UI 구현 (#12) -->
 
 - Closes #이슈번호
 
@@ -15,6 +12,18 @@
 - [ ]
 - [ ]
 - [ ]
+
+---
+
+## 🏷 변경 유형
+
+- [ ] 새로운 기능 (feat)
+- [ ] 버그 수정 (fix)
+- [ ] 리팩토링 (refactor)
+- [ ] 스타일/디자인 변경 (style/design)
+- [ ] 문서 수정 (docs)
+- [ ] 빌드/CI 설정 (build/ci)
+- [ ] 기타 (chore)
 
 ---
 

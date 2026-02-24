@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+import { handleLocation, useLocationAnswerStore } from "@/entities/location";
 import { fetchJSON } from "@/shared/api/fetchJSON";
 
 type WinnerCardProps = {
@@ -15,6 +16,8 @@ type WinnerCardProps = {
 
 export function WinnerCard({ winner }: WinnerCardProps) {
   const router = useRouter();
+  const { setKeyword, setX, setY, setLocationDenied } =
+    useLocationAnswerStore();
   const [menuImage, setMenuImage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,11 +33,13 @@ export function WinnerCard({ winner }: WinnerCardProps) {
   return (
     <button
       type="button"
-      onClick={() =>
+      onClick={() => {
+        setKeyword(winner.closestMenuName);
+        handleLocation(setX, setY, setLocationDenied);
         router.push(
           `/mainpage/result/${encodeURIComponent(winner.closestMenuName)}`,
-        )
-      }
+        );
+      }}
       className="w-full rounded-2xl border-2 border-[#FF7A7A] bg-white px-4 py-3 text-left"
       aria-label={`${winner.closestMenuName} 메뉴 추천 결과 보기`}
     >

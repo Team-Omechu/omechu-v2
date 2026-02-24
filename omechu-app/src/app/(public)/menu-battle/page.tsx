@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -15,6 +15,10 @@ interface Menu {
   name: string;
   image_link: string | null;
 }
+
+const MIN_MENU_SELECTION = 2;
+const MAX_MENU_SELECTION = 8;
+const MENU_SELECTION_MESSAGE = "메뉴는 2개에서 8개 사이로 선택해야 합니다";
 
 export default function MenuBattlePage() {
   const router = useRouter();
@@ -103,11 +107,18 @@ export default function MenuBattlePage() {
   }, [menus, search]);
 
   const toggleMenu = (id: string) => {
-    setSelectedMenus((prev) =>
-      prev.includes(id)
-        ? prev.filter((menuId) => menuId !== id)
-        : [...prev, id],
-    );
+    setSelectedMenus((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((menuId) => menuId !== id);
+      }
+
+      if (prev.length >= MAX_MENU_SELECTION) {
+        openToast(MENU_SELECTION_MESSAGE);
+        return prev;
+      }
+
+      return [...prev, id];
+    });
   };
 
   const handleEnterByCode = async () => {
@@ -126,8 +137,11 @@ export default function MenuBattlePage() {
   };
 
   const handleCreateBattle = async () => {
-    if (selectedMenus.length < 2) {
-      openToast("메뉴는 최소 2개 이상 선택해주세요.");
+    if (
+      selectedMenus.length < MIN_MENU_SELECTION ||
+      selectedMenus.length > MAX_MENU_SELECTION
+    ) {
+      openToast(MENU_SELECTION_MESSAGE);
       return;
     }
 
@@ -186,7 +200,13 @@ ${shareUrl}`;
 
   return (
     <main className="min-h-screen pb-32">
-      <Header title="메뉴 배틀" showProfileButton showHomeButton={false} />
+      <Header
+        title="오늘의 메뉴 배틀"
+        showBackButton={false}
+        homeModalTitle="메뉴 배틀을 중단하시겠어요?"
+        homeModalLeftText="그만하기"
+        homeModalRightText="계속하기"
+      />
 
       <section className="mt-2 px-4">
         <div className="rounded-2xl bg-white px-4 py-4 shadow-sm">
@@ -267,10 +287,14 @@ ${shareUrl}`;
 
             <BattleButton
               width="md"
-              disabled={selectedMenus.length < 2}
+              disabled={
+                selectedMenus.length < MIN_MENU_SELECTION ||
+                selectedMenus.length > MAX_MENU_SELECTION
+              }
               onClick={handleCreateBattle}
               className={`px-6 ${
-                selectedMenus.length < 2
+                selectedMenus.length < MIN_MENU_SELECTION ||
+                selectedMenus.length > MAX_MENU_SELECTION
                   ? "bg-statelayer-disabled text-white"
                   : "bg-statelayer-default text-white"
               }`}

@@ -229,7 +229,7 @@ export default function MenuDetailPage() {
         />
       </div>
 
-      <div className="mt-10 ml-4 w-fit p-4">
+      <div className="ml-4 w-fit p-4">
         <IngredientCard
           kcal={detailMenu?.calory}
           carbohydrate={detailMenu?.carbo}

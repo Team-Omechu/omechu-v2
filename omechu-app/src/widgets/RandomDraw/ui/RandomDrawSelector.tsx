@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+
 import clsx from "clsx";
 
 import {
@@ -59,7 +60,7 @@ export function RandomDrawSelector({
   const rows = useMemo(() => RANDOM_DRAW_GROUPS, []);
 
   return (
-    <div className={clsx("w-full max-w-[360px] p-2", className)}>
+    <div className={clsx("w-full max-w-90 p-2", className)}>
       {rows.map((group, idx) => {
         const isFirst = idx === 0;
 
@@ -72,7 +73,7 @@ export function RandomDrawSelector({
                 "border-font-placeholder/80 mt-4 border-t pt-4",
             )}
           >
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap justify-center gap-3">
               {group.options.map((opt) => {
                 const selected = selection[group.key].includes(opt.value);
 

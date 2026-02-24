@@ -1,31 +1,35 @@
 <div align="center">
 
-# 오메추 -- 오늘 뭐 먹지?
-
-<img src="https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
-<img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-<img src="https://img.shields.io/badge/TypeScript_5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
-<img src="https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
-<img src="https://img.shields.io/badge/TanStack_Query_5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" />
-<img src="https://img.shields.io/badge/Zustand_5-ff7676?style=for-the-badge&logo=react&logoColor=white" />
-
-<br/>
-
+# 오메추 - 오늘 뭐 먹지?
 **사용자 상태와 취향을 바탕으로 상황 맞춤 메뉴/맛집을 추천하는 웹 서비스**
-
+<br/>
 *Context-aware menu & restaurant recommendation service*
 
 <br/>
 
-<a href="https://omechu.log8.kr/">배포 URL</a> · 데모 계정: <code>user@example.com / User1234!</code>
+<img src="https://img.shields.io/badge/Next.js_16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
+  <img src="https://img.shields.io/badge/TypeScript_5.9-3178C6?style=for-the-badge&logo=typescript&logoColor=white" /> <br/>
+  <img src="https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" />
+  <img src="https://img.shields.io/badge/TanStack_Query_5-FF4154?style=for-the-badge&logo=reactquery&logoColor=white" />
+  <img src="https://img.shields.io/badge/Zustand_5-ff7676?style=for-the-badge&logo=react&logoColor=white" />
+
+<br/>
+<br/>
+
+<a href="https://omechu.log8.kr/">배포 URL</a> 
 
 </div>
+
+  
 
 ---
 
 ## 개요
 
-**오메추**는 사용자의 기본 상태, 취향, 컨디션 같은 맥락을 반영해 **맞춤 메뉴와 근처 맛집을 빠르게 추천**합니다. 고민 시간을 줄이고, 선택을 더 즐겁게 만드는 것이 목표입니다.
+**오메추**는 사용자의 기본 상태, 취향, 컨디션 같은 맥락을 반영해 **맞춤 메뉴와 근처 맛집을 빠르게 추천**합니다.
+<br/>
+고민 시간을 줄이고, 선택을 더 즐겁게 만드는 것이 목표입니다.
 
 ### 문제 인식
 
@@ -395,26 +399,23 @@ fix: 로그인 실패 시 에러 메시지 출력 오류 수정 #7
     <td align="center" width="150">
       <a href="https://github.com/theSnackOverflow"><img src="https://github.com/theSnackOverflow.png" width="100" alt="2ssac"/></a><br/>
       <b>2ssac</b><br/>
-      <sub>FE</sub><br/>
       <a href="https://github.com/theSnackOverflow"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
+      <a href="https://issac.app/"><img src="https://img.shields.io/badge/-Portfolio-ff7676?style=flat-square&logoColor=white" alt="Portfolio"/></a>
     </td>
     <td align="center" width="150">
       <a href="https://github.com/Head-ddy"><img src="https://github.com/Head-ddy.png" width="100" alt="라희수"/></a><br/>
       <b>라희수</b><br/>
-      <sub>FE</sub><br/>
       <a href="https://github.com/Head-ddy"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
     </td>
     <td align="center" width="150">
       <a href="https://github.com/IISweetHeartII"><img src="https://github.com/IISweetHeartII.png" width="100" alt="김덕환"/></a><br/>
       <b>김덕환</b><br/>
-      <sub>FE</sub><br/>
       <a href="https://github.com/IISweetHeartII"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
       <a href="https://log8.kr/portfolio/"><img src="https://img.shields.io/badge/-Portfolio-ff7676?style=flat-square&logoColor=white" alt="Portfolio"/></a>
     </td>
     <td align="center" width="150">
       <a href="https://github.com/jeonbinggu"><img src="https://github.com/jeonbinggu.png" width="100" alt="전병국"/></a><br/>
       <b>전병국</b><br/>
-      <sub>FE</sub><br/>
       <a href="https://github.com/jeonbinggu"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
     </td>
   </tr>

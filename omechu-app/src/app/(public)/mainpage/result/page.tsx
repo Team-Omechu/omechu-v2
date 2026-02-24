@@ -193,16 +193,16 @@ export default function ResultPage() {
         ))}
       </div>
 
-      <div className="mt-2 flex w-[330px] gap-2 py-2">
+      <div className="mt-2 flex w-82.5 gap-2 py-2">
         <Button
-          className="hover:bg-grey-normal text-foundation-grey-darker border-font-disabled rounded-md border bg-[#EEE] px-4 py-2"
+          className="hover:bg-grey-normal text-foundation-grey-darker border-font-disabled flex-1 rounded-md border bg-[#EEE] px-4 py-2"
           onClick={handleReshuffle}
         >
           다시 추천
         </Button>
 
         <Button
-          className="bg-primary-normal hover:bg-primary-normal-hover rounded-md px-4 py-2 text-[#FFF]"
+          className="bg-primary-normal hover:bg-primary-normal-hover flex-1 rounded-md px-4 py-2 text-[#FFF]"
           onClick={handleNext}
         >
           선택하기

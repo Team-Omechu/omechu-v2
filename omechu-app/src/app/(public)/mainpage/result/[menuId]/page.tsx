@@ -206,7 +206,7 @@ export default function MenuDetailPage() {
   };
 
   return (
-    <div className="flex w-full flex-col">
+    <div className="flex w-full flex-col items-center">
       <Header
         title="오늘의 메뉴"
         showBackButton={false}
@@ -229,7 +229,7 @@ export default function MenuDetailPage() {
         />
       </div>
 
-      <div className="mt-10 ml-4 w-full p-4">
+      <div className="mt-10 ml-4 w-fit p-4">
         <IngredientCard
           kcal={detailMenu?.calory}
           carbohydrate={detailMenu?.carbo}
@@ -240,7 +240,7 @@ export default function MenuDetailPage() {
         />
       </div>
 
-      <div className="mt-3 ml-4 items-center justify-center space-y-3.5 px-4 pb-6">
+      <div className="mt-3 ml-4 w-fit items-center justify-center space-y-3.5 px-4 pb-6">
         <h3 className="text-font-high text-body-3-medium text-[1.125rem] whitespace-nowrap">
           취향 저격! 추천 메뉴 있는 맛집
         </h3>

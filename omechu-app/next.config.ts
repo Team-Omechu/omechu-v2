@@ -3,6 +3,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: "/",
+        destination: "/mainpage",
+        permanent: true,
+      },
+    ];
+  },
   /* config options here */
   images: {
     remotePatterns: [

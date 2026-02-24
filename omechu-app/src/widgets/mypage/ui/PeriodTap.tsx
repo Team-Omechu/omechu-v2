@@ -21,7 +21,7 @@ type Period = (typeof PERIOD_OPTIONS)[number];
 
 export function PeriodTap({ value, onChange }: PeriodTapProps) {
   return (
-    <section className="h-12 overflow-x-auto px-5 pb-2.5">
+    <section className="h-fit overflow-x-auto px-5 pb-2.5">
       <div className="border-font-extra-low relative flex h-full w-max flex-nowrap items-end gap-4 border-b">
         {PERIOD_OPTIONS.map((item) => (
           <button

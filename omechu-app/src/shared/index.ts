@@ -64,6 +64,7 @@ export { ListButton } from "./ui/button/ListButton";
 // FoodCard는 widgets/card로 이동 (FSD: entities 의존)
 export { IngredientCard } from "./ui/card/IngredientCard";
 export { RecommendedFoodCard } from "./ui/card/RecommendedFoodCard";
+export { SkeletonRecommendedFoodCard } from "./ui/card/SkeletonRecommendedFoodCard";
 export { RestaurantCard } from "./ui/card/RestaurantCard";
 
 // UI - Modal

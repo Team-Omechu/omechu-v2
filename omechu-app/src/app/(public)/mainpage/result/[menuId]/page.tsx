@@ -29,8 +29,6 @@ import {
   type MenuDetail,
 } from "@/shared";
 
-const PAGE_SIZE = 3;
-
 export default function MenuDetailPage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -223,7 +221,7 @@ export default function MenuDetailPage() {
         <Image
           src={detailMenu?.image_link || "/image/image_empty.svg"}
           alt={detailMenu?.name || "메뉴 이미지"}
-          className="mx-auto h-24 w-24 rounded-md"
+          className="mx-auto h-28 w-28 rounded-md"
           width={96}
           height={96}
         />

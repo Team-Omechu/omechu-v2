@@ -43,7 +43,7 @@ export const FoodBox = ({
             className="rounded-xl object-fill"
           />
         </figure>
-        <figcaption className="text-body-4-medium text-font-high">
+        <figcaption className="text-caption-1-medium text-font-high">
           {title}
         </figcaption>
       </div>

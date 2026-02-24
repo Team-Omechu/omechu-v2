@@ -27,6 +27,8 @@ type QuestionAnswerActions = {
 
   clearStepValue: (step: number) => void;
 
+  resetExceptions: () => void;
+
   questionReset: () => void;
 };
 
@@ -99,6 +101,7 @@ export const useQuestionAnswerStore = create<
       return;
     }
   },
+  resetExceptions: () => set({ exceptions: [] }),
 
   questionReset: () => set(initialState),
 }));

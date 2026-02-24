@@ -42,8 +42,6 @@ export default function MenuDetailPage() {
 
   const { mutate } = usePostMukburim();
 
-  const [showHomeModal, setShowHomeModal] = useState(false);
-
   // ✅ 토스트(공유/기록) 통합
   const [toastMessage, setToastMessage] = useState("");
   const [showToast, setShowToast] = useState(false);
@@ -203,7 +201,7 @@ export default function MenuDetailPage() {
         showShareButton={true}
         onShareClick={handleShare}
         showHomeButton={true}
-        onHomeClick={() => setShowHomeModal(true)}
+        onHomeClick={() => router.push("/mainpage")}
       />
 
       <div className="mt-4 ml-4 flex-col items-center justify-center p-4">
@@ -302,22 +300,6 @@ export default function MenuDetailPage() {
           </>
         )}
       </div>
-
-      {showHomeModal && (
-        <ModalWrapper>
-          <BaseModal
-            title="메뉴추천을 중단하시겠어요?"
-            leftButtonText="그만하기"
-            rightButtonText="계속하기"
-            onCloseClick={() => setShowHomeModal(false)}
-            onLeftButtonClick={() => {
-              setShowHomeModal(false);
-              router.push("/mainpage");
-            }}
-            onRightButtonClick={() => setShowHomeModal(false)}
-          />
-        </ModalWrapper>
-      )}
 
       <Toast
         message={toastMessage}

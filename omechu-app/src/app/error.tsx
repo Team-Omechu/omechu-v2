@@ -18,16 +18,16 @@ export default function ErrorPage({
   return (
     <div className="flex min-h-screen items-center justify-center px-6">
       <div className="w-full max-w-[375px] space-y-4 text-center">
-        <h1 className="text-2xl font-bold text-[#242424]">
+        <h1 className="text-font-high text-2xl font-bold">
           문제가 발생했습니다
         </h1>
-        <p className="text-sm text-[#707070]">
+        <p className="text-font-low text-sm">
           예기치 않은 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
         </p>
         <button
           type="button"
           onClick={reset}
-          className="rounded-xl bg-[#ff7676] px-6 py-3 text-sm font-semibold text-white"
+          className="bg-brand-primary rounded-xl px-6 py-3 text-sm font-semibold text-white"
         >
           다시 시도
         </button>

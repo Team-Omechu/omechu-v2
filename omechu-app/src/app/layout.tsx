@@ -68,6 +68,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  verification: {
+    other: {
+      "naver-site-verification": "c700681f7356867cf35c8d9566f0a021e4f9b19d",
+    },
+  },
+
   robots: {
     index: true,
     follow: true,

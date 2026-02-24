@@ -29,6 +29,7 @@ export interface GetMukburimStatisticsParams {
 /** 메뉴별 통계 아이템 */
 export interface MukburimMenuStatistic {
   menu_name: string;
+  image_link: string;
   count: number;
   last_eaten_at: string;
   last_eaten_date: string;

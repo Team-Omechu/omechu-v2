@@ -104,7 +104,7 @@ export default function ResultPage() {
   if (isLoading || isRefetching) return <MainLoading />;
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-screen flex-col items-center">
       <Header
         title="맞춤 추천"
         onBackClick={() => router.back()}
@@ -126,9 +126,9 @@ export default function ResultPage() {
         ))}
       </div>
 
-      <div className="mt-2 flex gap-2 px-4 py-2">
+      <div className="mt-2 flex w-82.5 gap-2 py-2">
         <Button
-          className="hover:bg-grey-normal flex-1 rounded-md border border-[#2424243d] bg-[#EEE] px-4 py-2 text-[#393939]"
+          className="hover:bg-grey-normal text-foundation-grey-darker border-font-disabled flex-1 rounded-md border bg-[#EEE] px-4 py-2"
           onClick={handleReshuffle}
         >
           다시 추천

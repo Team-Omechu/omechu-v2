@@ -24,7 +24,7 @@ import {
   IngredientCard,
   ModalWrapper,
   RestaurantCard,
-  SkeletonUIFoodBox,
+  SkeletonRecommendedFoodCard,
   Toast,
   type MenuDetail,
 } from "@/shared";
@@ -266,7 +266,7 @@ export default function MenuDetailPage() {
             {(isLoading || (isFetching && restaurants.length === 0)) && (
               <div className="flex flex-col gap-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <SkeletonUIFoodBox key={i} />
+                  <SkeletonRecommendedFoodCard key={i} />
                 ))}
               </div>
             )}

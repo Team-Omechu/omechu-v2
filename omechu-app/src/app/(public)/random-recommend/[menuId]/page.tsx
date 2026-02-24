@@ -200,6 +200,7 @@ export default function MenuDetailPage() {
     <div className="flex flex-col items-center">
       <Header
         title="오늘의 메뉴"
+        showBackButton={false}
         showHomeButton={true}
         showShareButton={true}
         onShareClick={handleShare}

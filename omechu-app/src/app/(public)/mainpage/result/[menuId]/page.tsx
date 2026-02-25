@@ -204,7 +204,7 @@ export default function MenuDetailPage() {
         onHomeClick={() => router.push("/mainpage")}
       />
 
-      <div className="mt-4 ml-4 flex-col items-center justify-center p-4">
+      <div className="mt-4 flex-col items-center justify-center p-4">
         <p className="text-brand-primary text-body-1 mb-3 text-center font-semibold">
           {detailMenu?.name}
         </p>
@@ -217,7 +217,7 @@ export default function MenuDetailPage() {
         />
       </div>
 
-      <div className="ml-4 w-fit p-4">
+      <div className="w-fit p-4">
         <IngredientCard
           kcal={detailMenu?.calory}
           carbohydrate={detailMenu?.carbo}
@@ -228,7 +228,7 @@ export default function MenuDetailPage() {
         />
       </div>
 
-      <div className="mt-3 ml-4 w-fit items-center justify-center space-y-3.5 px-4 pb-6">
+      <div className="mt-3 w-fit items-center justify-center space-y-3.5 px-4 pb-6">
         <h3 className="text-font-high text-body-3-medium text-body-3 whitespace-nowrap">
           취향 저격! 추천 메뉴 있는 맛집
         </h3>

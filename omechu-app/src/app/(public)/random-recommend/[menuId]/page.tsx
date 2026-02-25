@@ -214,7 +214,7 @@ export default function MenuDetailPage() {
         />
       </div>
 
-      <div className="ml-4 w-fit p-4">
+      <div className="w-fit p-4">
         <IngredientCard
           kcal={detailMenu?.calory}
           carbohydrate={detailMenu?.carbo}
@@ -225,7 +225,7 @@ export default function MenuDetailPage() {
         />
       </div>
 
-      <div className="mt-3 ml-4 items-center justify-center space-y-3.5 px-4">
+      <div className="mt-3 items-center justify-center space-y-3.5 px-4">
         <h3 className="text-font-high text-body-3-medium text-body-3 font-semibold whitespace-nowrap">
           취향 저격! 추천 메뉴 있는 맛집
         </h3>

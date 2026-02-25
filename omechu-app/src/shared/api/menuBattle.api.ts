@@ -1,9 +1,10 @@
 import { fetchJSON } from "./fetchJSON";
 
 export const menuBattleAPI = {
-  createBattle: (payload: { creatorNickname: string; menuIds: number[] }) =>
+  createBattle: (payload: { menuIds: number[] }) =>
     fetchJSON<{
       battleId: string;
+      creatorNickname: string | null;
     }>("/menu/battles", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -21,7 +22,11 @@ export const menuBattleAPI = {
     }>(`/menu/battles/${battleId}/is-creator/${encodeURIComponent(nickname)}`),
 
   joinBattle: (battleId: string, nickname: string) =>
-    fetchJSON(`/menu/battles/${battleId}/join`, {
+    fetchJSON<{
+      isCreator?: boolean;
+      battleId?: string;
+      nickname?: string;
+    }>(`/menu/battles/${battleId}/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nickname }),

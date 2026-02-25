@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { useAuthStore } from "@/entities/user/model/auth.store";
 import { BattleButton, Button, FoodBox, Header, Input, Toast } from "@/shared";
 import { fetchJSON } from "@/shared/api/fetchJSON";
 import { menuBattleAPI } from "@/shared/api/menuBattle.api";
@@ -22,7 +21,6 @@ const MENU_SELECTION_MESSAGE = "메뉴는 2개에서 8개 사이로 선택해야
 
 export default function MenuBattlePage() {
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
 
   const [joinCode, setJoinCode] = useState("");
   const [battleName, setBattleName] = useState("오늘의 메뉴 배틀");
@@ -39,11 +37,6 @@ export default function MenuBattlePage() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMenus, setIsLoadingMenus] = useState(false);
   const observerRef = useRef<HTMLDivElement | null>(null);
-
-  const creatorNickname = useMemo(
-    () => user?.nickname?.trim() || "방장",
-    [user],
-  );
 
   const openToast = useCallback((message: string) => {
     setToastMessage(message);
@@ -145,29 +138,33 @@ export default function MenuBattlePage() {
       return;
     }
 
+    const payload = {
+      menuIds: selectedMenus.map(Number),
+    };
+
     try {
-      const payload = {
-        creatorNickname,
-        menuIds: selectedMenus.map(Number),
-      };
+      console.log("[MenuBattle] create request payload", payload);
       const result = await menuBattleAPI.createBattle(payload);
       setRoomNumber(result.battleId);
       setShowCreateModal(true);
-    } catch {
+    } catch (error) {
+      console.error("[MenuBattle] create battle failed", {
+        payload,
+        error,
+      });
+      if (error instanceof Error && error.message) {
+        openToast(`배틀방 생성 실패: ${error.message}`);
+        return;
+      }
       openToast("배틀방 생성에 실패했습니다.");
     }
   };
 
   const makeBattlePlayUrl = useCallback(
-    (battleId: string, options?: { prefillNickname?: string }) => {
+    (battleId: string) => {
       const params = new URLSearchParams({
         battleName,
       });
-
-      if (options?.prefillNickname) {
-        params.set("prefillNickname", options.prefillNickname);
-      }
-
       return `/menu-battle/play/${battleId}?${params.toString()}`;
     },
     [battleName],
@@ -347,13 +344,7 @@ ${shareUrl}`;
               <Button
                 width="md"
                 className="bg-statelayer-default flex-1 text-white"
-                onClick={() =>
-                  router.push(
-                    makeBattlePlayUrl(roomNumber, {
-                      prefillNickname: creatorNickname,
-                    }),
-                  )
-                }
+                onClick={() => router.push(makeBattlePlayUrl(roomNumber))}
               >
                 바로 참여하기
               </Button>

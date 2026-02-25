@@ -255,12 +255,25 @@ export default function PlayPage() {
   }, [showToast]);
 
   useEffect(() => {
-    if (showNicknameModal || finished || hasMyStopped || menus.length === 0)
+    if (
+      showNicknameModal ||
+      finished ||
+      hasMyStopped ||
+      isSubmittingSpin ||
+      menus.length === 0
+    )
       return;
     if (isSpinning) return;
     rouletteRef.current?.start();
     setIsSpinning(true);
-  }, [finished, hasMyStopped, isSpinning, menus.length, showNicknameModal]);
+  }, [
+    finished,
+    hasMyStopped,
+    isSpinning,
+    isSubmittingSpin,
+    menus.length,
+    showNicknameModal,
+  ]);
 
   const isValidNickname = (value: string) =>
     /^[a-zA-Z0-9가-힣]{1,20}$/.test(value);
@@ -335,15 +348,17 @@ export default function PlayPage() {
       return;
     }
 
+    // Stop immediately on click, then reconcile with server result.
+    rouletteRef.current?.stop();
+    setIsSpinning(false);
+
     const userAngle = rouletteRef.current?.getAngle() ?? 0;
     const hasMyHistory = spinHistory.some((item) => item.nickname === nickname);
 
     try {
       setIsSubmittingSpin(true);
       const result = await menuBattleAPI.spin(battleId, nickname);
-      rouletteRef.current?.setAngle(result.stoppedAngle);
-      rouletteRef.current?.stop();
-      setIsSpinning(false);
+      // Keep the click position as-is to avoid visible angle jumps.
       setSpinHistory((prev) =>
         mergeSpinResults(prev, [
           {
@@ -379,9 +394,7 @@ export default function PlayPage() {
           spunAt: new Date().toISOString(),
         };
 
-        rouletteRef.current?.setAngle(localResult.stoppedAngle);
-        rouletteRef.current?.stop();
-        setIsSpinning(false);
+        await rouletteRef.current?.animateToAngle(localResult.stoppedAngle);
         setSpinHistory((prev) => mergeSpinResults(prev, [localResult]));
       } else {
         openToast("스핀에 실패했습니다. 잠시 후 다시 시도해주세요.");

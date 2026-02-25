@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -42,7 +42,6 @@ export default function PlayPage() {
 
   const battleNameFromQuery = searchParams.get("battleName");
   const initialNickname = searchParams.get("nickname");
-  const prefillNickname = searchParams.get("prefillNickname");
 
   const battleName = useMemo(
     () =>
@@ -52,9 +51,7 @@ export default function PlayPage() {
     [battleNameFromQuery],
   );
 
-  const [nickname, setNickname] = useState(
-    initialNickname ?? prefillNickname ?? "",
-  );
+  const [nickname, setNickname] = useState(initialNickname ?? "");
   const [showNicknameModal, setShowNicknameModal] = useState(!initialNickname);
   const [isSubmittingNickname, setIsSubmittingNickname] = useState(false);
 
@@ -278,8 +275,11 @@ export default function PlayPage() {
 
     try {
       setIsSubmittingNickname(true);
-      await menuBattleAPI.joinBattle(battleId, trimmed);
+      const joinResult = await menuBattleAPI.joinBattle(battleId, trimmed);
       setNickname(trimmed);
+      if (typeof joinResult?.isCreator === "boolean") {
+        setIsCreator(joinResult.isCreator);
+      }
       setShowNicknameModal(false);
 
       window.history.replaceState(
@@ -289,8 +289,38 @@ export default function PlayPage() {
       );
 
       await syncBattle();
-    } catch {
-      openToast("입장에 실패했습니다. 닉네임을 확인해주세요.");
+    } catch (error) {
+      try {
+        const battle = (await menuBattleAPI.getBattle(
+          battleId,
+        )) as BattleResponse;
+        const alreadyJoined = battle.participants.some(
+          (participant) => participant.nickname === trimmed,
+        );
+
+        if (alreadyJoined) {
+          setNickname(trimmed);
+          setIsCreator(battle.creatorNickname === trimmed);
+          setShowNicknameModal(false);
+
+          window.history.replaceState(
+            null,
+            "",
+            `/menu-battle/play/${battleId}?nickname=${encodeURIComponent(trimmed)}&battleName=${encodeURIComponent(battleName)}`,
+          );
+
+          await syncBattle();
+          return;
+        }
+      } catch {
+        // ignore fallback errors
+      }
+
+      if (error instanceof Error && error.message) {
+        openToast(error.message);
+      } else {
+        openToast("입장에 실패했습니다. 닉네임을 확인해주세요.");
+      }
     } finally {
       setIsSubmittingNickname(false);
     }

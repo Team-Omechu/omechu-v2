@@ -397,8 +397,8 @@ fix: 로그인 실패 시 에러 메시지 출력 오류 수정 #7
 <table>
   <tr>
     <td align="center" width="150">
-      <a href="https://github.com/theSnackOverflow"><img src="https://github.com/theSnackOverflow.png" width="100" alt="2ssac"/></a><br/>
-      <b>2ssac</b><br/>
+      <a href="https://github.com/theSnackOverflow"><img src="https://github.com/theSnackOverflow.png" width="100" alt="강지훈"/></a><br/>
+      <b>강지훈</b><br/>
       <a href="https://github.com/theSnackOverflow"><img src="https://img.shields.io/badge/-GitHub-181717?style=flat-square&logo=github&logoColor=white" alt="GitHub"/></a>
       <a href="https://issac.app/"><img src="https://img.shields.io/badge/-Portfolio-ff7676?style=flat-square&logoColor=white" alt="Portfolio"/></a>
     </td>

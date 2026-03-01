@@ -320,9 +320,15 @@ export default function PlayPage() {
     try {
       setIsFinishing(true);
       const result = await menuBattleAPI.finish(battleId, nickname);
-      setWinner(result.winner);
+      if (result && typeof result === "object" && "winner" in result) {
+        const winnerFromResult = (result as { winner?: Winner }).winner;
+        if (winnerFromResult) {
+          setWinner(winnerFromResult);
+        }
+      }
       setFinished(true);
-      await fetchRankings();
+      await syncBattle(true);
+      await fetchRankings(true);
     } catch {
       openToast("배틀 마감에 실패했습니다.");
     } finally {

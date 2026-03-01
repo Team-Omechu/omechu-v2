@@ -37,6 +37,7 @@ export default function MenuBattlePage() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMenus, setIsLoadingMenus] = useState(false);
   const observerRef = useRef<HTMLDivElement | null>(null);
+  const batchSizeRef = useRef<number | null>(null);
 
   const openToast = useCallback((message: string) => {
     setToastMessage(message);
@@ -54,6 +55,20 @@ export default function MenuBattlePage() {
         return;
       }
 
+      if (batchSizeRef.current === null) {
+        batchSizeRef.current = data.length;
+      }
+
+      // Cursor didn't move (or moved backward): stop to prevent repeated fetches.
+      const fetchedLastMenuId = Number(data[data.length - 1].id);
+      if (
+        !Number.isFinite(fetchedLastMenuId) ||
+        fetchedLastMenuId <= lastMenuId
+      ) {
+        setHasMore(false);
+        return;
+      }
+
       setMenus((prev) => {
         const merged = [...prev, ...data];
         return Array.from(
@@ -61,7 +76,12 @@ export default function MenuBattlePage() {
         );
       });
 
-      setLastMenuId(Number(data[data.length - 1].id));
+      setLastMenuId(fetchedLastMenuId);
+
+      // Last page guard: if current batch is smaller than initial batch, stop here.
+      if (batchSizeRef.current !== null && data.length < batchSizeRef.current) {
+        setHasMore(false);
+      }
     } catch {
       openToast("메뉴를 불러오지 못했습니다.");
     } finally {

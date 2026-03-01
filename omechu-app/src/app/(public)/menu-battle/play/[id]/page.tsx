@@ -30,11 +30,6 @@ const mergeSpinResults = (prev: SpinResult[], incoming: SpinResult[]) => {
   return Array.from(map.values());
 };
 
-const circularDistance = (a: number, b: number) => {
-  const raw = Math.abs(a - b) % 360;
-  return Math.min(raw, 360 - raw);
-};
-
 export default function PlayPage() {
   const { id: battleId } = useParams<{ id: string }>();
   const router = useRouter();
@@ -110,81 +105,28 @@ export default function PlayPage() {
     }
   }, []);
 
-  const liveRankings = useMemo(
-    () =>
-      Array.from(
-        spinHistory
-          .reduce(
-            (acc, result) => {
-              const current = acc.get(result.nickname);
-              const spunAt = new Date(result.spunAt).getTime();
-              const gainedScore = Math.max(
-                0,
-                100 - Math.round(result.distanceToBoundary),
-              );
-
-              if (!current) {
-                acc.set(result.nickname, {
-                  nickname: result.nickname,
-                  closestMenuName: result.closestMenuName,
-                  totalScore: gainedScore,
-                  attempts: 1,
-                  firstSpunAt: spunAt,
-                });
-                return acc;
-              }
-
-              acc.set(result.nickname, {
-                ...current,
-                closestMenuName: result.closestMenuName,
-                totalScore: current.totalScore + gainedScore,
-                attempts: current.attempts + 1,
-                firstSpunAt: Math.min(current.firstSpunAt, spunAt),
-              });
-              return acc;
-            },
-            new Map<
-              string,
-              {
-                nickname: string;
-                closestMenuName: string;
-                totalScore: number;
-                attempts: number;
-                firstSpunAt: number;
-              }
-            >(),
-          )
-          .values(),
-      )
-        .sort((a, b) => {
-          const scoreGap = b.totalScore - a.totalScore;
-          if (scoreGap !== 0) return scoreGap;
-          return a.firstSpunAt - b.firstSpunAt;
-        })
-        .map((entry, index) => ({
-          rank: index + 1,
-          nickname: entry.nickname,
-          closestMenuName: entry.closestMenuName,
-          totalScore: entry.totalScore,
-          attempts: entry.attempts,
-        })),
-    [spinHistory],
-  );
-
   const hasMyStopped = useMemo(
     () => !!nickname && spinHistory.some((item) => item.nickname === nickname),
     [nickname, spinHistory],
   );
 
-  const fetchRankings = useCallback(async () => {
-    if (!battleId) return;
-    try {
-      const data = await menuBattleAPI.getRankings(battleId);
-      setRankings(data);
-    } catch {
-      openToast("순위를 불러오지 못했습니다.");
-    }
-  }, [battleId, openToast]);
+  const fetchRankings = useCallback(
+    async (silent = false) => {
+      if (!battleId) return;
+      try {
+        const data = await menuBattleAPI.getRankings(battleId);
+        const normalized = Array.isArray(data)
+          ? data
+          : Array.isArray((data as { rankings?: Ranking[] })?.rankings)
+            ? ((data as { rankings: Ranking[] }).rankings ?? [])
+            : [];
+        setRankings(normalized);
+      } catch {
+        if (!silent) openToast("순위를 불러오지 못했습니다.");
+      }
+    },
+    [battleId, openToast],
+  );
 
   const syncBattle = useCallback(
     async (silent = false) => {
@@ -210,9 +152,7 @@ export default function PlayPage() {
           setIsCreator(false);
         }
 
-        if (data.status === "finished") {
-          await fetchRankings();
-        }
+        await fetchRankings(silent);
       } catch {
         if (!silent) openToast("배틀방 정보를 불러오지 못했습니다.");
       }
@@ -352,13 +292,10 @@ export default function PlayPage() {
     rouletteRef.current?.stop();
     setIsSpinning(false);
 
-    const userAngle = rouletteRef.current?.getAngle() ?? 0;
-    const hasMyHistory = spinHistory.some((item) => item.nickname === nickname);
-
     try {
       setIsSubmittingSpin(true);
       const result = await menuBattleAPI.spin(battleId, nickname);
-      // Keep the click position as-is to avoid visible angle jumps.
+      await rouletteRef.current?.animateToAngle(result.stoppedAngle);
       setSpinHistory((prev) =>
         mergeSpinResults(prev, [
           {
@@ -373,32 +310,7 @@ export default function PlayPage() {
       );
       await syncBattle();
     } catch {
-      if (hasMyHistory && menus.length > 0) {
-        let closest = menus[0];
-        let minDistance = circularDistance(userAngle, menus[0].centerAngle);
-
-        for (const menu of menus.slice(1)) {
-          const distance = circularDistance(userAngle, menu.centerAngle);
-          if (distance < minDistance) {
-            minDistance = distance;
-            closest = menu;
-          }
-        }
-
-        const localResult: SpinResult = {
-          nickname,
-          stoppedAngle: userAngle,
-          closestMenuName: closest.menuName,
-          distanceToBoundary: minDistance,
-          rank: 0,
-          spunAt: new Date().toISOString(),
-        };
-
-        await rouletteRef.current?.animateToAngle(localResult.stoppedAngle);
-        setSpinHistory((prev) => mergeSpinResults(prev, [localResult]));
-      } else {
-        openToast("스핀에 실패했습니다. 잠시 후 다시 시도해주세요.");
-      }
+      openToast("스핀에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSubmittingSpin(false);
     }
@@ -466,9 +378,9 @@ export default function PlayPage() {
             </button>
           )}
 
-          {!finished && liveRankings.length > 0 && (
+          {!finished && rankings.length > 0 && (
             <section className="my-8 space-y-3 text-left">
-              {liveRankings.map((result) => (
+              {rankings.map((result) => (
                 <div
                   key={result.nickname}
                   className="flex items-center justify-between rounded-xl border bg-white px-4 py-2.5"
@@ -477,7 +389,7 @@ export default function PlayPage() {
                     {result.rank}. {result.nickname}({result.closestMenuName})
                   </p>
                   <p className="text-body-3 text-font-high">
-                    {result.totalScore}
+                    {Math.round(result.distanceToBoundary)}
                   </p>
                 </div>
               ))}

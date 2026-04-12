@@ -7,12 +7,12 @@ type QuestionAnswerLayoutProps = {
   paddingClassName?: string; // paddingClassName prop 추가
 };
 
-export const QuestionAnswerLayout = ({
+export function QuestionAnswerLayout({
   title,
   children,
   contentClassName = "",
   paddingClassName = "px-8", // 기본값을 'px-8'로 설정
-}: QuestionAnswerLayoutProps) => {
+}: QuestionAnswerLayoutProps) {
   return (
     <div className="flex w-full flex-col items-center px-4 py-6">
       <section className="my-20 h-[32px] text-center">
@@ -29,4 +29,4 @@ export const QuestionAnswerLayout = ({
       </section>
     </div>
   );
-};
+}

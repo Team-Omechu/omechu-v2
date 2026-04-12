@@ -13,12 +13,12 @@ interface FoodBoxProps {
   onClick?: () => void;
 }
 
-export const FoodBox = ({
+export function FoodBox({
   src,
   title,
   isSelected = false,
   onClick,
-}: FoodBoxProps) => {
+}: FoodBoxProps) {
   return (
     <button
       onClick={onClick}
@@ -49,4 +49,4 @@ export const FoodBox = ({
       </div>
     </button>
   );
-};
+}

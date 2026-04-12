@@ -10,11 +10,11 @@ type LoginPromptModalProps = {
   onSkip?: () => void; // "그냥 추천받기" 버튼 클릭 시
 };
 
-export const LoginPromptModal = ({
+export function LoginPromptModal({
   onConfirm,
   onClose,
   onSkip,
-}: LoginPromptModalProps) => {
+}: LoginPromptModalProps) {
   // 이 컴포넌트는 ModalWrapper 내에서 사용되어야 합니다.
   return (
     <div className="border-grey-dark-hover relative flex w-[315px] flex-col items-center rounded-[20px] border bg-white px-6 pt-6 pb-6 text-center shadow-lg">
@@ -49,6 +49,6 @@ export const LoginPromptModal = ({
       </div>
     </div>
   );
-};
+}
 
 export default LoginPromptModal;

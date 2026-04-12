@@ -7,7 +7,7 @@ import { useQuestionAnswerStore, whoOptions } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 import { ListButton } from "@/shared";
 
-export const WhoStep = () => {
+export function WhoStep() {
   const router = useRouter();
   const { who, setWho } = useQuestionAnswerStore();
   const { setWhoTag } = useTagStore();
@@ -32,7 +32,7 @@ export const WhoStep = () => {
       ))}
     </QuestionAnswerLayout>
   );
-};
+}
 
 // ...existing code...
 //"use client";

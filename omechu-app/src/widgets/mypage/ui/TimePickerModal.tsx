@@ -11,7 +11,7 @@ type TimePickerModalProps = {
   max?: string;
 };
 
-export const TimePickerModal = ({
+export function TimePickerModal({
   open,
   time,
   onChangeTime,
@@ -20,7 +20,7 @@ export const TimePickerModal = ({
   onOff,
   min,
   max,
-}: TimePickerModalProps) => {
+}: TimePickerModalProps) {
   if (!open) return null;
 
   return (
@@ -46,4 +46,4 @@ export const TimePickerModal = ({
       </BaseModal>
     </>
   );
-};
+}

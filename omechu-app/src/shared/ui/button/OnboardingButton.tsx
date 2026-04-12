@@ -39,14 +39,14 @@ type OnboardingButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
     selected?: boolean;
   };
 
-export const OnboardingButton = ({
+export function OnboardingButton({
   width,
   selected = false,
   children,
   className,
   onClick,
   ...props
-}: OnboardingButtonProps) => {
+}: OnboardingButtonProps) {
   return (
     <button
       type="button"
@@ -57,4 +57,4 @@ export const OnboardingButton = ({
       {children}
     </button>
   );
-};
+}

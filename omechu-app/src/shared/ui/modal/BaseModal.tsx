@@ -20,7 +20,7 @@ interface BaseModalProps {
   onRightButtonClick?: () => void;
 }
 
-export const BaseModal = ({
+export function BaseModal({
   children,
 
   title,
@@ -35,7 +35,7 @@ export const BaseModal = ({
   onCloseClick,
   onLeftButtonClick,
   onRightButtonClick,
-}: BaseModalProps) => {
+}: BaseModalProps) {
   return (
     <section className="bg-brand-secondary relative h-fit w-83.75 rounded-[20px] px-5 pt-6 pb-2 shadow-xl">
       {isCloseButtonShow && (
@@ -87,4 +87,4 @@ export const BaseModal = ({
       </div>
     </section>
   );
-};
+}

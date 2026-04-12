@@ -20,7 +20,7 @@ export interface FormFieldProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 
-export const FormField = ({
+export function FormField({
   label,
   id,
   helperText,
@@ -29,7 +29,7 @@ export const FormField = ({
   children,
   className,
   ...props
-}: FormFieldProps) => {
+}: FormFieldProps) {
   const helperId = helperText ? `${id}-helper` : undefined;
 
   const enhancedChildren = React.isValidElement(children)
@@ -59,6 +59,6 @@ export const FormField = ({
       )}
     </div>
   );
-};
+}
 
 FormField.displayName = "FormField";

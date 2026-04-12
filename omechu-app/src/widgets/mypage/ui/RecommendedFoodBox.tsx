@@ -13,12 +13,12 @@ interface RecommendedFoodBoxProps {
   isToggled: boolean;
 }
 
-export const RecommendedFoodBox = ({
+export function RecommendedFoodBox({
   src,
   title,
   onClick,
   isToggled,
-}: RecommendedFoodBoxProps) => {
+}: RecommendedFoodBoxProps) {
   return (
     <div
       aria-label={`${title} 선택 버튼`}
@@ -52,4 +52,4 @@ export const RecommendedFoodBox = ({
       </div>
     </div>
   );
-};
+}

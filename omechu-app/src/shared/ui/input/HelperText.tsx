@@ -9,12 +9,12 @@ export interface HelperTextProps extends React.HTMLAttributes<HTMLParagraphEleme
   state: "default" | "error" | "success";
 }
 
-export const HelperText = ({
+export function HelperText({
   children,
   className,
   state,
   ...props
-}: HelperTextProps) => {
+}: HelperTextProps) {
   return (
     <p
       className={clsx(
@@ -31,6 +31,6 @@ export const HelperText = ({
       {children}
     </p>
   );
-};
+}
 
 HelperText.displayName = "HelperText";

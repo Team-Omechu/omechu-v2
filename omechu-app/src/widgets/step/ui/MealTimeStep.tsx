@@ -7,7 +7,7 @@ import { QuestionAnswerLayout } from "./QuestionAnswerLayout";
 import { mealTimeOptions, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 
-export const MealTimeStep = () => {
+export function MealTimeStep() {
   const router = useRouter();
   const { mealTime, setMealTime } = useQuestionAnswerStore();
   const { setMealTimeTag } = useTagStore();
@@ -33,4 +33,4 @@ export const MealTimeStep = () => {
       ))}
     </QuestionAnswerLayout>
   );
-};
+}

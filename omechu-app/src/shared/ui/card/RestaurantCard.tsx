@@ -14,7 +14,7 @@ interface RestaurantCardProps {
   onCardClick?: () => void;
 }
 
-export const RestaurantCard = ({
+export function RestaurantCard({
   name,
   distance,
   category,
@@ -22,7 +22,7 @@ export const RestaurantCard = ({
   address,
   image,
   onCardClick,
-}: RestaurantCardProps) => {
+}: RestaurantCardProps) {
   return (
     <section
       onClick={onCardClick}
@@ -60,4 +60,4 @@ export const RestaurantCard = ({
       </div>
     </section>
   );
-};
+}

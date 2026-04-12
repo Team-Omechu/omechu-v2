@@ -39,12 +39,12 @@ const bottomButtonStyles = cva(
 type BottomButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof bottomButtonStyles>;
 
-export const BottomButton = ({
+export function BottomButton({
   variant,
   className,
   children,
   ...props
-}: BottomButtonProps) => {
+}: BottomButtonProps) {
   return (
     <button
       type="button"
@@ -54,4 +54,4 @@ export const BottomButton = ({
       {children}
     </button>
   );
-};
+}

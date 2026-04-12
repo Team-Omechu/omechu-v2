@@ -45,14 +45,14 @@ const battleButtonStyles = cva(
 type BattleButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof battleButtonStyles>;
 
-export const BattleButton = ({
+export function BattleButton({
   fontColor,
   bgColor,
   width,
   className,
   children,
   ...props
-}: BattleButtonProps) => {
+}: BattleButtonProps) {
   return (
     <button
       type="button"
@@ -65,4 +65,4 @@ export const BattleButton = ({
       {children}
     </button>
   );
-};
+}

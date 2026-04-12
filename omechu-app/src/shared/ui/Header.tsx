@@ -49,7 +49,7 @@ type HeaderProps = VariantProps<typeof headerStyles> & {
   className?: string;
 };
 
-export const Header = ({
+export function Header({
   variant = "default",
   title,
   showBackButton = true,
@@ -65,7 +65,7 @@ export const Header = ({
   homeModalLeftText = "네",
   homeModalRightText = "아니요",
   className,
-}: HeaderProps) => {
+}: HeaderProps) {
   const router = useRouter();
   const [showHomeModal, setShowHomeModal] = useState(false);
 
@@ -167,4 +167,4 @@ export const Header = ({
       )}
     </>
   );
-};
+}

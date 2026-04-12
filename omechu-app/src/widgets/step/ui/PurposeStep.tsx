@@ -7,7 +7,7 @@ import { purposeOptions, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 import { ListButton } from "@/shared";
 
-export const PurposeStep = () => {
+export function PurposeStep() {
   const router = useRouter();
   const { purpose, setPurpose } = useQuestionAnswerStore();
   const { setPurposeTag } = useTagStore();
@@ -32,4 +32,4 @@ export const PurposeStep = () => {
       ))}
     </QuestionAnswerLayout>
   );
-};
+}

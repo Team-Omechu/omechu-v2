@@ -10,7 +10,7 @@ interface IngredientCardProps {
   onCardClick?: () => void;
 }
 
-export const IngredientCard = ({
+export function IngredientCard({
   kcal,
   carbohydrate,
   protein,
@@ -18,7 +18,7 @@ export const IngredientCard = ({
   vitamin,
   allergies,
   onCardClick,
-}: IngredientCardProps) => {
+}: IngredientCardProps) {
   const rawAllergies = Array.isArray(allergies)
     ? allergies.join(",")
     : typeof allergies === "string"
@@ -80,4 +80,4 @@ export const IngredientCard = ({
       </div>
     </section>
   );
-};
+}

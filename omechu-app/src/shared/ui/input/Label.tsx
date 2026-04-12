@@ -8,12 +8,12 @@ export interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> 
   children: React.ReactNode;
 }
 
-export const Label = ({ children, className, ...props }: LabelProps) => {
+export function Label({ children, className, ...props }: LabelProps) {
   return (
     <label className={cn("text-body-3-medium", className)} {...props}>
       {children}
     </label>
   );
-};
+}
 
 Label.displayName = "Label";

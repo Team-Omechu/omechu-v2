@@ -30,7 +30,7 @@ type BattleModalProps = VariantProps<typeof battleModalStyles> & {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
-export const BattleModal = ({
+export function BattleModal({
   modalType,
   battleRoomName,
   roomCode,
@@ -39,7 +39,7 @@ export const BattleModal = ({
   onEnter,
   value,
   onChange,
-}: BattleModalProps) => {
+}: BattleModalProps) {
   return (
     <div className={cn(battleModalStyles({ modalType }))}>
       {modalType === "createDone" ? (
@@ -81,4 +81,4 @@ export const BattleModal = ({
       )}
     </div>
   );
-};
+}

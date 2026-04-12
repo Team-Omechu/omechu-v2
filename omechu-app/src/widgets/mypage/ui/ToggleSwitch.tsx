@@ -5,7 +5,7 @@ type ToggleSwitchProps = {
   onChange: (checked: boolean) => void;
 };
 
-export const ToggleSwitch = ({ checked, onChange }: ToggleSwitchProps) => {
+export function ToggleSwitch({ checked, onChange }: ToggleSwitchProps) {
   return (
     <button
       type="button"
@@ -25,4 +25,4 @@ export const ToggleSwitch = ({ checked, onChange }: ToggleSwitchProps) => {
       />
     </button>
   );
-};
+}

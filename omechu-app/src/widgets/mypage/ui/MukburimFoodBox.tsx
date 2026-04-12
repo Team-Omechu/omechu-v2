@@ -14,11 +14,11 @@ interface MukburimFoodBoxProps {
   frequency: string;
 }
 
-export const MukburimFoodBox = ({
+export function MukburimFoodBox({
   src,
   frequency = "0",
   title,
-}: MukburimFoodBoxProps) => {
+}: MukburimFoodBoxProps) {
   const [imgSrc, setImgSrc] = useState(src || FALLBACK_IMAGE);
 
   return (
@@ -42,4 +42,4 @@ export const MukburimFoodBox = ({
       </span>
     </div>
   );
-};
+}

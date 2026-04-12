@@ -12,13 +12,13 @@ interface menuModalProps {
   onRightButtonClick: () => void;
 }
 
-export const MenuModal = ({
+export function MenuModal({
   menuTitle,
   src,
   onCloseClick,
   onLeftButtonClick,
   onRightButtonClick,
-}: menuModalProps) => {
+}: menuModalProps) {
   return (
     <BaseModal
       onCloseClick={onCloseClick}
@@ -37,4 +37,4 @@ export const MenuModal = ({
       <div className="text-body-2-bold text-font-high">{menuTitle}</div>
     </BaseModal>
   );
-};
+}

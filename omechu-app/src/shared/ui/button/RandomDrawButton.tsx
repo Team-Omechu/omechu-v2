@@ -38,14 +38,14 @@ type RandomDrawButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
     selected?: boolean;
   };
 
-export const RandomDrawButton = ({
+export function RandomDrawButton({
   width,
   selected = false,
   children,
   className,
   onClick,
   ...props
-}: RandomDrawButtonProps) => {
+}: RandomDrawButtonProps) {
   return (
     <button
       type="button"
@@ -56,4 +56,4 @@ export const RandomDrawButton = ({
       {children}
     </button>
   );
-};
+}

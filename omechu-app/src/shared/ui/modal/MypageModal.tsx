@@ -14,14 +14,14 @@ interface MypageModalProps {
   onRightButtonClick: () => void;
 }
 
-export const MypageModal = ({
+export function MypageModal({
   title,
   inputValue,
   placeholder = "닉네임",
   onChangeInput,
   onLeftButtonClick,
   onRightButtonClick,
-}: MypageModalProps) => {
+}: MypageModalProps) {
   return (
     <BaseModal
       isCloseButtonShow={false}
@@ -48,4 +48,4 @@ export const MypageModal = ({
       </div>
     </BaseModal>
   );
-};
+}

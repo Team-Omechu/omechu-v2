@@ -7,12 +7,12 @@ type ListButtonProps = {
   textSize?: "sm" | "base" | "lg" | "xl";
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
-export const ListButton = ({
+export function ListButton({
   isSelected,
   children,
   textSize = "xl",
   ...props
-}: ListButtonProps) => {
+}: ListButtonProps) {
   const baseStyle = `w-50 min-h-12 h-auto px-4 py-2 rounded-md border text-center flex items-center justify-center transition-colors text-${textSize}`;
 
   const selectedStyle =
@@ -33,4 +33,4 @@ export const ListButton = ({
       {children}
     </button>
   );
-};
+}

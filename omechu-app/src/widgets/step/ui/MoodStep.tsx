@@ -7,7 +7,7 @@ import { moodOptions, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 import { ListButton } from "@/shared";
 
-export const MoodStep = () => {
+export function MoodStep() {
   const router = useRouter();
   const { mood, setMood } = useQuestionAnswerStore();
   const { setMoodTag } = useTagStore();
@@ -32,4 +32,4 @@ export const MoodStep = () => {
       ))}
     </QuestionAnswerLayout>
   );
-};
+}

@@ -43,7 +43,7 @@ const buttonStyles = cva(
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonStyles>;
 
-export const Button = ({
+export function Button({
   fontColor,
   bgColor,
   width,
@@ -52,12 +52,14 @@ export const Button = ({
   children,
 
   ...props
-}: ButtonProps) => (
-  <button
-    type="button"
-    className={cn(buttonStyles({ bgColor, width, fontColor }), className)}
-    {...props}
-  >
-    {children}
-  </button>
-);
+}: ButtonProps) {
+  return (
+    <button
+      type="button"
+      className={cn(buttonStyles({ bgColor, width, fontColor }), className)}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}

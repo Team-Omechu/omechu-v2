@@ -12,14 +12,14 @@ interface RecommendedFoodCardProps {
   onCardClick: () => void;
 }
 
-export const RecommendedFoodCard = ({
+export function RecommendedFoodCard({
   selected,
   onCardClick,
   menuTitle,
   menuDesc,
   src,
 }: React.ButtonHTMLAttributes<HTMLButtonElement> &
-  RecommendedFoodCardProps) => {
+  RecommendedFoodCardProps) {
   return (
     <div className="relative">
       <button
@@ -54,4 +54,4 @@ export const RecommendedFoodCard = ({
       </button>
     </div>
   );
-};
+}

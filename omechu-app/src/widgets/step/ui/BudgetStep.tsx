@@ -8,7 +8,7 @@ import { QuestionAnswerLayout } from "./QuestionAnswerLayout";
 import { budgetOptions, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 
-export const BudgetStep = () => {
+export function BudgetStep() {
   const router = useRouter();
   const { budget, setBudget } = useQuestionAnswerStore();
   const { setBudgetTag } = useTagStore();
@@ -34,4 +34,4 @@ export const BudgetStep = () => {
       ))}
     </QuestionAnswerLayout>
   );
-};
+}

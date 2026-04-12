@@ -2,7 +2,7 @@ import Image from "next/image";
 
 import type { Metadata } from "next";
 
-import { Header } from "@/shared/ui/header/Header";
+import { Header } from "@/shared";
 
 export const metadata: Metadata = {
   title: "로그인",

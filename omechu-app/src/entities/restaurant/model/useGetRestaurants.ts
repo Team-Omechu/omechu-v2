@@ -4,7 +4,7 @@ import {
   type UseQueryResult,
 } from "@tanstack/react-query";
 
-import { useLocationAnswerStore } from "@/entities/location";
+import { useLocationAnswerStore } from "@/shared/store/locationAnswer.store";
 import { getRestaurants } from "@/entities/restaurant/api/getRestaurants";
 import type {
   RestaurantListResponse,

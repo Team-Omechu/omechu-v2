@@ -4,7 +4,9 @@
 // ============================================
 
 // Types
-// Restaurant 타입은 entities/restaurant/model/restaurant.types.ts로 이동 (FSD)
+export type { TagData } from "./types/tag";
+export type { RandomMenu, MenuListResponse } from "./types/menu";
+export type { BattleResponse } from "./types/battle";
 
 // Config
 export type { ApiResponse, ApiError } from "./config/api.types";
@@ -24,7 +26,12 @@ export {
 // Terms Config
 export type { TermsItem, TermsType, TermsConfig } from "./constants/terms";
 
+// Store (cross-entity 스토어)
+export { useLocationAnswerStore } from "./store/locationAnswer.store";
+export { useQuestionAnswerStore } from "./store/questionAnswer.store";
+
 // Lib
+export { handleLocation } from "./lib/handleLocation";
 export { axiosInstance, setupAxiosInterceptors } from "./lib/axiosInstance";
 export type { AuthStoreGetter } from "./lib/axiosInstance";
 export { lockBodyScroll, unlockBodyScroll } from "./lib/bodyScrollLock";

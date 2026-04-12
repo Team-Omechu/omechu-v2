@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { handleLocation, useLocationAnswerStore } from "@/entities/location";
+import { handleLocation } from "@/shared/lib/handleLocation";
+import { useLocationAnswerStore } from "@/shared/store/locationAnswer.store";
 import { fetchJSON } from "@/shared/api/fetchJSON";
 
 type WinnerCardProps = {

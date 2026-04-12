@@ -1,6 +1,6 @@
-import type { RandomMenu, MenuListResponse } from "@/entities/menu";
-import type { BattleResponse } from "@/entities/menubattle";
 import { MenuDetail } from "@/shared/config/menu";
+import type { BattleResponse } from "@/shared/types/battle";
+import type { RandomMenu, MenuListResponse } from "@/shared/types/menu";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 const EMBED_API_URL = process.env.NEXT_PUBLIC_EMBED_API_URL;

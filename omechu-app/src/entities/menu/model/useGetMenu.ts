@@ -1,4 +1,5 @@
-import { useQuestionAnswerStore, whoOptions } from "@/entities/question";
+import { useQuestionAnswerStore } from "@/shared/store/questionAnswer.store";
+import { whoOptions } from "@/shared/config/questionOptions";
 import { useQuery } from "@tanstack/react-query";
 import {
   MenuListResponse,

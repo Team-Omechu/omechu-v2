@@ -4,12 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
+    "validate": "pnpm lint && pnpm typecheck && pnpm format:check",
     "prepare": "cd .. && husky install .husky"
   },
   "dependencies": {
@@ -38,6 +41,7 @@
     "@eslint/js": "^9.38.0",
     "@next/eslint-plugin-next": "^16.1.5",
     "@tailwindcss/postcss": "^4.1.16",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/node": "^22.19.7",
     "@types/react": "^19.2.8",
     "@types/react-dom": "^19",
@@ -47,7 +51,9 @@
     "eslint": "^9",
     "eslint-config-next": "^16.1.5",
     "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-check-file": "^3.3.1",
     "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "husky": "^9.1.7",
@@ -58,12 +64,6 @@
     "tailwindcss": "^4.1.18",
     "typescript": "5.9.3",
     "typescript-eslint": "^8.53.1"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ]
   },
   "packageManager": "pnpm@10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48"
 }

@@ -61,7 +61,7 @@ export function Header({
 
   onBackClick,
   onHomeClick,
-  homeModalTitle = "홈으로 돌아가시겠어요?",
+  homeModalTitle,
   homeModalLeftText = "네",
   homeModalRightText = "아니요",
   className,
@@ -137,7 +137,12 @@ export function Header({
           {showHomeButton ? (
             <button
               type="button"
-              onClick={onHomeClick ?? (() => setShowHomeModal(true))}
+              onClick={
+              onHomeClick ??
+              (homeModalTitle
+                ? () => setShowHomeModal(true)
+                : () => router.push("/mainpage"))
+            }
               aria-label="홈으로"
               className="shrink-0"
             >

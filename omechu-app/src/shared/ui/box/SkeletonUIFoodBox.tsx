@@ -1,7 +1,6 @@
 //! 26.01.06 작업 완료
 //! 내가 쓰려고 미리 만들어둔거라 삭제하지 마삼 ~.~ (from 이삭)
 
-"use client";
 
 export function SkeletonUIFoodBox() {
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Image from "next/image";
 import {
@@ -9,6 +9,8 @@ import {
   useSearchParams,
   usePathname,
 } from "next/navigation";
+
+import { isAxiosError } from "axios";
 
 import { useLocationAnswerStore } from "@/entities/location";
 import { useGetMenuDetail } from "@/entities/menu";
@@ -19,10 +21,8 @@ import {
   useGetRestaurants,
 } from "@/entities/restaurant";
 import {
-  BaseModal,
   Header,
   IngredientCard,
-  ModalWrapper,
   RestaurantCard,
   SkeletonRecommendedFoodCard,
   Toast,
@@ -70,10 +70,7 @@ export default function MenuDetailPage() {
   const { data, isLoading, isFetching, error } = useGetRestaurants(page);
 
   const isRestaurant404 =
-    !!error &&
-    typeof error === "object" &&
-    "response" in (error as any) &&
-    (error as any).response?.status === 404;
+    isAxiosError(error) && error.response?.status === 404;
 
   // 위치 허용 여부
   const showRestaurantLoadFail = locationDenied || isRestaurant404;
@@ -289,7 +286,7 @@ export default function MenuDetailPage() {
               type="button"
               onClick={handleLoadMore}
               disabled={isEnd || isFetching}
-              className="mr-2 mb-5 w-full text-center text-[A8A8A8] disabled:opacity-50"
+              className="mr-2 mb-5 w-full text-center text-font-placeholder disabled:opacity-50"
             >
               {isFetching
                 ? "불러오는 중..."

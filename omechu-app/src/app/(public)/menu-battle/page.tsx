@@ -163,7 +163,6 @@ export default function MenuBattlePage() {
     };
 
     try {
-      console.log("[MenuBattle] create request payload", payload);
       const result = await menuBattleAPI.createBattle(payload);
       setRoomNumber(result.battleId);
       setShowCreateModal(true);
@@ -211,8 +210,12 @@ ${shareUrl}`;
       }
     }
 
-    await navigator.clipboard.writeText(shareMessage);
-    openToast("초대 문구가 복사되었습니다.");
+    try {
+      await navigator.clipboard.writeText(shareMessage);
+      openToast("초대 문구가 복사되었습니다.");
+    } catch {
+      openToast("복사에 실패했습니다. 직접 복사해 주세요.");
+    }
   };
 
   return (

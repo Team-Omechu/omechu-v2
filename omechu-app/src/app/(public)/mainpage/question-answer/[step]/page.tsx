@@ -51,7 +51,7 @@ export default function QuestionAnswerPage() {
 
   const hanldeXClick = () => {
     setShowModal(true);
-    console.log("xclick");
+
   };
 
   useEffect(() => {

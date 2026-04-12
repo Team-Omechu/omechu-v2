@@ -1,6 +1,7 @@
-const AUTH_STORAGE_KEY = "auth-storage";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+
+const AUTH_STORAGE_KEY = "auth-storage";
 
 import type { LoginSuccessData } from "@/entities/user/api/authApi";
 import { queryClient } from "@/shared/lib/queryClient";

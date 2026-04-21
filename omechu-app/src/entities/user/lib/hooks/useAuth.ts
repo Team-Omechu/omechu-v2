@@ -1,154 +1,137 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
-import * as authApi from "@/entities/user/api/authApi";
+import {
+  requestPasswordReset as requestPasswordResetFn,
+  sendVerificationCodeEmail,
+  signInWithEmail,
+  signOut as signOutFn,
+  updatePassword,
+  verifyEmailCode,
+} from "@/entities/user/api/supabaseAuth";
+import { fetchProfile as fetchSupabaseProfile } from "@/entities/user/api/supabaseProfile";
 import type {
-  LoginFormValues,
-  SignupFormValues,
   FindPasswordFormValues,
+  LoginFormValues,
   ResetPasswordFormValues,
+  SignupFormValues,
 } from "@/entities/user/model/auth.schema";
 import { useAuthStore } from "@/entities/user/model/auth.store";
-import axiosInstance from "@/shared/lib/axiosInstance";
+import type {
+  AllergyType,
+  ExerciseType,
+  PreferType,
+} from "@/entities/user/model/profile.types";
 
-// 로그인
+const EXERCISE_MAP: Record<string, ExerciseType> = {
+  cutting: "다이어트 중",
+  bulking: "증량 중",
+  maintenance: "유지 중",
+};
+
+const PREFER_MAP: Record<string, PreferType> = {
+  korean: "한식",
+  western: "양식",
+  chinese: "중식",
+  japanese: "일식",
+  other: "다른나라",
+};
+
+async function fetchAndSetProfile(userId: string, email: string | undefined) {
+  try {
+    const { profile, prefers, allergies } = await fetchSupabaseProfile();
+    useAuthStore.getState().setUser({
+      id: userId,
+      email: email ?? undefined,
+      nickname: profile.nickname ?? "",
+      exercise: profile.exercise
+        ? (EXERCISE_MAP[profile.exercise] ?? null)
+        : null,
+      prefer: (prefers as string[])
+        .map((p) => PREFER_MAP[p])
+        .filter(Boolean) as PreferType[],
+      allergy: (
+        allergies as unknown as { allergy_min: { allergy: string } | null }[]
+      )
+        .map((a) => a.allergy_min?.allergy)
+        .filter(Boolean) as AllergyType[],
+    });
+  } catch {
+    // profile fetch 실패해도 기본 user 정보는 store에 있음
+  }
+}
+
 export const useLoginMutation = () => {
   const { login: setLoginState } = useAuthStore();
-  const queryClient = useQueryClient();
 
-  return useMutation<authApi.LoginTokens, Error, LoginFormValues>({
-    mutationFn: authApi.login,
-    onSuccess: async (tokens, variables) => {
-      // 1) 토큰 보관 (로그인 직후는 프로필 정보 없음 - prefetch로 채움)
-      const tempUser = {
-        id: tokens.userId,
-        email: tokens.email ?? variables.email,
-      };
-
-      setLoginState({
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        user: tempUser,
-      });
-
-      // 2) axios 인스턴스에 Authorization 주입 (중복 401 방지)
-      if (tokens?.accessToken) {
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${tokens.accessToken}`;
-      }
-
-      try {
-        const profile = await queryClient.fetchQuery({
-          queryKey: ["user", "profile"],
-          queryFn: authApi.getCurrentUser,
-          staleTime: 1000 * 60 * 10,
-        });
-        const currentEmail = useAuthStore.getState().user?.email;
-        useAuthStore.getState().setUser({
-          ...profile,
-          email: profile.email ?? currentEmail,
-        });
-      } catch (err) {
-        console.warn(
-          "[Auth] 프로필 prefetch 실패:",
-          err instanceof Error ? err.message : String(err),
-        );
-      }
-    },
-    onError: (error) => {
-      console.error("[Auth] 로그인 실패:", error.message);
-    },
-  });
-};
-
-// 회원가입
-export const useSignupMutation = () => {
-  const { login: setLoginState } = useAuthStore();
-  const queryClient = useQueryClient();
-
-  return useMutation<authApi.SignupSuccessData, Error, SignupFormValues>({
-    mutationFn: authApi.signup,
+  return useMutation({
+    mutationFn: (data: LoginFormValues) => signInWithEmail(data),
     onSuccess: async (data) => {
-      const newUser = {
-        id: data.id,
-        email: data.email,
-      };
+      const { user, session } = data;
+      if (!session) return;
 
       setLoginState({
-        accessToken: data.accessToken,
-        refreshToken: data.refreshToken,
-        user: newUser,
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+        user: { id: user.id, email: user.email ?? "" },
       });
 
-      if (data?.accessToken) {
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
-      }
-
-      try {
-        const profile = await queryClient.fetchQuery({
-          queryKey: ["user", "profile"],
-          queryFn: authApi.getCurrentUser,
-          staleTime: 1000 * 60 * 10,
-        });
-        const currentEmail = useAuthStore.getState().user?.email;
-        useAuthStore.getState().setUser({
-          ...profile,
-          email: profile.email ?? currentEmail,
-        });
-      } catch (err) {
-        console.warn(
-          "[Auth] 회원가입 후 프로필 prefetch 실패:",
-          err instanceof Error ? err.message : String(err),
-        );
-      }
-    },
-    onError: (error) => {
-      console.error("[Auth] 회원가입 실패:", error.message);
+      await fetchAndSetProfile(user.id, user.email ?? undefined);
     },
   });
 };
 
-// 로그아웃
+export const useSignupMutation = () => {
+  return useMutation({
+    mutationFn: async (data: SignupFormValues) => {
+      // OTP 인증 완료 후 비밀번호 설정으로 회원가입 완료
+      await updatePassword(data.password);
+    },
+  });
+};
+
 export const useLogoutMutation = () => {
-  return useMutation<void, Error>({
-    mutationFn: authApi.logout,
+  const { logout } = useAuthStore();
+
+  return useMutation({
+    mutationFn: signOutFn,
+    onSuccess: () => logout(),
+    onError: () => logout(),
   });
 };
 
-// 이메일 인증코드 전송
 export const useSendVerificationCodeMutation = () => {
-  return useMutation<authApi.SendVerificationCodeSuccessData, Error, string>({
-    mutationFn: (email) => authApi.sendVerificationCode(email),
+  return useMutation({
+    mutationFn: async (email: string) => {
+      await sendVerificationCodeEmail(email);
+      return { message: "인증번호를 전송했습니다.", code: "" };
+    },
   });
 };
 
-// 이메일 인증코드 검증
 export const useVerifyVerificationCodeMutation = () => {
-  return useMutation<
-    authApi.VerifyVerificationCodeSuccessData,
-    Error,
-    { email: string; code: string }
-  >({
-    mutationFn: (data) => authApi.verifyVerificationCode(data),
+  return useMutation({
+    mutationFn: async ({ email, code }: { email: string; code: string }) => {
+      await verifyEmailCode(email, code);
+      return { message: "이메일 인증이 완료되었습니다." };
+    },
   });
 };
 
-// 비밀번호 재설정 요청
 export const useRequestPasswordResetMutation = () => {
-  return useMutation<
-    authApi.RequestPasswordResetSuccessData,
-    Error,
-    FindPasswordFormValues
-  >({
-    mutationFn: authApi.requestPasswordReset,
+  return useMutation({
+    mutationFn: async (data: FindPasswordFormValues) => {
+      await requestPasswordResetFn(data.email);
+      return { message: "비밀번호 재설정 이메일을 발송했습니다.", token: "" };
+    },
   });
 };
 
-// 비밀번호 재설정
 export const useResetPasswordMutation = () => {
-  return useMutation<
-    string,
-    Error,
-    ResetPasswordFormValues & { token: string }
-  >({
-    mutationFn: authApi.resetPassword,
+  return useMutation({
+    mutationFn: async (data: ResetPasswordFormValues & { token: string }) => {
+      // Supabase는 URL 해시에서 세션을 자동 복구. token 파라미터 불필요.
+      await updatePassword(data.password);
+      return "";
+    },
   });
 };

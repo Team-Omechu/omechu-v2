@@ -5,12 +5,14 @@ import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 import {
-  ApiClientError,
+  type ApiClientError,
+  type SignupFormValues,
+  getAuthErrorMessage,
   useSendVerificationCodeMutation,
   useVerifyVerificationCodeMutation,
-  type SignupFormValues,
 } from "@/entities/user";
-import { Button, FormField, Input, Toast } from "@/shared";
+
+import { Button, FormField, Input, Toast, useToast } from "@/shared";
 
 export default function UserInfoFields() {
   const {
@@ -23,8 +25,7 @@ export default function UserInfoFields() {
   const [passwordConfirmBlurred, setPasswordConfirmBlurred] = useState(false);
   const [isCodeSent, setIsCodeSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const { show: showToast, message: toastMessage, triggerToast } = useToast();
   const verificationCode = watch("verificationCode");
   const email = watch("email");
 
@@ -32,12 +33,6 @@ export default function UserInfoFields() {
     useSendVerificationCodeMutation();
   const { mutate: verifyCode, isPending: isVerifying } =
     useVerifyVerificationCodeMutation();
-
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2500);
-  };
 
   const handleSendCode = () => {
     const emailToSend = getValues("email");
@@ -75,15 +70,10 @@ export default function UserInfoFields() {
             reason?: string;
             code?: string;
           };
-          let msg: string = e?.reason || e?.message || "인증에 실패했습니다.";
-          switch (e?.code) {
-            case "V001":
-              msg = e.reason || "인증번호가 올바르지 않습니다.";
-              break;
-            case "V002":
-              msg = e.reason || "인증번호가 만료되었어요. 다시 전송해 주세요.";
-              break;
-          }
+          const msg =
+            e?.reason ||
+            e?.message ||
+            getAuthErrorMessage(e?.code, "인증에 실패했습니다.");
           triggerToast(msg);
         },
       },

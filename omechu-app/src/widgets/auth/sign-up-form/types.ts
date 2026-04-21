@@ -1,4 +1,5 @@
 import type { SignupFormValues } from "@/entities/user";
+
 import type { TermsType } from "@/shared";
 
 /**

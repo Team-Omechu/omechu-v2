@@ -1,14 +1,7 @@
-import { acceptsJson, errorResponse, jsonResponse } from "@/app/api/_lib/http";
+import { errorResponse, jsonResponse } from "@/app/api/_lib/http";
+import { withErrorHandler } from "@/app/api/_lib/withErrorHandler";
 
-export async function GET(req: Request) {
-  if (!acceptsJson(req)) {
-    return errorResponse(
-      406,
-      "NOT_ACCEPTABLE",
-      "Only application/json responses are supported.",
-    );
-  }
-
+export const GET = withErrorHandler(async (req) => {
   const { searchParams } = new URL(req.url);
   const address = searchParams.get("address");
 
@@ -34,25 +27,19 @@ export async function GET(req: Request) {
     address,
   )}&key=${apiKey}`;
 
-  try {
-    const res = await fetch(url);
+  const res = await fetch(url);
 
-    if (!res.ok) {
-      return errorResponse(
-        503,
-        "UPSTREAM_UNAVAILABLE",
-        "지오코딩 상위 서비스를 일시적으로 사용할 수 없습니다.",
-        { upstreamStatus: res.status },
-        { "Retry-After": "30" },
-      );
-    }
-
-    const data = await res.json();
-
-    return jsonResponse(data);
-  } catch (err) {
-    return errorResponse(500, "INTERNAL_ERROR", "서버 오류가 발생했습니다.", {
-      detail: String(err),
-    });
+  if (!res.ok) {
+    return errorResponse(
+      503,
+      "UPSTREAM_UNAVAILABLE",
+      "지오코딩 상위 서비스를 일시적으로 사용할 수 없습니다.",
+      { upstreamStatus: res.status },
+      { "Retry-After": "30" },
+    );
   }
-}
+
+  const data = await res.json();
+
+  return jsonResponse(data);
+});

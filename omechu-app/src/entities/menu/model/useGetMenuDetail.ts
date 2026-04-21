@@ -1,7 +1,11 @@
-// /mainpage/hooks/useGetMenuDetail.ts
-import { MenuDetail } from "@/shared/config/menu";
 import { useQuery } from "@tanstack/react-query";
+
 import { getMenuDetail } from "@/entities/menu/api/getMenuDetail";
+
+import { type MenuDetail } from "@/shared/config/menu";
+
+const MENU_DETAIL_STALE_TIME_MS = 5 * 60 * 1000;
+const MENU_DETAIL_GC_TIME_MS = 5 * 60 * 1000;
 
 export function useGetMenuDetail(menuName?: string) {
   return useQuery<MenuDetail>({
@@ -9,9 +13,9 @@ export function useGetMenuDetail(menuName?: string) {
     queryFn: ({ queryKey, signal }) =>
       getMenuDetail(queryKey[1] as string, { signal }),
     enabled: !!menuName,
-    staleTime: 1000 * 60 * 5, // 5분 동안 캐시 유지
+    staleTime: MENU_DETAIL_STALE_TIME_MS,
     refetchOnWindowFocus: false,
     retry: 0,
-    gcTime: 5 * 60 * 1000,
+    gcTime: MENU_DETAIL_GC_TIME_MS,
   });
 }

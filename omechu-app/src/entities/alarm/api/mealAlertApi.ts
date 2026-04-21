@@ -1,8 +1,9 @@
 import type {
   MealAlertPatchBody,
-  MealAlertsResponse,
   MealAlertToggleResponse,
+  MealAlertsResponse,
 } from "@/entities/alarm/model/alarm.types";
+
 import { axiosInstance } from "@/shared";
 
 export const getMealAlerts = async (): Promise<MealAlertsResponse> => {

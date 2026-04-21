@@ -1,39 +1,40 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { useOnboardingStore } from "@/entities/onboarding";
+
 import { FOOD_OPTIONS } from "@/shared/constants/mypage";
+
 import {
   BaseModal,
   BottomButton,
+  Button,
   Header,
   ModalWrapper,
-  OnboardingButton,
   ProgressBar,
-} from "@/shared/index";
+} from "@/shared";
 
-const foodValueToLabel: Record<string, string> = {
+const foodValueToLabel = {
   korean: "한식",
   western: "양식",
   chinese: "중식",
   japanese: "일식",
   other: "다른나라",
-};
+} as const;
 
 interface BasicFoodFormProps {
-  onCancel: () => void;
+  cancelHref: string;
 }
 
-export function BasicFoodForm({ onCancel }: BasicFoodFormProps) {
+export function BasicFoodForm({ cancelHref }: BasicFoodFormProps) {
   const router = useRouter();
   const { prefer, togglePrefer } = useOnboardingStore();
   const [showCancleModal, setShowCancleModal] = useState(false);
 
   const selectedIndexes = FOOD_OPTIONS.map((opt, idx) =>
-    prefer.includes(foodValueToLabel[opt.value]) ? idx : -1,
+    prefer.includes(foodValueToLabel[opt.value] ?? opt.value) ? idx : -1,
   ).filter((idx) => idx !== -1);
 
   return (
@@ -48,13 +49,16 @@ export function BasicFoodForm({ onCancel }: BasicFoodFormProps) {
         <h1 className="text-foundation-grey-darker mt-16 text-center text-[28px] font-medium whitespace-pre-line">{`평소 자주 먹거나 좋아하는 \n 음식이 있나요?`}</h1>
         <div className="mt-20 flex flex-col gap-4">
           {FOOD_OPTIONS.map(({ label, value }, idx) => (
-            <OnboardingButton
+            <Button
               key={idx}
               selected={selectedIndexes.includes(idx)}
-              onClick={() => togglePrefer(foodValueToLabel[value])}
+              onClick={() => togglePrefer(foodValueToLabel[value] ?? value)}
+              height="md"
+              radius="sm"
+              className="text-body-2-regular w-[246px]"
             >
               {label}
-            </OnboardingButton>
+            </Button>
           ))}
         </div>
       </section>
@@ -72,7 +76,7 @@ export function BasicFoodForm({ onCancel }: BasicFoodFormProps) {
             isCloseButtonShow={false}
             leftButtonText="그만하기"
             rightButtonText="계속하기"
-            onLeftButtonClick={onCancel}
+            onLeftButtonClick={() => router.push(cancelHref)}
             onRightButtonClick={() => setShowCancleModal(false)}
           />
         </ModalWrapper>

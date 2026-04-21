@@ -1,12 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { logout, useAuthStore } from "@/entities/user";
-import { BaseModal, Button, Header, ModalWrapper } from "@/shared";
+
 import { ArrowIcon } from "@/shared/assets/icons";
+
+import { BaseModal, Button, Header, ModalWrapper } from "@/shared";
 
 export default function AccountSettingPage() {
   const router = useRouter();

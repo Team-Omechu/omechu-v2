@@ -4,7 +4,7 @@
 
 import Image from "next/image";
 
-import { CirclePlus, CircleMinus } from "@/shared/assets/icons/index";
+import { CircleMinus, CirclePlus } from "@/shared/assets/icons/index";
 
 interface RecommendedFoodBoxProps {
   src: string;
@@ -20,18 +20,20 @@ export function RecommendedFoodBox({
   isToggled,
 }: RecommendedFoodBoxProps) {
   return (
-    <div
+    <button
+      type="button"
       aria-label={`${title} 선택 버튼`}
+      aria-pressed={isToggled}
       onClick={onClick}
-      className="bg-brand-secondary relative h-25 w-25 rounded-xl transition-all"
+      className="bg-brand-secondary relative block h-25 w-25 rounded-xl border-0 bg-transparent p-0 text-left transition-all"
     >
-      <button className="absolute top-1 right-1">
+      <span className="absolute top-1 right-1">
         {isToggled ? (
           <CirclePlus className="w-5" currentColor="#A8A8A8" />
         ) : (
           <CircleMinus className="w-5" currentColor="#A8A8A8" />
         )}
-      </button>
+      </span>
 
       <div className="flex h-full w-full flex-col items-center justify-between rounded-2xl p-2">
         <figure className="flex h-16 w-16 items-center">
@@ -50,6 +52,6 @@ export function RecommendedFoodBox({
           {title}
         </figcaption>
       </div>
-    </div>
+    </button>
   );
 }

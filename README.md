@@ -1,9 +1,13 @@
 <div align="center">
 
-# 오메추 - 오늘 뭐 먹지?
+# 오메추 - 오늘 뭐 먹지? (Renewal)
 **사용자 상태와 취향을 바탕으로 상황 맞춤 메뉴/맛집을 추천하는 웹 서비스**
 <br/>
 *Context-aware menu & restaurant recommendation service*
+
+> 🔄 **리뉴얼 중** — 원본은 [`Team-Omechu/Omechu-web`](https://github.com/Team-Omechu/Omechu-web) (UMC 8기 팀 프로젝트, MIT).
+> 이 저장소는 개인 포폴 목적의 리뉴얼로 **Next.js 풀스택 + Supabase** 구조로 전환 중. MSA 백엔드와 Socket.IO는 제거 예정.
+> 작업 규칙·아키텍처는 [`CLAUDE.md`](./CLAUDE.md), [`AGENTS.md`](./AGENTS.md), [`docs/HARNESS_ENGINEERING.md`](./docs/HARNESS_ENGINEERING.md)를 참고.
 
 <br/>
 
@@ -63,12 +67,16 @@
 
 ## 아키텍처
 
+* **프레임워크**: Next.js 16 App Router + Turbopack (모놀리스 풀스택)
+* **아키텍처 패턴**: FSD 4계층 (`app → widgets → entities → shared`) — ESLint로 레이어 경계 + Public API barrel 강제
 * **서버 상태**: TanStack Query로 캐싱/무효화/낙관적 업데이트/무한 스크롤 관리
 * **클라이언트 상태**: Zustand로 온보딩 진행/모달/뷰 로컬 상태 관리
 * **네트워크 계층 분리**: `axiosInstance`(인증) · `axiosPublicInstance`(공개 업로드)
-* **실시간 통신**: Socket.IO로 메뉴 배틀 실시간 대결 처리
+* **실시간 통신**: Socket.IO → **Supabase Realtime으로 마이그레이션 예정**
+* **인증**: JWT → **Supabase Auth로 마이그레이션 예정**
 * **이미지 안정화**: 한글 파일명 **NFC 정규화**, 확장자 소문자, onError 폴백/재시도
 * **API Routes**: Google Places/Geocode 프록시로 API 키 보호
+* **하네스 엔지니어링**: `pnpm validate:ci`가 lint + typecheck + format + `harness:check`(meta-check) + Vitest 유닛 + Playwright smoke까지 전부 CI 게이트
 
 ```mermaid
 flowchart LR
@@ -160,24 +168,37 @@ flowchart LR
 
 ```bash
 # 1) 클론
-git clone https://github.com/Team-Omechu/Omechu-web.git
+git clone https://github.com/IISweetHeartII/Omechu-web.git
 cd Omechu-web/omechu-app
 
-# 2) 패키지 설치
+# 2) 패키지 설치 (pnpm 강제 — npm/yarn 금지)
 pnpm install
 
 # 3) 개발 서버
-pnpm dev          # http://localhost:3000
+pnpm dev             # http://localhost:3000
 
 # 4) 빌드/미리보기
 pnpm build
 pnpm start
+
+# 5) 검증 파이프라인
+pnpm validate        # lint + typecheck + format:check
+pnpm validate:ci     # validate + harness:check + test:unit (CI 동일)
+pnpm test:unit       # Vitest
+pnpm test:e2e        # Playwright smoke
+pnpm harness:check   # 하네스 자기 점검 (필수 파일·스크립트·CI 단계 존재 검증)
 ```
+
+> Node.js 24+, pnpm 10.33+ 필요.
 
 ### 환경 변수 예시 (`.env.local`)
 
 ```env
 NEXT_PUBLIC_API_URL=https://api.example.com
+SUPABASE_PROJECT_REF=xztldvunnasjaxnzqpct
+NEXT_PUBLIC_SUPABASE_URL=https://xztldvunnasjaxnzqpct.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_TW1dRfU6xM4uxpt2jodk8w_AIO67EMq
+SUPABASE_SECRET_KEY=your_supabase_secret_key_here
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
 GOOGLE_MAP_SERVER_API_KEY=...
 NEXT_PUBLIC_EMBED_API_URL=https://embed.example.com
@@ -186,6 +207,8 @@ SENTRY_AUTH_TOKEN=...
 SENTRY_ORG=omechu
 SENTRY_PROJECT=omechu-fe
 ```
+
+> `NEXT_PUBLIC_SUPABASE_*` 값은 클라이언트/SSR 공개 설정용입니다. `SUPABASE_SECRET_KEY`는 서버 전용이며 git에 커밋하면 안 됩니다.
 
 > 이미지 최적화를 위해 `sharp`가 자동으로 설치됩니다.
 
@@ -217,31 +240,30 @@ src/
 │   ├── not-found.tsx           # 404 페이지
 │   └── loading.tsx             # 글로벌 로딩
 │
-├── widgets/                    # 복합 UI 블록 (여러 entities 조합)
-│   ├── LoginModal/             #   로그인 모달
-│   ├── MenuCard/               #   메뉴 카드
-│   ├── RandomDraw/             #   랜덤 드로우 셀렉터
-│   ├── RandomRecommendModal/   #   랜덤 추천 모달
-│   ├── TagCard/                #   태그 카드
+├── widgets/                    # 복합 UI 블록 (여러 entities 조합, kebab-case 강제)
 │   ├── auth/                   #   인증 관련 위젯
+│   ├── login-modal/            #   로그인 모달
 │   ├── mainpage/               #   메인페이지 위젯
-│   ├── menubattle/             #   메뉴 배틀 (BattleBoard, BattleResult)
+│   ├── menu-battle/            #   메뉴 배틀 (BattleBoard, BattleResult, Roulette)
+│   ├── menu-card/              #   메뉴 카드
 │   ├── mypage/                 #   마이페이지 위젯
-│   └── step/                   #   온보딩 단계 위젯
+│   ├── random-draw/            #   랜덤 드로우 셀렉터
+│   ├── random-recommend-modal/ #   랜덤 추천 모달
+│   ├── step/                   #   온보딩 단계 위젯
+│   └── tag-card/               #   태그 카드
 │
-├── entities/                   # 비즈니스 엔티티 (12개 도메인)
-│   ├── user/                   #   사용자 인증/프로필
+├── entities/                   # 비즈니스 엔티티 (kebab-case 강제)
+│   ├── alarm/                  #   알림 설정
+│   ├── location/               #   위치 정보
 │   ├── menu/                   #   메뉴 데이터
+│   ├── menu-battle/            #   메뉴 배틀
+│   ├── mukburim/               #   먹부림 기록
+│   ├── onboarding/             #   온보딩 플로우
+│   ├── question/               #   추천 질문/응답
+│   ├── random-draw/            #   랜덤 드로우
 │   ├── restaurant/             #   맛집 데이터
 │   ├── tag/                    #   음식 취향 태그
-│   ├── question/               #   추천 질문/응답
-│   ├── onboarding/             #   온보딩 플로우
-│   ├── mukburim/               #   먹부림 기록
-│   ├── menubattle/             #   메뉴 배틀
-│   ├── randomDraw/             #   랜덤 드로우
-│   ├── location/               #   위치 정보
-│   ├── alarm/                  #   알림 설정
-│   └── mypage/                 #   마이페이지
+│   └── user/                   #   사용자 인증/프로필
 │
 └── shared/                     # 재사용 코드
     ├── ui/                     #   공통 컴포넌트 (Button, Modal, Header, Toast 등)
@@ -259,6 +281,7 @@ src/
 ```
 
 > 원칙: **app -> widgets -> entities -> shared** (상위->하위만 import 가능)
+> 다른 슬라이스 접근은 **반드시 각 슬라이스의 `index.ts` Public API barrel 경유** — deep import는 ESLint error로 차단.
 
 ---
 

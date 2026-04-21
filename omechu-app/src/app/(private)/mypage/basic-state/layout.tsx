@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { useOnboardingStore } from "@/entities/onboarding/model/onboarding.store";
+import { useOnboardingStore } from "@/entities/onboarding";
 import { useProfile } from "@/entities/user";
 
 export default function BasicStateLayout({

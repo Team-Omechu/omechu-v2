@@ -1,16 +1,18 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { ResetPasswordForm } from "@/widgets/auth";
 
 import {
-  ApiClientError,
-  useResetPasswordMutation,
   type ResetPasswordFormValues,
+  useResetPasswordMutation,
 } from "@/entities/user";
+
+import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
+
 import { BaseModal, Header, ModalWrapper } from "@/shared";
-import { ResetPasswordForm } from "@/widgets/auth";
 
 export default function ResetPasswordPage() {
   return (
@@ -27,20 +29,25 @@ export default function ResetPasswordPage() {
 }
 
 function ResetPasswordClient() {
+  const [isReady, setIsReady] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
   const { mutateAsync: resetPassword } = useResetPasswordMutation();
 
+  useEffect(() => {
+    const sb = createSupabaseBrowserClient();
+    const {
+      data: { subscription },
+    } = sb.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setIsReady(true);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   const handleFormSubmit = async (data: ResetPasswordFormValues) => {
-    if (!token) {
-      throw new ApiClientError(
-        "유효하지 않은 링크입니다. 이메일의 링크를 다시 확인해 주세요.",
-        "E001",
-      );
-    }
-    await resetPassword({ ...data, token });
+    await resetPassword({ ...data, token: "" });
     setIsModalOpen(true);
   };
 
@@ -49,12 +56,19 @@ function ResetPasswordClient() {
     router.push("/login");
   };
 
+  if (!isReady) {
+    return (
+      <main className="flex min-h-dvh items-center justify-center">
+        <p className="text-font-medium">링크를 확인하는 중...</p>
+      </main>
+    );
+  }
+
   return (
     <main className="flex flex-1 flex-col">
       <Header />
 
       <div className="flex flex-col px-5">
-        {/* 타이틀 영역 */}
         <div className="flex flex-col items-center gap-3 py-5">
           <h1 className="text-body-2-bold text-font-high text-center">
             비밀번호 재설정
@@ -64,7 +78,6 @@ function ResetPasswordClient() {
           </p>
         </div>
 
-        {/* 폼 영역 */}
         <div className="pt-8">
           <ResetPasswordForm onFormSubmit={handleFormSubmit} />
         </div>

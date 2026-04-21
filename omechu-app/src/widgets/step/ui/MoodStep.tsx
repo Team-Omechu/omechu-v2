@@ -2,17 +2,19 @@
 
 import { useRouter } from "next/navigation";
 
-import { QuestionAnswerLayout } from "./QuestionAnswerLayout";
 import { moodOptions, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
-import { ListButton } from "@/shared";
+
+import { Button } from "@/shared";
+
+import { QuestionAnswerLayout } from "./QuestionAnswerLayout";
 
 export function MoodStep() {
   const router = useRouter();
   const { mood, setMood } = useQuestionAnswerStore();
   const { setMoodTag } = useTagStore();
 
-  const handleSelect = (value: number, label: string, description: string) => {
+  const handleSelect = (label: string, description: string) => {
     setMood(label);
     setMoodTag(label, description);
     router.push("/mainpage/question-answer/4");
@@ -21,14 +23,17 @@ export function MoodStep() {
   return (
     <QuestionAnswerLayout title="날씨는 어떤가요?">
       {moodOptions.map(({ label, value, description }) => (
-        <ListButton
+        <Button
           key={value}
-          onClick={() => handleSelect(value, label, description)}
-          isSelected={mood === label}
-          textSize="base"
+          onClick={() => handleSelect(label, description)}
+          selected={mood === label}
+          width="lg"
+          height="auto"
+          radius="md"
+          className="min-h-12 px-4 py-2"
         >
           {label}
-        </ListButton>
+        </Button>
       ))}
     </QuestionAnswerLayout>
   );

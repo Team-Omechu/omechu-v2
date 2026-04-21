@@ -1,11 +1,14 @@
-import { useQuestionAnswerStore } from "@/shared/store/questionAnswer.store";
-import { whoOptions } from "@/shared/config/questionOptions";
 import { useQuery } from "@tanstack/react-query";
-import {
-  MenuListResponse,
-  RecommendMenuRequest,
-} from "@/entities/menu/config/resultData";
+
 import { getMenu } from "@/entities/menu/api/getMenu";
+import {
+  type MenuListResponse,
+  type RecommendMenuRequest,
+} from "@/entities/menu/config/resultData";
+
+import { useQuestionAnswerStore } from "@/shared/store/questionAnswer.store";
+
+const MENU_STALE_TIME_MS = 5 * 60 * 1000;
 
 export function useGetMenu() {
   const { mealTime, purpose, mood, who, budget, exceptions } =
@@ -22,6 +25,6 @@ export function useGetMenu() {
   return useQuery<MenuListResponse>({
     queryKey: ["recommendMenu", payload],
     queryFn: () => getMenu(payload),
-    staleTime: 1000 * 60 * 5,
+    staleTime: MENU_STALE_TIME_MS,
   });
 }

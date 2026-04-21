@@ -1,31 +1,32 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { useOnboardingStore } from "@/entities/onboarding";
+
 import { STATE_OPTIONS } from "@/shared/constants/mypage";
+
 import {
   BaseModal,
   BottomButton,
+  Button,
   Header,
   ModalWrapper,
-  OnboardingButton,
   ProgressBar,
-} from "@/shared/index";
+} from "@/shared";
 
-const exerciseValueToLabel: Record<string, string> = {
+const exerciseValueToLabel = {
   diet: "다이어트 중",
   bulk: "증량 중",
   maintain: "유지 중",
-};
+} as const;
 
 interface BasicStateFormProps {
-  onCancel: () => void;
+  cancelHref: string;
 }
 
-export function BasicStateForm({ onCancel }: BasicStateFormProps) {
+export function BasicStateForm({ cancelHref }: BasicStateFormProps) {
   const router = useRouter();
   const { exercise, setExercise } = useOnboardingStore();
   const [showCancleModal, setShowCancleModal] = useState(false);
@@ -48,13 +49,16 @@ export function BasicStateForm({ onCancel }: BasicStateFormProps) {
         <h1 className="text-foundation-grey-darker mt-16 text-center text-[28px] font-medium whitespace-pre-line">{`지금 어떤 운동 상태에 \n 가까운가요?`}</h1>
         <div className="mt-20 flex flex-col gap-4">
           {STATE_OPTIONS.map(({ label, value }, idx) => (
-            <OnboardingButton
+            <Button
               key={idx}
               selected={selectedIndex === idx}
-              onClick={() => setExercise(exerciseValueToLabel[value])}
+              onClick={() => setExercise(exerciseValueToLabel[value] ?? value)}
+              height="md"
+              radius="sm"
+              className="text-body-2-regular w-[246px]"
             >
               {label}
-            </OnboardingButton>
+            </Button>
           ))}
         </div>
       </section>
@@ -72,7 +76,7 @@ export function BasicStateForm({ onCancel }: BasicStateFormProps) {
             isCloseButtonShow={false}
             leftButtonText="그만하기"
             rightButtonText="계속하기"
-            onLeftButtonClick={onCancel}
+            onLeftButtonClick={() => router.push(cancelHref)}
             onRightButtonClick={() => setShowCancleModal(false)}
           />
         </ModalWrapper>

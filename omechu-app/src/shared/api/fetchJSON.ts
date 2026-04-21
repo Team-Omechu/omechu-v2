@@ -1,57 +1,81 @@
-type ApiError = {
+import type { AxiosRequestHeaders, Method } from "axios";
+
+import { axiosInstance } from "@/shared/lib/axiosInstance";
+import { HttpError } from "@/shared/lib/httpError";
+
+type WrappedError = {
   reason?: string;
   message?: string;
+  errorCode?: string;
+  code?: string;
 };
 
 type WrappedResponse<T> = {
   resultType: "SUCCESS" | "FAIL";
   success?: T;
-  error?: ApiError;
+  error?: WrappedError;
 };
 
+function isWrapped(value: unknown): value is WrappedResponse<unknown> {
+  return typeof value === "object" && value !== null && "resultType" in value;
+}
+
+function toAxiosHeaders(
+  headers: RequestInit["headers"],
+): AxiosRequestHeaders | undefined {
+  if (!headers) return undefined;
+  if (headers instanceof Headers) {
+    const out: Record<string, string> = {};
+    headers.forEach((v, k) => (out[k] = v));
+    return out as AxiosRequestHeaders;
+  }
+  if (Array.isArray(headers)) {
+    return Object.fromEntries(headers) as AxiosRequestHeaders;
+  }
+  return headers as AxiosRequestHeaders;
+}
+
+/**
+ * 래핑/비래핑 REST API 공용 호출.
+ * - `resultType` 래핑된 응답은 `success`를 자동 언래핑.
+ * - 리스트 엔드포인트의 404는 빈 배열로 정상 종료.
+ * - 그 외 에러는 axios interceptor에서 `HttpError`로 이미 정규화됨.
+ */
 export async function fetchJSON<T>(
   path: string,
   options?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${path}`, {
-    credentials: "include",
-    ...options,
-  });
-
-  let data: unknown = null;
   try {
-    data = await res.json();
-  } catch {
-    // body 없는 경우
-  }
+    const res = await axiosInstance.request<unknown>({
+      url: path,
+      method: (options?.method ?? "GET") as Method,
+      data: options?.body,
+      headers: toAxiosHeaders(options?.headers),
+    });
 
-  // 1️⃣ resultType 기반 API
-  if (typeof data === "object" && data !== null && "resultType" in data) {
-    const wrapped = data as WrappedResponse<T>;
+    const data = res.data;
 
-    if (wrapped.resultType !== "SUCCESS") {
-      throw new Error(
-        wrapped.error?.reason ||
-          wrapped.error?.message ||
-          "서버 요청에 실패했습니다.",
-      );
+    if (isWrapped(data)) {
+      const wrapped = data as WrappedResponse<T>;
+      if (wrapped.resultType !== "SUCCESS") {
+        throw new HttpError({
+          status: res.status,
+          code: wrapped.error?.code ?? wrapped.error?.errorCode ?? "API_FAIL",
+          message:
+            wrapped.error?.reason ??
+            wrapped.error?.message ??
+            "서버 요청에 실패했습니다.",
+        });
+      }
+      return wrapped.success as T;
     }
 
-    return wrapped.success as T;
-  }
-
-  // 2️⃣ 일반 REST API
-  if (!res.ok) {
-    // ✅ 리스트 API에서 404 = 데이터 없음 (정상 종료)
-    if (res.status === 404) {
+    return data as T;
+  } catch (err) {
+    // 리스트 API 404 = 데이터 없음 (정상 종료)
+    if (err instanceof HttpError && err.status === 404) {
       return [] as T;
     }
-
-    const errorData = data as ApiError | null;
-    throw new Error(
-      errorData?.message || errorData?.reason || "서버 요청에 실패했습니다.",
-    );
+    throw err;
   }
-
-  return data as T;
 }

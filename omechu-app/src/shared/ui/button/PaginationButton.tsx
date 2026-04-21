@@ -1,8 +1,7 @@
 // ! 26.01.04 작업 완료
-
 import Image from "next/image";
 
-import { cva, type VariantProps } from "class-variance-authority";
+import { type VariantProps, cva } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/cn.util";
 
@@ -52,6 +51,7 @@ export function PaginationButton({
           alt={alt}
           width={7}
           height={10}
+          style={{ width: "auto", height: "auto" }}
           className={direction === "left" ? "" : "scale-x-[-1]"}
         />
       </div>

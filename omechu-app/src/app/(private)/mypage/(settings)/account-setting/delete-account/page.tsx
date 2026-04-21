@@ -1,19 +1,20 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import clsx from "clsx";
 
 import {
-  withdrawAccount,
+  ApiClientError,
   useAuthStore,
   useProfile,
-  ApiClientError,
+  withdrawAccount,
 } from "@/entities/user";
-import { BaseModal, Button, Header, ModalWrapper, Toast } from "@/shared";
+
 import { CheckIcon } from "@/shared/assets/icons";
+
+import { BaseModal, Button, Header, ModalWrapper, Toast } from "@/shared";
 
 const WITHDRAW_REASONS = [
   "선택해 주세요.",
@@ -151,13 +152,26 @@ export default function DeleteAccountPage() {
             </button>
 
             {showDropDown && (
-              <ul className="border-font-disabled absolute z-50 mt-2 flex h-fit w-full flex-col gap-2 rounded-[10px] border bg-white p-2.5">
+              <ul
+                role="listbox"
+                className="border-font-disabled absolute z-50 mt-2 flex h-fit w-full flex-col gap-2 rounded-[10px] border bg-white p-2.5"
+              >
                 {WITHDRAW_REASONS.map((reason) => (
                   <li
                     key={reason}
+                    role="option"
+                    aria-selected={selectedReason === reason}
+                    tabIndex={0}
                     onClick={() => {
                       setSelectedReason(reason);
                       setShowDropDown(false);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setSelectedReason(reason);
+                        setShowDropDown(false);
+                      }
                     }}
                     className="flex cursor-pointer items-center gap-1.5 py-1"
                   >

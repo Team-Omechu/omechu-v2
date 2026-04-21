@@ -5,6 +5,7 @@ import React from "react";
 import { useFormContext } from "react-hook-form";
 
 import type { SignupFormValues } from "@/entities/user";
+
 import { CheckBox } from "@/shared";
 
 import type { ModalType } from "../types";

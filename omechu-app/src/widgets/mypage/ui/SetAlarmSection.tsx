@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 
 import { getMealAlerts } from "@/entities/alarm";
+
 import { ArrowIcon } from "@/shared/assets/icons/index";
 
 export function SetAlarmSection() {

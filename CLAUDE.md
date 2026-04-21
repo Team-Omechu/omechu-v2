@@ -1,228 +1,193 @@
+@AGENTS.md
+
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
+Claude Code(claude.ai/code)가 이 저장소 작업 시 참고할 가이드.
 
 ## Overview
 
-Omechu (오메추 - "오늘 뭐 먹지?") is a food recommendation web application that provides personalized menu and restaurant recommendations based on user preferences, context, and conditions.
+**오메추** (오늘 뭐 먹지?) — 사용자 상태와 취향을 반영해 맞춤 메뉴·맛집을 추천하는 Next.js 풀스택 웹 서비스.
+
+원본: UMC 8기 팀 프로젝트 (`Team-Omechu/Omechu-web`, MIT)
+현재: 개인 포폴·여친 PM 포폴 보조 목적 **Next.js + Supabase 리뉴얼**.
 
 ## Tech Stack
 
-- **Framework**: Next.js 16 (App Router, Turbopack)
-- **Language**: TypeScript (strict mode)
-- **Styling**: Tailwind CSS 4 (CSS-first config in `globals.css`)
-- **State**: Zustand (client), TanStack React Query (server)
+- **Framework**: Next.js 16 App Router (Turbopack)
+- **Language**: TypeScript (strict + `noUncheckedIndexedAccess`, `noImplicitOverride`, `noFallthroughCasesInSwitch`)
+- **Styling**: Tailwind CSS 4 (CSS-first config)
+- **State**: Zustand (client) / TanStack Query (server)
 - **Forms**: React Hook Form + Zod 4
-- **API**: Axios with JWT auth interceptors
-- **Monitoring**: Sentry + Vercel Analytics + Vercel Speed Insights
-- **Package Manager**: pnpm (only — `npm`/`yarn` 금지)
+- **Testing**: Vitest (unit) / Playwright (e2e smoke)
+- **Monitoring**: Sentry + Vercel Analytics + Speed Insights
+- **Package Manager**: pnpm (강제 — `npm`/`yarn` 금지)
+- **Deploy**: Vercel Hobby + Supabase Free (마이그레이션 진행 중)
 
-## Scripts
+## 디렉토리 구조
 
-All commands run from `omechu-app/` directory:
+모든 커맨드는 `omechu-app/`에서 실행.
+
+```
+omechu-renewal/
+├── omechu-app/              # Next.js app
+│   ├── src/
+│   ├── e2e/                 # Playwright smoke
+│   ├── docs/CONVENTIONS.md  # 코드 스타일 + Git + Lint Policy
+│   ├── eslint.config.mjs
+│   ├── commitlint.config.mjs
+│   └── ...
+├── .husky/                  # Git hooks (pre-commit, commit-msg, pre-push)
+├── .github/workflows/ci.yml
+├── AGENTS.md                # AI agent 규칙 (Claude Code / Codex 등)
+├── CLAUDE.md                # 이 파일
+└── README.md                # 프로젝트 설명
+```
+
+## Scripts (in `omechu-app/`)
 
 ```bash
-pnpm dev          # 개발 서버 (Turbopack) — http://localhost:3000
-pnpm build        # 프로덕션 빌드
-pnpm start        # 프로덕션 서버
-pnpm lint         # ESLint 검사
-pnpm lint:fix     # ESLint 자동 수정
-pnpm format       # Prettier 포맷팅
-pnpm format:check # Prettier 검사만
-pnpm typecheck    # TypeScript 타입 검사
-pnpm validate     # lint + typecheck + format 전체 검증
-pnpm prepare      # Husky hooks 설치
+pnpm dev             # dev server (http://localhost:3000)
+pnpm build
+pnpm start
+
+pnpm lint            # ESLint
+pnpm lint:fix        # ESLint 자동 수정
+pnpm format          # Prettier 쓰기
+pnpm format:check    # Prettier 검사
+pnpm typecheck       # tsc --noEmit
+
+pnpm test            # = test:unit
+pnpm test:unit       # Vitest (one-shot)
+pnpm test:unit:watch # Vitest watch
+pnpm test:e2e        # Playwright
+
+pnpm validate        # lint + typecheck + format:check
+pnpm validate:ci     # validate + test:unit (CI용)
 ```
 
 ## Architecture — FSD 4-Layer
 
 ```
-omechu-app/src/
-├── app/           # Next.js App Router — pages, layouts, route handlers
-├── widgets/       # 조합형 UI 블록 (Header, BottomNav 등)
-├── entities/      # 비즈니스 엔티티 (user, menu, restaurant 등)
-└── shared/        # 공용 레이어
-    ├── api/       # Axios instance, fetch 유틸
-    ├── config/    # 상수, 메뉴 설정
-    ├── constants/ # 사이트 상수 (URL, 테마 등)
-    ├── lib/       # 유틸리티
-    ├── store/     # Zustand stores
-    └── ui/        # 디자인 시스템 컴포넌트
+app → widgets → entities → shared
 ```
 
-### Import Rules (엄격)
+### Import Rules (ESLint error 차단)
+
+| From | Can import | Cannot |
+|------|-----------|--------|
+| `shared` | external only | `app`, `widgets`, `entities` |
+| `entities` | `shared` | `app`, `widgets` |
+| `widgets` | `entities`, `shared` | `app` |
+| `app` | `widgets`, `entities`, `shared` | — |
+
+**Public API 강제**: 다른 슬라이스 내부 경로(`@/entities/user/model/*` 등) 직접 찌르기 금지. 반드시 `@/entities/{slice}`의 `index.ts` barrel 경유.
+
+```ts
+// ❌ Deep import (ESLint error)
+import { useAuthStore } from "@/entities/user/model/auth.store";
+
+// ✅ Barrel
+import { useAuthStore } from "@/entities/user";
+```
+
+**슬라이스 네이밍**: `src/widgets/*`, `src/entities/*` 하위는 kebab-case 강제 (`check-file/folder-naming-convention`).
+
+### Path Aliases
 
 ```
-app → widgets, entities, shared
-widgets → entities, shared
-entities → shared
-shared → (external packages only)
-```
-
-- **상위 레이어가 하위 레이어를 import**: OK
-- **하위 레이어가 상위 레이어를 import**: NEVER — ESLint가 error로 차단
-- **같은 레이어 간 cross-import**: NEVER
-
-### Path Aliases (tsconfig.json)
-
-```typescript
 "@/*"          → "./src/*"
 "@/app/*"      → "./src/app/*"
-"@/entities/*" → "./src/entities/*"
 "@/widgets/*"  → "./src/widgets/*"
+"@/entities/*" → "./src/entities/*"
 "@/shared/*"   → "./src/shared/*"
 ```
 
 ### Entity Module Structure
 
 ```
-entity/
-├── api/          # API calls
-├── model/        # State management (hooks, stores)
-├── ui/           # Components
-├── lib/          # Utils & helpers
-├── types/        # Type definitions
-└── index.ts      # Barrel exports (cross-layer import 진입점)
+{slice}/
+├── api/          # API calls (axios)
+├── model/        # hooks, stores, types, schemas
+├── ui/           # components
+├── lib/          # utils
+├── config/       # constants
+└── index.ts      # Public API barrel
 ```
 
 ## Code Conventions
 
-### File Naming
+### Naming
 
-| 대상 | 규칙 | 예시 |
-|------|------|------|
-| 컴포넌트 (.tsx) | PascalCase | `MenuCard.tsx`, `UserProfile.tsx` |
-| Next.js 예약 파일 | lowercase | `page.tsx`, `layout.tsx`, `loading.tsx` |
-| 훅 | camelCase (use 접두사) | `useAuth.ts`, `useMenuList.ts` |
-| 유틸/라이브러리 | camelCase | `axiosInstance.ts`, `formatDate.ts` |
-| 타입 | camelCase | `menu.ts`, `user.ts` |
+- 컴포넌트 `.tsx`: PascalCase (`MenuCard.tsx`)
+- Next 예약 파일: lowercase (`page.tsx`, `layout.tsx`, `global-error.tsx` 등)
+- 훅 `.ts`: camelCase + `use*` (`useAuth.ts`)
+- 유틸/API `.ts`: camelCase (`axiosInstance.ts`, `authApi.ts`)
+- 타입 파일: `*.types.ts`
+- 슬라이스 폴더: kebab-case
+- 상수: UPPER_SNAKE_CASE
+- 타입/인터페이스: PascalCase
 
-ESLint `check-file` 플러그인이 자동으로 강제함.
+상세: `omechu-app/docs/CONVENTIONS.md`.
 
 ### Component Rules
 
-- **function declaration** 사용 (arrow function export 금지)
-- `'use client'`는 필요한 곳에만 최소한으로
+- `function` 선언 사용 (arrow export 지양)
+- `'use client'` 는 필요한 곳만 최소한으로
 - Server Component 우선
-
-```tsx
-// Good
-export default function MenuCard({ name }: MenuCardProps) {
-  return <div>{name}</div>;
-}
-
-// Bad
-const MenuCard = ({ name }: MenuCardProps) => <div>{name}</div>;
-export default MenuCard;
-```
-
-### Import Ordering (Prettier 자동 정렬)
-
-```typescript
-// 1. React / Next.js
-import { useState } from "react";
-import Image from "next/image";
-
-// 2. 외부 패키지
-import { useQuery } from "@tanstack/react-query";
-
-// 3. 내부 레이어 (FSD 순서)
-import { SomeWidget } from "@/widgets/some-widget";
-import { useAuth } from "@/entities/user";
-import { Button } from "@/shared/ui";
-
-// 4. 상대 경로
-import { helper } from "./helper";
-```
-
-Prettier commit 시 자동 정렬. 수동으로 순서 맞출 필요 없음.
 
 ### Styling
 
-- Tailwind 유틸리티 클래스 사용
-- 인라인 스타일 금지
-- `cn()` (`clsx` + `tailwind-merge`) 으로 조건부 클래스 병합
-- CVA로 variants 관리 (`shared/ui` 컴포넌트)
+- Tailwind 유틸리티 클래스
+- 인라인 style 금지
+- 조건부 클래스는 `cn()` (`clsx` + `tailwind-merge`)
+- variants는 CVA
 - 모바일 고정 레이아웃: `max-w-120 min-w-93.75` (375px 기준)
 
 ### Error Handling
 
-- `console.log` 금지 — `console.warn`, `console.error`만 허용 (ESLint 강제)
-- API 에러는 명시적으로 처리
-- `any` 타입 최소화 (ESLint warn)
+- `console.log` 금지 (ESLint warn) — `console.warn`, `console.error`만
+- API 에러 명시 처리
+- `any` 사용 최소화 (ESLint warn)
 
-## Core Architecture Patterns
+## Authentication
 
-### Authentication
+- JWT + Axios interceptor (refresh token queue)
+- Zustand persist (localStorage)
+- Client-side 보호: `app/(private)/layout.tsx`의 `ProtectedRoute`
+- Supabase Auth 전환 예정
 
-- JWT-based with automatic token refresh
-- Access token in Zustand store (persisted to localStorage)
-- Axios interceptor handles 401 errors with token refresh queue
-- Client-side route protection in `ClientLayout.tsx`
+## State Management
 
-Key files:
-- Auth store: `src/entities/user/model/auth.store.ts`
-- Axios instance: `src/shared/lib/axiosInstance.ts`
+- Zustand stores (persist middleware)
+  - `auth.store.ts`, `onboarding.store.ts`, `tagData.store.ts`, `questionAnswer.store.ts`, `locationAnswer.store.ts`
+- Server state: TanStack React Query (caching, infinite query, optimistic mutation)
 
-### State Management
+## API Layer
 
-**Zustand stores** (with persist middleware):
-- `auth.store.ts` — Authentication state
-- `onboarding.store.ts` — Multi-step onboarding flow
-- `tagData.store.ts` — Food preference tags
-- `questionAnswer.store.ts` — Recommendation questionnaire
-- `userInfoSetup.store.ts` — User profile setup
+- Centralized Axios instance (`src/shared/lib/axiosInstance.ts`)
+- Base URL: `NEXT_PUBLIC_API_URL`
+- Response wrapper: `{ resultType, error, success }`
+- `fetchJSON` 유틸: `resultType` 자동 언래핑 + 404 → `[]`
+- Next Route Handlers (`src/app/api/`): Google Places / Geocode 프록시
 
-### API Layer
+## Git / Husky
 
-- Centralized Axios instance with interceptors
-- Base URL from `NEXT_PUBLIC_API_URL`
-- Response format: `{ resultType, error, success }`
-- React Query for caching/mutations
-- `fetchJSON` 유틸: resultType 래핑 자동 처리, 404 → `[]` 반환
+- `.husky/pre-commit`: lint-staged (`eslint --fix → prettier --write → tsc --noEmit`)
+- `.husky/commit-msg`: commitlint (Conventional Commits)
+- `.husky/pre-push`: `pnpm validate` 게이트
 
-### Zod v4 Syntax
-
-```typescript
-// v4 정확한 문법
-z.enum(["a", "b"], { message: "에러 메시지" });
-// 틀린 문법 (v3)
-z.enum(["a", "b"], { errorMap: () => ({ message: "..." }) });
-```
-
-## Git Strategy
-
-- **브랜치**: `develop` → `main` PR 방식
-- **커밋**: pre-commit hook이 자동 검증 후 커밋
-- **커밋 메시지**: `type: 설명` (한국어/영어 혼용 가능)
-
-### Pre-commit 검증 체인
-
-```
-1. eslint --fix       (lint + auto-fix)
-2. prettier --write   (format)
-3. tsc --noEmit       (type check)
-```
-
-세 단계 모두 통과해야 커밋 가능. `git commit --no-verify` 사용 금지.
-
-## Code Quality Gates
-
-| 도구 | 역할 | 레벨 |
-|------|------|------|
-| ESLint (check-file) | 파일명 컨벤션 | warn |
-| ESLint (FSD rules) | 레이어 import 위반 | error |
-| ESLint (eqeqeq) | `==` 사용 | error |
-| ESLint (no-console) | console.log | warn |
-| ESLint (prettier) | 포맷 불일치 | error |
-| tsc --noEmit | 타입 에러 | error |
+**우회 금지**: `git commit --no-verify`, `git push --no-verify`, `SKIP_*` 환경변수 모두 금지. CI가 최종 게이트.
 
 ## Environment Variables
 
 ```bash
 NEXT_PUBLIC_API_URL=<backend-api-url>
+SUPABASE_PROJECT_REF=xztldvunnasjaxnzqpct
+NEXT_PUBLIC_SUPABASE_URL=https://xztldvunnasjaxnzqpct.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_TW1dRfU6xM4uxpt2jodk8w_AIO67EMq
+SUPABASE_SECRET_KEY=<server-only-supabase-secret-key>
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=<google-maps-api-key>
-GOOGLE_MAP_SERVER_API_KEY=<google-map-server-api-key>
+GOOGLE_MAP_SERVER_API_KEY=<server-side-google-key>
 NEXT_PUBLIC_EMBED_API_URL=<embed-api-url>
 NEXT_PUBLIC_SENTRY_DSN=<sentry-dsn>
 SENTRY_AUTH_TOKEN=<sentry-auth-token>
@@ -231,8 +196,25 @@ SENTRY_PROJECT=omechu-fe
 NEXT_PUBLIC_SITE_URL=https://omechu.log8.kr
 ```
 
+`NEXT_PUBLIC_SUPABASE_*`는 브라우저/SSR용 공개 설정.
+`SUPABASE_SECRET_KEY`는 서버 전용. 절대 클라이언트 코드나 공개 저장소에 넣지 말 것.
+
+테스트 환경에선 `.env.test` 사용. `.env.local`에 의존하지 말 것.
+
 ## Image Handling
 
-- AWS S3 for uploads
-- Next.js `<Image>` with `remotePatterns` configured
-- Korean filenames: NFC normalization 필요
+- S3 / Google Places (마이그레이션 시 Supabase Storage로 이전 예정)
+- `next/image` + `remotePatterns` 등록
+- 한글 파일명: NFC 정규화
+
+## 리뉴얼 상태
+
+- [x] FSD 4계층 + Public API barrel 강제
+- [x] ESLint / Prettier / Husky / Commitlint / CI 정비
+- [x] tsconfig strict 확장 (noUncheckedIndexedAccess 등)
+- [x] Vitest / Playwright smoke 인프라
+- [ ] Socket.IO 배틀 → Supabase Realtime
+- [ ] JWT + Redis → Supabase Auth
+- [ ] MySQL → Supabase Postgres
+- [ ] S3 → Supabase Storage
+- [ ] 개인화 추천 엔진 고도화

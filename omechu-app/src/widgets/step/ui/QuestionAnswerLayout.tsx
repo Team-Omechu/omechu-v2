@@ -16,7 +16,7 @@ export function QuestionAnswerLayout({
   return (
     <div className="flex w-full flex-col items-center px-4 py-6">
       <section className="my-20 h-[32px] text-center">
-        <h1 className="text-2xl font-bold whitespace-pre-line text-[#393939]">
+        <h1 className="text-font-high text-2xl font-bold whitespace-pre-line">
           {title}
         </h1>
       </section>

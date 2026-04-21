@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import clsx from "clsx";
+
+import { TimePickerModal, ToggleSwitch } from "@/widgets/mypage";
 
 import type {
   MealAlertItem,
@@ -17,9 +18,10 @@ import {
   patchMealAlerts,
   toggleMealAlerts,
 } from "@/entities/alarm";
-import { Header, ModalWrapper } from "@/shared";
+
 import { ArrowIcon } from "@/shared/assets/icons";
-import { TimePickerModal, ToggleSwitch } from "@/widgets/mypage/ui";
+
+import { Header, ModalWrapper } from "@/shared";
 
 const MEAL_LABELS: Record<MealType, string> = {
   breakfast: "아침 알림",

@@ -1,5 +1,4 @@
 // ! 26.01.04 작업 완료
-
 import Image from "next/image";
 
 import { cn } from "@/shared/lib/cn.util";
@@ -18,15 +17,14 @@ export function RecommendedFoodCard({
   menuTitle,
   menuDesc,
   src,
-}: React.ButtonHTMLAttributes<HTMLButtonElement> &
-  RecommendedFoodCardProps) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & RecommendedFoodCardProps) {
   return (
     <div className="relative">
       <button
         onClick={onCardClick}
         className={cn(
           "bg-brand-secondary border-font-disabled flex h-28 w-84 gap-5 rounded-2xl border-[1.5px] p-3",
-          selected && "border-[#242424]",
+          selected && "border-font-high",
         )}
         aria-label="추천 음식 카드"
         aria-pressed={selected}

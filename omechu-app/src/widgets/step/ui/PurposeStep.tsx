@@ -2,17 +2,19 @@
 
 import { useRouter } from "next/navigation";
 
-import { QuestionAnswerLayout } from "./QuestionAnswerLayout";
 import { purposeOptions, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
-import { ListButton } from "@/shared";
+
+import { Button } from "@/shared";
+
+import { QuestionAnswerLayout } from "./QuestionAnswerLayout";
 
 export function PurposeStep() {
   const router = useRouter();
   const { purpose, setPurpose } = useQuestionAnswerStore();
   const { setPurposeTag } = useTagStore();
 
-  const handleSelect = (value: number, label: string, description: string) => {
+  const handleSelect = (label: string, description: string) => {
     setPurpose(label);
     setPurposeTag(label, description);
     router.push("/mainpage/question-answer/3");
@@ -21,14 +23,17 @@ export function PurposeStep() {
   return (
     <QuestionAnswerLayout title="식사 목적은 무엇인가요?">
       {purposeOptions.map(({ label, value, description }) => (
-        <ListButton
+        <Button
           key={value}
-          onClick={() => handleSelect(value, label, description)}
-          isSelected={purpose === label}
-          textSize="base"
+          onClick={() => handleSelect(label, description)}
+          selected={purpose === label}
+          width="lg"
+          height="auto"
+          radius="md"
+          className="min-h-12 px-4 py-2"
         >
           {label}
-        </ListButton>
+        </Button>
       ))}
     </QuestionAnswerLayout>
   );

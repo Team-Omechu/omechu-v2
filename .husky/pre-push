@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+
+# pre-push: lint + typecheck + format 전체 게이트
+# 우회 금지 (--no-verify / SKIP 환경변수 금지). 실패 시 코드 고쳐서 푸시.
+(cd omechu-app && pnpm validate)

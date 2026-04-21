@@ -12,7 +12,7 @@ export const ArrowUpIcon = ({ className }: ArrowUpIconProps) => {
     >
       <path
         d="M7.33309 3L7.33309 14.3333M7.33309 3L11.9998 7.66667M7.33309 3L2.66642 7.66667"
-        stroke="#242424"
+        stroke="var(--color-font-high)"
         strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"

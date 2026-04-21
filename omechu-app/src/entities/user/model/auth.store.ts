@@ -1,10 +1,21 @@
+import { z } from "zod";
 import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
+
+import type { ProfileType } from "@/entities/user/model/profile.types";
+
+import { queryClient } from "@/shared/lib/queryClient";
+
+type LoginSuccessData = Partial<ProfileType> & { id: string };
 
 const AUTH_STORAGE_KEY = "auth-storage";
 
-import type { LoginSuccessData } from "@/entities/user/api/authApi";
-import { queryClient } from "@/shared/lib/queryClient";
+const authStoreStateSchema = z.object({
+  isLoggedIn: z.boolean(),
+  user: z.looseObject({ id: z.string() }).nullable(),
+  accessToken: z.string().nullable(),
+  refreshToken: z.string().nullable(),
+});
 
 interface AuthStoreState {
   isLoggedIn: boolean;
@@ -73,18 +84,31 @@ export const useAuthStore = create<AuthStore>()(
         refreshToken: state.refreshToken,
       }),
       migrate: (persistedState: unknown, version: number) => {
-        if (
-          version === 0 &&
-          persistedState &&
-          typeof persistedState === "object"
-        ) {
-          const { password: _pw, ...rest } = persistedState as Record<
-            string,
-            unknown
-          >;
-          return rest as unknown as AuthStoreState;
+        const candidate =
+          version === 0 && persistedState && typeof persistedState === "object"
+            ? (() => {
+                const { password: _pw, ...rest } = persistedState as Record<
+                  string,
+                  unknown
+                >;
+                return rest;
+              })()
+            : persistedState;
+
+        const parsed = authStoreStateSchema.safeParse(candidate);
+        if (parsed.success) {
+          return {
+            ...parsed.data,
+            user: parsed.data.user as LoginSuccessData | null,
+          };
         }
-        return persistedState as AuthStoreState;
+        // 형식 불일치 시 로그아웃 상태로 초기화
+        return {
+          isLoggedIn: false,
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+        };
       },
     },
   ),

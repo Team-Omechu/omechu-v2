@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
-
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { cva, type VariantProps } from "class-variance-authority";
+import { type VariantProps, cva } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/cn.util";
 
@@ -138,11 +137,11 @@ export function Header({
             <button
               type="button"
               onClick={
-              onHomeClick ??
-              (homeModalTitle
-                ? () => setShowHomeModal(true)
-                : () => router.push("/mainpage"))
-            }
+                onHomeClick ??
+                (homeModalTitle
+                  ? () => setShowHomeModal(true)
+                  : () => router.push("/mainpage"))
+              }
               aria-label="홈으로"
               className="shrink-0"
             >

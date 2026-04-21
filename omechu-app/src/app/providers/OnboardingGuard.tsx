@@ -1,11 +1,9 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { usePathname, useRouter } from "next/navigation";
-
-import { useProfile } from "@/entities/user/lib/hooks/useProfile";
-import { useAuthStore } from "@/entities/user/model/auth.store";
+import { useAuthStore, useProfile } from "@/entities/user";
 
 interface OnboardingGuardProps {
   children: React.ReactNode;

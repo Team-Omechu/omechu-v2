@@ -5,4 +5,4 @@ export type {
   RestaurantRequest,
   Restaurant,
   RestaurantList,
-} from "./config/RestaurantData";
+} from "./config/restaurantData";

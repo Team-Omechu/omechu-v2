@@ -22,7 +22,7 @@ export const ArrowIcon = ({
     >
       <path
         d="M1 1L7 7.5L1 14"
-        stroke={currentColor || "#242424"}
+        stroke={currentColor || "var(--color-font-high)"}
         strokeWidth="2"
       />
     </svg>

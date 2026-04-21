@@ -1,16 +1,16 @@
 "use client";
 
-import { useCallback } from "react";
-
 import Link from "next/link";
+import { useCallback } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 
 import {
-  findPasswordSchema,
   type FindPasswordFormValues,
-} from "@/entities/user/model/auth.schema";
+  findPasswordSchema,
+} from "@/entities/user";
+
 import { Button, FormField, Input } from "@/shared";
 
 type ForgotPasswordFormProps = {

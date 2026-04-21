@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+(cd omechu-app && pnpm exec commitlint --edit "$1")

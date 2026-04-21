@@ -24,8 +24,14 @@ export function RestaurantCard({
   onCardClick,
 }: RestaurantCardProps) {
   return (
-    <section
+    <div
       onClick={onCardClick}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onCardClick?.();
+        }
+      }}
       role="button"
       tabIndex={0}
       aria-label={`${name} 카드`}
@@ -58,6 +64,6 @@ export function RestaurantCard({
           className="rounded-xl object-cover"
         />
       </div>
-    </section>
+    </div>
   );
 }

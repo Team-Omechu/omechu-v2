@@ -1,5 +1,4 @@
 //! 26.01.06 작업 완료
-
 import Image from "next/image";
 
 import { Button } from "@/shared/ui/button/Button";
@@ -56,6 +55,7 @@ export function BaseModal({
             alt="오메추 로고 이미지"
             width={107}
             height={70}
+            style={{ width: "auto", height: "auto" }}
             className="mb-2"
           />
         )}

@@ -1,8 +1,12 @@
+import * as Sentry from "@sentry/nextjs";
 import axios, { type AxiosInstance } from "axios";
+
+import { HttpError, toHttpError } from "@/shared/lib/httpError";
 
 // 순수 axios instance (FSD: shared는 다른 레이어에 의존하지 않음)
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
 });
 
 // Auth store 인터페이스 (의존성 주입용)
@@ -28,6 +32,17 @@ let pendingQueue: Array<(token: string | null) => void> = [];
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let authStoreRef: AuthStoreGetter<any> | null = null;
 
+function rejectNormalized(err: unknown): Promise<never> {
+  const httpErr = toHttpError(err);
+
+  // 5xx 또는 네트워크 에러는 Sentry 보고
+  if (httpErr.status === 0 || httpErr.status >= 500) {
+    Sentry.captureException(httpErr);
+  }
+
+  return Promise.reject(httpErr);
+}
+
 /**
  * Interceptor 설정 함수 (app 레이어에서 호출)
  * FSD 규칙: shared는 entities에 의존하지 않고, app에서 의존성을 주입받음
@@ -43,7 +58,7 @@ export const setupAxiosInterceptors = (authStore: AuthStoreGetter<any>) => {
       if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`;
       return config;
     },
-    (error) => Promise.reject(error),
+    (error) => rejectNormalized(error),
   );
 
   // Response interceptor: 401 처리 및 토큰 재발급
@@ -52,7 +67,7 @@ export const setupAxiosInterceptors = (authStore: AuthStoreGetter<any>) => {
     async (error) => {
       const original = error.config || {};
       if (error.response?.status !== 401 || original._retry) {
-        return Promise.reject(error);
+        return rejectNormalized(error);
       }
       original._retry = true;
 
@@ -64,23 +79,32 @@ export const setupAxiosInterceptors = (authStore: AuthStoreGetter<any>) => {
         original.url.includes("/auth/logout")
       ) {
         store.logout();
-        return Promise.reject(error);
+        return rejectNormalized(error);
       }
 
       const { refreshToken, user } = store;
       if (!refreshToken) {
         store.logout();
-        return Promise.reject(error);
+        return rejectNormalized(error);
       }
 
       if (isRefreshing) {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
           pendingQueue.push((newToken) => {
-            if (newToken)
-              original.headers = {
-                ...(original.headers || {}),
-                Authorization: `Bearer ${newToken}`,
-              };
+            if (!newToken) {
+              reject(
+                new HttpError({
+                  status: 401,
+                  code: "TOKEN_REFRESH_FAILED",
+                  message: "세션이 만료되었습니다.",
+                }),
+              );
+              return;
+            }
+            original.headers = {
+              ...(original.headers || {}),
+              Authorization: `Bearer ${newToken}`,
+            };
             resolve(axiosInstance(original));
           });
         });
@@ -118,7 +142,7 @@ export const setupAxiosInterceptors = (authStore: AuthStoreGetter<any>) => {
         pendingQueue.forEach((cb) => cb(null));
         pendingQueue = [];
         store.logout();
-        return Promise.reject(e);
+        return rejectNormalized(e);
       } finally {
         isRefreshing = false;
       }

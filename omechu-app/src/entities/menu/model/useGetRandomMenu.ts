@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getRandomMenu } from "@/entities/menu/api/getRandomMenu";
 import type { RandomMenu } from "@/entities/menu/config/resultData";
+
 import { useQuestionAnswerStore } from "@/shared/store/questionAnswer.store";
 
 export function useGetRandomMenu() {

@@ -1,17 +1,15 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { CustomerSupportSection, UserInfoSection } from "@/widgets/mypage";
 
 import { useProfile, useUpdateProfileMutation } from "@/entities/user";
-import { Header, ModalWrapper, MainLoading } from "@/shared";
-import { MypageModal } from "@/shared/ui/modal/MypageModal";
-import {
-  CustomerSupportSection,
-  SetAlarmSection,
-  UserInfoSection,
-} from "@/widgets/mypage/ui";
+
+import { CloseIcon } from "@/shared/assets/icons/index";
+
+import { BaseModal, Header, MainLoading, ModalWrapper } from "@/shared";
 
 export default function MypageMain() {
   const router = useRouter();
@@ -86,14 +84,30 @@ export default function MypageMain() {
 
       {isModalOpen && (
         <ModalWrapper className="pb-52" onClose={handleCloseModal}>
-          <MypageModal
-            title="닉네임 변경"
-            placeholder={userInfo.name}
-            inputValue={inputValue}
-            onChangeInput={setInputValue}
+          <BaseModal
+            isCloseButtonShow={false}
+            leftButtonText="취소"
+            rightButtonText="변경하기"
             onLeftButtonClick={handleCloseModal}
             onRightButtonClick={handleSubmitNickname}
-          />
+          >
+            <div className="relative z-50 flex w-full flex-col items-center justify-center gap-4 px-1">
+              <div className="text-body-2-bold text-font-high">닉네임 변경</div>
+              <input
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder={userInfo.name}
+                className="border-font-disabled h-12 w-full rounded-[10px] border pr-9 pl-4"
+              />
+              <button
+                type="button"
+                onClick={() => setInputValue("")}
+                className="absolute right-4 bottom-3.5"
+              >
+                <CloseIcon className="h-5 w-5" />
+              </button>
+            </div>
+          </BaseModal>
         </ModalWrapper>
       )}
     </>

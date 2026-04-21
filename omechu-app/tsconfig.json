@@ -6,6 +6,9 @@
     "skipLibCheck": true,
     "noImplicitAny": true,
     "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -21,9 +24,13 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
+      "@/app": ["./src/app"],
       "@/app/*": ["./src/app/*"],
+      "@/entities": ["./src/entities"],
       "@/entities/*": ["./src/entities/*"],
+      "@/widgets": ["./src/widgets"],
       "@/widgets/*": ["./src/widgets/*"],
+      "@/shared": ["./src/shared"],
       "@/shared/*": ["./src/shared/*"]
     }
   },

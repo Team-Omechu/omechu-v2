@@ -1,23 +1,24 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useRouter } from "next/navigation";
-
-import {
-  useRecommendManagement,
-  useExceptMenuMutation,
-  useRemoveExceptMenuMutation,
-} from "@/entities/user";
-import { MENU_SUGGESTIONS } from "@/shared/constants/mypage";
-import { Header, SearchBar } from "@/shared/index";
-import { useToast } from "@/shared/lib/useToast";
-import { Toast } from "@/shared/ui/toast/Toast";
 import {
   FloatingActionButton,
   RecommendedFoodBox,
   SelectTab,
-} from "@/widgets/mypage/ui";
+} from "@/widgets/mypage";
+
+import {
+  useExceptMenuMutation,
+  useRecommendManagement,
+  useRemoveExceptMenuMutation,
+} from "@/entities/user";
+
+import { MENU_SUGGESTIONS } from "@/shared/constants/mypage";
+import { Header, SearchBar } from "@/shared/index";
+import { useToast } from "@/shared/lib/useToast";
+import { Toast } from "@/shared/ui/toast/Toast";
 
 const TAB = {
   RECOMMEND: 0,

@@ -1,37 +1,39 @@
 "use client";
 
-import { useState } from "react";
-
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
 import {
-  ApiClientError,
-  getAuthErrorMessage,
-  useSignupMutation,
-  signupSchema,
-  type SignupFormValues,
-} from "@/entities/user";
-import { BottomButton, Header, ModalWrapper, Toast } from "@/shared";
-import {
-  termsForServiceMain,
-  termsForServiceServe,
-  termsForPersonalInfoMain,
-  termsForPersonalInfoServe,
-  termsForLocationServiceMain,
-  termsForLocationServiceServe,
-  type TermsConfig,
-  type TermsType,
-} from "@/shared/constants/terms";
-import {
+  MODAL_TO_FORM_FIELD,
+  MODAL_TO_TERMS_TYPE,
+  type ModalType,
   SignUpForm,
   TermsModal,
-  type ModalType,
-  MODAL_TO_TERMS_TYPE,
-  MODAL_TO_FORM_FIELD,
 } from "@/widgets/auth";
+
+import {
+  type ApiClientError,
+  type SignupFormValues,
+  getAuthErrorMessage,
+  signupSchema,
+  useSignupMutation,
+} from "@/entities/user";
+
+import {
+  type TermsConfig,
+  type TermsType,
+  termsForLocationServiceMain,
+  termsForLocationServiceServe,
+  termsForPersonalInfoMain,
+  termsForPersonalInfoServe,
+  termsForServiceMain,
+  termsForServiceServe,
+} from "@/shared/constants/terms";
+
+import { BottomButton, Header, ModalWrapper, Toast, useToast } from "@/shared";
 
 const TERMS_CONFIG: Record<TermsType, TermsConfig> = {
   service: {
@@ -50,8 +52,7 @@ const TERMS_CONFIG: Record<TermsType, TermsConfig> = {
 
 export default function SignupPage() {
   const [activeModal, setActiveModal] = useState<ModalType | null>(null);
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const { show: showToast, message: toastMessage, triggerToast } = useToast();
   const router = useRouter();
   const { mutate: signup, isPending: isSigningUp } = useSignupMutation();
 
@@ -75,12 +76,6 @@ export default function SignupPage() {
     setValue,
     formState: { isValid },
   } = methods;
-
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2500);
-  };
 
   const onSubmit = (data: SignupFormValues) => {
     signup(data, {

@@ -1,17 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
 import { BasicAllergyForm, useOnboardingStore } from "@/entities/onboarding";
-import { useUpdateProfileMutation } from "@/entities/user";
-import type {
-  AllergyType,
-  ExerciseType,
-  PreferType,
-} from "@/entities/user/model/profile.types";
+import {
+  type AllergyType,
+  type ExerciseType,
+  type PreferType,
+  useUpdateProfileMutation,
+} from "@/entities/user";
 
 export default function AllergyForm() {
-  const router = useRouter();
   const { exercise, prefer, allergy } = useOnboardingStore();
   const { mutateAsync } = useUpdateProfileMutation();
 
@@ -23,10 +20,5 @@ export default function AllergyForm() {
     });
   };
 
-  return (
-    <BasicAllergyForm
-      onCancel={() => router.push("/mypage")}
-      onSave={handleSave}
-    />
-  );
+  return <BasicAllergyForm cancelHref="/mypage" onSave={handleSave} />;
 }

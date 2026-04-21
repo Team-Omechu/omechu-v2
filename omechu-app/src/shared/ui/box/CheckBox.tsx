@@ -1,8 +1,7 @@
 "use client";
 
-import React, { forwardRef } from "react";
-
 import Image from "next/image";
+import React, { forwardRef } from "react";
 
 type CheckboxProps = {
   label: React.ReactNode;

@@ -23,6 +23,7 @@ type QuestionAnswerActions = {
   addException: (exception: string) => void;
   removeException: (exception: string) => void;
   resetExceptions: () => void;
+  setExceptions: (exceptions: string[]) => void;
 
   addAddition: (addition: string) => void;
   removeAddition: (addition: string) => void;
@@ -75,6 +76,17 @@ export const useQuestionAnswerStore = create<
       },
 
       resetExceptions: () => set({ exceptions: [] }),
+
+      setExceptions: (exceptions) => {
+        const unique = Array.from(
+          new Set(
+            exceptions
+              .map((e) => e.trim())
+              .filter((e): e is string => e.length > 0),
+          ),
+        );
+        set({ exceptions: unique });
+      },
 
       addAddition: (addition) => {
         const v = addition.trim();

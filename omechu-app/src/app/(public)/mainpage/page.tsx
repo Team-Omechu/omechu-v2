@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { StartButton } from "@/widgets/mainpage";
 
 import { handleLocation, useLocationAnswerStore } from "@/entities/location";
 import { useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 import { useRecommendManagement } from "@/entities/user";
+
 import { Header } from "@/shared";
-import { StartButton } from "@/widgets/mainpage/ui/StartButton";
 
 type Pick = "start" | "battle" | "random" | null;
 
@@ -21,19 +22,20 @@ export default function MainPage() {
   const { locationReset, setX, setY, setLocationDenied } =
     useLocationAnswerStore();
 
-  const { questionReset, addException, resetExceptions } =
-    useQuestionAnswerStore();
+  const { questionReset, setExceptions } = useQuestionAnswerStore();
 
   const [picked, setPicked] = useState<Pick>(null);
   const [isNavigating, setIsNavigating] = useState(false);
 
   const { data, refetch } = useRecommendManagement();
 
-  const resetAll = () => {
+  const NAVIGATION_DELAY_MS = 120;
+
+  const resetAll = async () => {
     tagDataReset();
     locationReset();
     questionReset();
-    handleLocation(setX, setY, setLocationDenied);
+    await handleLocation(setX, setY, setLocationDenied);
   };
 
   const go = (next: string, pick: Exclude<Pick, null>) => {
@@ -41,10 +43,10 @@ export default function MainPage() {
     setIsNavigating(true);
     setPicked(pick);
 
-    window.setTimeout(() => {
-      resetAll();
+    window.setTimeout(async () => {
+      await resetAll();
       router.push(next);
-    }, 120);
+    }, NAVIGATION_DELAY_MS);
   };
 
   // 1) "이 페이지로 돌아왔을 때" API를 다시 치게 만들기
@@ -71,19 +73,17 @@ export default function MainPage() {
     };
   }, [refetch]);
 
-  //2) 응답에서 exceptedMenus.name만 뽑아서 addException에 넣기
+  // 2) 서버 제외목록 → store 1회 setState로 동기화
   useEffect(() => {
     const exceptedMenus = data?.exceptedMenus;
     if (!Array.isArray(exceptedMenus)) return;
 
-    // 서버 제외목록이 "갱신"되는 걸 정확히 반영하려면:
-    // 기존 exceptions를 한번 비우고 최신 목록으로 다시 채우는 게 안전
-    resetExceptions();
+    const names = exceptedMenus
+      .map((m) => (typeof m?.name === "string" ? m.name : ""))
+      .filter((name) => name.length > 0);
 
-    exceptedMenus
-      .filter((m) => m && typeof m.name === "string" && m.name.trim())
-      .forEach((m) => addException(m.name.trim()));
-  }, [data, addException, resetExceptions]);
+    setExceptions(names);
+  }, [data, setExceptions]);
 
   return (
     <div className="scrollbar-hide relative flex h-screen w-full justify-center overflow-hidden bg-linear-to-b from-pink-200 to-purple-300">
@@ -96,8 +96,10 @@ export default function MainPage() {
           src="/mainpage/mainpage.svg"
           alt="메인 페이지"
           fill
+          sizes="(max-width: 1024px) 100vw, 1024px"
           style={{ objectFit: "cover" }}
           className="object-cover lg:object-contain"
+          priority
         />
       </div>
 
@@ -107,7 +109,8 @@ export default function MainPage() {
           alt="메인 로고"
           width={260}
           height={170}
-          className="flex justify-center"
+          style={{ width: "auto", height: "auto" }}
+          priority
         />
 
         <section className="mt-10 flex flex-col gap-5">

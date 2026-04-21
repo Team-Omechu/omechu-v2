@@ -1,6 +1,6 @@
-import { Metadata } from "next";
+import { type Metadata } from "next";
 
-import { MenuDetail } from "@/shared/config/menu";
+import { type MenuDetail } from "@/shared/config/menu";
 import { BASE_URL } from "@/shared/constants/url";
 
 const MAX_DISPLAY_MENUS = 5;

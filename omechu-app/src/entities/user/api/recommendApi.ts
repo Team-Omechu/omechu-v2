@@ -1,5 +1,3 @@
-import axios from "axios";
-
 import { ApiClientError } from "@/entities/user/api/authApi";
 import type {
   ExceptMenuRequest,
@@ -8,19 +6,20 @@ import type {
   RemoveExceptMenuRequest,
   RemoveExceptMenuResponse,
 } from "@/entities/user/model/recommend.types";
+
 import type { ApiResponse } from "@/shared/config/api.types";
 import { axiosInstance } from "@/shared/lib/axiosInstance";
+import { HttpError } from "@/shared/lib/httpError";
 
 function handleApiError(error: unknown, fallbackMessage: string): never {
   if (error instanceof ApiClientError) throw error;
 
-  if (axios.isAxiosError(error)) {
-    const api = error.response?.data as ApiResponse<unknown> | undefined;
+  if (error instanceof HttpError) {
     throw new ApiClientError(
-      api?.error?.reason ?? error.message ?? fallbackMessage,
-      api?.error?.errorCode,
-      error.response?.status,
-      api?.error?.data,
+      error.message || fallbackMessage,
+      error.code,
+      error.status,
+      error.details,
     );
   }
 

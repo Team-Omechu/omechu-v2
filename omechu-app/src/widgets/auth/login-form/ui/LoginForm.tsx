@@ -1,23 +1,22 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 
-import { ApiClientError } from "@/entities/user/api/authApi";
-import { fetchProfile } from "@/entities/user/api/profileApi";
-import { useLoginMutation } from "@/entities/user/lib/hooks/useAuth";
 import {
+  type ApiClientError,
+  type LoginFormValues,
+  getAuthErrorMessage,
   loginSchema,
-  LoginFormValues,
-} from "@/entities/user/model/auth.schema";
-import { useAuthStore } from "@/entities/user/model/auth.store";
-import { CheckBox, Toast, Button, FormField, Input } from "@/shared";
+  useAuthStore,
+  useLoginMutation,
+} from "@/entities/user";
+
+import { Button, CheckBox, FormField, Input, Toast, useToast } from "@/shared";
 
 /**
  * LoginForm (Legacy)
@@ -25,16 +24,13 @@ import { CheckBox, Toast, Button, FormField, Input } from "@/shared";
  * - 새로운 로그인 페이지는 /login/email/page.tsx 사용 권장
  */
 export default function LoginForm() {
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const toastTimerRef = useRef<number | null>(null);
+  const { show: showToast, message: toastMessage, triggerToast } = useToast();
   const navigatedRef = useRef(false);
   const justLoggedInRef = useRef(false);
 
   const router = useRouter();
-  const queryClient = useQueryClient();
 
-  const { mutate: login, isPending, isSuccess, error } = useLoginMutation();
+  const { mutate: login, isPending, isSuccess } = useLoginMutation();
 
   const {
     control,
@@ -49,22 +45,8 @@ export default function LoginForm() {
     },
   });
 
-  const triggerToast = useCallback((msg: string) => {
-    setToastMessage(msg);
-    setShowToast(true);
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => {
-      setShowToast(false);
-      toastTimerRef.current = null;
-    }, 2500);
-  }, []);
-
   useEffect(() => {
     return () => {
-      if (toastTimerRef.current) {
-        window.clearTimeout(toastTimerRef.current);
-        toastTimerRef.current = null;
-      }
       justLoggedInRef.current = false;
       navigatedRef.current = false;
     };
@@ -73,20 +55,20 @@ export default function LoginForm() {
   const onSubmit = useCallback(
     (data: LoginFormValues) => {
       login(data, {
-        onSuccess: async () => {
-          try {
-            await queryClient.prefetchQuery({
-              queryKey: ["user", "profile"],
-              queryFn: fetchProfile,
-            });
-            justLoggedInRef.current = true;
-          } catch (e) {
-            console.warn("[Login] prefetch profile failed", e);
-          }
+        onSuccess: () => {
+          // useLoginMutation 내부에서 이미 프로필 fetch + setUser 완료
+          justLoggedInRef.current = true;
+        },
+        onError: (err) => {
+          const e = err as ApiClientError & { code?: string; status?: number };
+          const msg =
+            e?.message ||
+            getAuthErrorMessage(e?.code, "로그인에 실패했습니다.");
+          triggerToast(msg);
         },
       });
     },
-    [login, queryClient],
+    [login, triggerToast],
   );
 
   const user = useAuthStore((s) => s.user);
@@ -103,34 +85,6 @@ export default function LoginForm() {
       router.push("/onboarding");
     }
   }, [isSuccess, user, router]);
-
-  useEffect(() => {
-    if (!error) return;
-    const e = error as ApiClientError & { code?: string; status?: number };
-    const code = e?.code;
-    let msg: string | null = e?.message || null;
-
-    if (!msg) {
-      switch (code) {
-        case "C001":
-          msg = "이메일 또는 비밀번호를 입력해 주세요.";
-          break;
-        case "C003":
-          msg = "로그인이 필요합니다. 다시 시도해 주세요.";
-          break;
-        case "S001":
-          msg = "세션이 만료되었어요. 다시 로그인해 주세요.";
-          break;
-        case "T002":
-        case "T003":
-          msg = "인증에 문제가 발생했어요. 다시 로그인해 주세요.";
-          break;
-        default:
-          msg = null;
-      }
-    }
-    triggerToast(msg || "로그인에 실패했습니다.");
-  }, [error, triggerToast]);
 
   // eslint-disable-next-line react-hooks/refs -- handleSubmit is from react-hook-form
   const handleFormSubmit = handleSubmit(onSubmit);

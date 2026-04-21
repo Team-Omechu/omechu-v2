@@ -55,7 +55,7 @@ async function fetchAllMenus(): Promise<Menu[]> {
 
     if (!Array.isArray(data) || data.length === 0) break;
 
-    const fetchedLastId = Number(data[data.length - 1].id);
+    const fetchedLastId = Number(data[data.length - 1]?.id);
     if (!Number.isFinite(fetchedLastId) || fetchedLastId <= lastMenuId) break;
 
     allMenus.push(...data);

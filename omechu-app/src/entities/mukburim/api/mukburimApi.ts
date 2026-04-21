@@ -1,11 +1,12 @@
 import type {
-  GetMukburimStatisticsParams,
-  GetMukburimStatisticsResponse,
   GetMukburimCalendarParams,
   GetMukburimCalendarResponse,
   GetMukburimDateParams,
   GetMukburimDateResponse,
+  GetMukburimStatisticsParams,
+  GetMukburimStatisticsResponse,
 } from "@/entities/mukburim/model/mukburim.types";
+
 import { axiosInstance } from "@/shared";
 
 export const getMukburimStatistics = async (

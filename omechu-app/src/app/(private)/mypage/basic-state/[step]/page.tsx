@@ -1,14 +1,12 @@
-//! 26.01.13 작업
-
 import { notFound } from "next/navigation";
 
-import AllergyForm from "./AllergyForm";
-import FoodForm from "./FoodForm";
-import StateForm from "./StateForm";
+import { BasicFoodForm, BasicStateForm } from "@/entities/onboarding";
+
 import { BASIC_STATE_STEPS, type BasicStateStep } from "../steps";
+import AllergyForm from "./AllergyForm";
 
 type PageProps = {
-  params: { step: string };
+  params: Promise<{ step: string }>;
 };
 
 function isBasicStateStep(step: string): step is BasicStateStep {
@@ -21,8 +19,8 @@ export default async function BasicStateStepPage({ params }: PageProps) {
   if (!isBasicStateStep(step)) notFound();
   return (
     <main>
-      {step === "state" && <StateForm />}
-      {step === "food" && <FoodForm />}
+      {step === "state" && <BasicStateForm cancelHref="/mypage" />}
+      {step === "food" && <BasicFoodForm cancelHref="/mypage" />}
       {step === "allergy" && <AllergyForm />}
     </main>
   );

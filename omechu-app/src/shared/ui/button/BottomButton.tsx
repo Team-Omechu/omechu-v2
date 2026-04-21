@@ -1,8 +1,7 @@
 // ! 26.01.04 작업 완료
-
 import React from "react";
 
-import { cva, VariantProps } from "class-variance-authority";
+import { type VariantProps, cva } from "class-variance-authority";
 
 import { cn } from "@/shared/lib/cn.util";
 

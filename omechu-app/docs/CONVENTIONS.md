@@ -18,6 +18,23 @@
 | Type files      | \*.types.ts         | `user.types.ts`, `menu.types.ts`       |
 | Utility files   | camelCase.ts        | `formatDate.ts`, `validation.ts`       |
 
+#### Folder rules (강제)
+
+- `src/widgets/*`, `src/entities/*` 하위 슬라이스 폴더는 **반드시 kebab-case**.
+  ESLint `check-file/folder-naming-convention` 규칙이 error로 차단.
+  - OK: `src/widgets/login-modal/`, `src/entities/menu-battle/`
+  - NG: `src/widgets/LoginModal/`, `src/entities/randomDraw/`
+- 한 단어 슬라이스는 lowercase (`auth/`, `user/`, `menu/`) — kebab-case의 degenerate case.
+- 각 슬라이스 내부 표준 폴더명 (`api/`, `model/`, `ui/`, `lib/`, `config/`, `constants/`, `types/`)은 고정.
+
+#### App 라우트 네이밍
+
+- 원칙: Next.js 라우트 세그먼트(`src/app/`)도 kebab-case.
+  - OK: `menu-battle/`, `random-recommend/`, `account-setting/`, `question-answer/`
+- **예외**: 한국 웹서비스 관례상 굳어진 이름은 no-separator lowercase 허용.
+  - `mainpage/`, `mypage/` (URL로도 노출되는데 관례 우선)
+- 새 라우트 추가 시 위 관례에 해당하지 않으면 기본값은 kebab-case.
+
 ### Variables & Functions
 
 | Type             | Convention       | Example                         |
@@ -108,8 +125,9 @@ entity/
 
 ```typescript
 // 절대 경로 사용 (권장)
-import { Button } from "@/shared/ui/button/Button";
 import { useAuthStore } from "@/entities/user/model/auth.store";
+
+import { Button } from "@/shared/ui/button/Button";
 
 // 상대 경로는 같은 모듈 내에서만
 import { formatDate } from "./utils";
@@ -147,12 +165,12 @@ export function useUser(userId: string) {
 ```tsx
 // 컴포넌트 파일 구조
 "use client"; // 필요한 경우
-
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import { useAuthStore } from "@/entities/user/model/auth.store";
 
 import { Button } from "@/shared/ui/button/Button";
-import { useAuthStore } from "@/entities/user/model/auth.store";
 
 interface Props {
   // ...
@@ -175,17 +193,41 @@ export function ComponentName({ ...props }: Props) {
 4. 상대 경로
 
 ```typescript
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 
-import { Button } from "@/shared/ui/button/Button";
 import { useAuthStore } from "@/entities/user/model/auth.store";
+
+import { Button } from "@/shared/ui/button/Button";
 
 import { formatDate } from "./utils";
 ```
+
+---
+
+## Lint / Typecheck Policy
+
+### 우회 금지 원칙
+
+- `git commit --no-verify`, `git push --no-verify` **금지**
+- `pre-push` 훅 SKIP 환경변수 **없음** (`LOCAL_PREPUSH_SKIP` 등 도입 금지)
+- `@ts-ignore`, `@ts-nocheck`, `prettier-ignore` **사용 금지**. 필요 시 `@ts-expect-error`로 이유 주석 동반
+- `eslint-disable`은 **인라인 + `-- reason` 주석** 의무 (라이브러리 한계 등 불가피할 때만)
+- CI (`.github/workflows/ci.yml`)가 최종 게이트. 로컬 훅 우회해도 CI 실패로 드러남
+
+### 현재 허용된 예외 (중앙집중, 파일 scatter 금지)
+
+- `@typescript-eslint/no-explicit-any`: `src/shared/lib/axiosInstance.ts` 3곳
+  - 사유: authStore ↔ axios circular dep 회피. `AuthStoreGetter<TUser = any>` 인터페이스 바운더리 필요
+- `react-hooks/refs`: `react-hook-form`의 `handleSubmit` 호출 부 2곳
+  - 사유: 라이브러리 내부 ref 접근이 설계 전제. `useWatch` 전환 완료 후에도 남는 불가피 케이스
+- `react-hooks/set-state-in-effect`: **규칙 `off`**
+  - 사유: 수동 페이지네이션, `react-query onSuccess → toast state` 등 데이터 sync 패턴과 충돌. 대안은 `useInfiniteQuery`/`useQuery select`로 점진적 마이그레이션 (일부 완료). 규칙 전체 off가 inline disable 스캐터보다 투명
+- `react-hooks/incompatible-library`, `react-hooks/refs`: **warn**
+  - 사유: 점진 개선 대상. react-hook-form → `useWatch`/`useController` 전환 완료한 파일부터 자동 해결
 
 ---
 
@@ -193,95 +235,61 @@ import { formatDate } from "./utils";
 
 ### Branch Naming
 
-#### 브랜치 구조
-
 ```
-main                        # 운영 브랜치
-develop                     # 개발 브랜치
-<type>/<설명>-#<issue>       # 작업 브랜치
+main                         # 운영
+develop                      # 개발
+<type>/<kebab-case-설명>      # 작업 브랜치
 ```
 
-#### 형식
+| 구성요소 | 설명            | 예시                                         |
+| -------- | --------------- | -------------------------------------------- |
+| `type`   | 작업 유형       | `feat`, `fix`, `refactor`, `chore`, `hotfix` |
+| `설명`   | 영문 kebab-case | `signup-flow`, `restaurant-infinite-query`   |
+
+예시: `feat/signup-flow`, `fix/nfc-normalization`, `refactor/fsd-barrel`
+
+### Commit Message (Conventional Commits)
+
+`.husky/commit-msg` → `commitlint`가 자동 검증. 형식:
 
 ```
-<type>/<간단한_설명>-#<issue_number>
+<type>: <subject>
+
+[body]
 ```
 
-| 구성요소       | 설명                                | 예시                                |
-| -------------- | ----------------------------------- | ----------------------------------- |
-| `type`         | 작업 유형                           | `feat`, `fix`, `refactor`, `hotfix` |
-| `설명`         | 간단한 작업 설명 (영문, 케밥케이스) | `signup-api`, `image-upload`        |
-| `issue_number` | GitHub 이슈 번호 **(필수)**         | `#14`, `#23`, `#218`                |
+| Type       | 설명                    |
+| ---------- | ----------------------- |
+| `feat`     | 새로운 기능             |
+| `fix`      | 버그 수정               |
+| `docs`     | 문서                    |
+| `refactor` | 기능 변화 없는 리팩토링 |
+| `perf`     | 성능 개선               |
+| `style`    | 포맷/공백 (UI 아님)     |
+| `test`     | 테스트 추가·수정        |
+| `build`    | 빌드/패키지 설정        |
+| `ci`       | CI 설정                 |
+| `chore`    | 기타 (설정, 패키지 등)  |
+| `revert`   | 이전 커밋 되돌리기      |
 
-#### 예시
+**규칙**:
 
-```bash
-feat/signup-api-#14          # 회원가입 API 기능 추가
-fix/image-upload-#23         # 이미지 업로드 버그 수정
-refactor/proxy-layout-#218   # proxy 마이그레이션
-hotfix/auth-bug-#45          # 인증 관련 긴급 버그 수정
-chore/docker-setup-#5        # Docker 환경 설정
+- `type` 소문자
+- `subject` 한글/영문 혼용 가능, 50자 이내, 마침표 없음
+- `body`는 선택 — 무엇을 **왜** 바꿨는지
+- GitHub 이슈 쓰는 경우 `(#N)`로 subject 뒤 또는 body에 참조 (선택)
+
+예시:
+
 ```
+feat: 로그인 페이지 UI 구현
 
----
+fix: 이미지 업로드 시 NFC 정규화 누락 수정
 
-### Commit Message
+refactor: useGetRestaurants를 useInfiniteQuery로 전환
 
-#### 형식
-
+- 수동 page state + 누적 배열 제거
+- react-hooks/set-state-in-effect 경고 해소
 ```
-<type>: <subject> (#<issue_number>)
-
-<body>
-```
-
-#### 커밋 유형 (Type)
-
-| Type       | 설명                            |
-| ---------- | ------------------------------- |
-| `feat`     | 새로운 기능 추가                |
-| `fix`      | 버그 수정                       |
-| `docs`     | 문서 수정                       |
-| `refactor` | 코드 리팩토링                   |
-| `style`    | UI 스타일 수정 (기능 변경 없음) |
-| `chore`    | 빌드 설정, 패키지 매니저 등     |
-| `rename`   | 파일/폴더 이름 변경 또는 이동   |
-| `remove`   | 파일 삭제                       |
-
-#### 규칙
-
-1. **type**: 소문자 영문
-2. **subject**: 한글 또는 영문, 50자 이내, 마침표 없음
-3. **body**: 한글 작성 권장, 무엇을 왜 변경했는지 설명
-4. **이슈 번호**: 가능하면 포함
-
-#### 예시
-
-```bash
-# 간단한 커밋
-feat: 로그인 페이지 UI 구현 (#12)
-
-# 본문 포함 커밋
-feat: 소셜 로그인 기능 추가 (#28)
-
-- 카카오 OAuth2 로그인 구현
-- 이메일 로그인 폼 추가
-- 토큰 저장 로직 구현
-
-# 버그 수정
-fix: 이미지 업로드 시 NFC 정규화 누락 수정 (#45)
-
-# 리팩토링
-refactor: BottomNavigation 제거 및 ClientLayout 정리 (#218)
-```
-
----
-
-### Issue & PR 연동
-
-- 브랜치 생성 시 반드시 이슈 먼저 생성
-- 브랜치명에 이슈 번호 필수 포함
-- 커밋 메시지에 이슈 번호 포함 권장
-- PR 머지 시 이슈 자동 종료: `Closes #14`, `Fixes #14`
 
 ---

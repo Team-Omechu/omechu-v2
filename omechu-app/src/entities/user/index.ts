@@ -1,3 +1,32 @@
+// Supabase 기반 Public API (새 경로 — 권장)
+export {
+  signUpWithEmail,
+  signInWithEmail,
+  signOut as signOutSupabase,
+  signInWithGoogle,
+  signInWithKakaoCode,
+  sendVerificationCodeEmail,
+  verifyEmailCode,
+  requestPasswordReset as requestPasswordResetSupabase,
+  updatePassword,
+  getCurrentUser as getCurrentUserSupabase,
+  withdraw,
+  type SignUpInput,
+  type SignInInput,
+} from "./api/supabaseAuth";
+
+export {
+  fetchProfile as fetchProfileSupabase,
+  updateProfile as updateProfileSupabase,
+  setPreferences,
+  setAllergies,
+  submitInquiry as submitInquirySupabase,
+  saveAgreement,
+  type PreferKind,
+  type ExerciseKind,
+} from "./api/supabaseProfile";
+
+// 레거시 axios 기반 (마이그레이션 완료 후 제거 예정)
 export {
   ApiClientError,
   type ApiResponse,
@@ -8,7 +37,6 @@ export {
   type SendVerificationCodeSuccessData,
   type VerifyVerificationCodeSuccessData,
   type RequestPasswordResetSuccessData,
-  type OAuthStartResponse,
   login,
   signup,
   sendVerificationCode,
@@ -17,10 +45,7 @@ export {
   resetPassword,
   logout,
   changePassword,
-  getCurrentUserWithToken,
   getCurrentUser,
-  startKakaoLogin,
-  startGoogleLogin,
 } from "./api/authApi";
 
 export {
@@ -54,16 +79,7 @@ export {
   useRemoveExceptMenuMutation,
 } from "./lib/hooks/useRecommendManagement";
 
-export { useKakaoLogin } from "./lib/hooks/useKakaoLogin";
-
-export { useGoogleLogin } from "./lib/hooks/useGoogleLogin";
-
-export {
-  VALID_PROVIDERS,
-  PROVIDER_DISPLAY_NAMES,
-  AUTH_ERROR_MESSAGES,
-  getAuthErrorMessage,
-} from "./lib/constants";
+export { AUTH_ERROR_MESSAGES, getAuthErrorMessage } from "./lib/constants";
 
 export {
   loginSchema,
@@ -78,7 +94,6 @@ export {
 
 export { useAuthStore } from "./model/auth.store";
 
-export type { OAuthProvider } from "./model/auth.types";
 export type {
   ProfileType,
   UpdateProfileBody,

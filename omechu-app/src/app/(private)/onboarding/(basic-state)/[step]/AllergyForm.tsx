@@ -34,7 +34,5 @@ export default function AllergyForm() {
     router.replace("/");
   };
 
-  return (
-    <BasicAllergyForm onCancel={() => router.push("/")} onSave={handleSave} />
-  );
+  return <BasicAllergyForm cancelHref="/" onSave={handleSave} />;
 }

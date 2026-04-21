@@ -1,15 +1,15 @@
-import axios from "axios";
-
 import type {
-  LoginFormValues,
-  SignupFormValues,
   FindPasswordFormValues,
+  LoginFormValues,
   ResetPasswordFormValues,
+  SignupFormValues,
 } from "@/entities/user/model/auth.schema";
 import { useAuthStore } from "@/entities/user/model/auth.store";
 import type { ProfileType } from "@/entities/user/model/profile.types";
-import type { ApiResponse, ApiError } from "@/shared/config/api.types";
+
+import type { ApiError, ApiResponse } from "@/shared/config/api.types";
 import axiosInstance from "@/shared/lib/axiosInstance";
+import { HttpError } from "@/shared/lib/httpError";
 
 export type { ApiResponse, ApiError };
 
@@ -49,6 +49,19 @@ export const isNotModifiedError = (err: unknown): err is NotModifiedError => {
     (err as NotModifiedError).code === 304
   );
 };
+
+function rethrowAsApiClientError(err: unknown, fallback: string): never {
+  if (err instanceof ApiClientError) throw err;
+  if (err instanceof HttpError) {
+    throw new ApiClientError(
+      err.message || fallback,
+      err.code,
+      err.status,
+      err.details,
+    );
+  }
+  throw new ApiClientError(err instanceof Error ? err.message : fallback);
+}
 
 export type LoginSuccessData = Partial<ProfileType> & { id: string };
 
@@ -108,109 +121,6 @@ const readAccessToken = (): string | null => {
   return null;
 };
 
-// OAuth 로그인 시작 응답 타입
-export interface OAuthStartResponse {
-  authorizeUrl: string;
-}
-
-/**
- * 카카오 로그인 시작 API (BE API 방식)
- * @param redirectUri 로그인 후 리다이렉트될 FE URL
- * @returns authorizeUrl (카카오 로그인 페이지 URL)
- */
-export const startKakaoLogin = async (
-  redirectUri: string,
-): Promise<OAuthStartResponse> => {
-  try {
-    const response = await axiosInstance.post<ApiResponse<OAuthStartResponse>>(
-      "/auth/login/kakao",
-      { redirectUri },
-    );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.resultType === "FAIL" || !apiResponse.success) {
-      const reason =
-        apiResponse.error?.reason || "카카오 로그인 시작에 실패했습니다.";
-      const errorCode = apiResponse.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        errorCode,
-        response.status,
-        apiResponse.error?.data,
-      );
-    }
-
-    return apiResponse.success;
-  } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      const reason =
-        api?.error?.reason ||
-        err.message ||
-        "카카오 로그인 시작에 실패했습니다.";
-      const errorCode = api?.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        errorCode,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.",
-    );
-  }
-};
-
-/**
- * 구글 로그인 시작 API (BE API 방식)
- * @param redirectUri 로그인 후 리다이렉트될 FE URL
- * @returns authorizeUrl (구글 로그인 페이지 URL)
- */
-export const startGoogleLogin = async (
-  redirectUri: string,
-): Promise<OAuthStartResponse> => {
-  try {
-    const response = await axiosInstance.post<ApiResponse<OAuthStartResponse>>(
-      "/auth/login/google",
-      { redirectUri },
-    );
-
-    const apiResponse = response.data;
-
-    if (apiResponse.resultType === "FAIL" || !apiResponse.success) {
-      const reason =
-        apiResponse.error?.reason || "구글 로그인 시작에 실패했습니다.";
-      const errorCode = apiResponse.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        errorCode,
-        response.status,
-        apiResponse.error?.data,
-      );
-    }
-
-    return apiResponse.success;
-  } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      const reason =
-        api?.error?.reason || err.message || "구글 로그인 시작에 실패했습니다.";
-      const errorCode = api?.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        errorCode,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.",
-    );
-  }
-};
-
 /**
  * 로그인 API
  * @param data email, password
@@ -220,7 +130,6 @@ export const login = async (data: LoginFormValues): Promise<LoginTokens> => {
     const response = await axiosInstance.post<ApiResponse<LoginTokens>>(
       "/auth/login",
       data,
-      { withCredentials: true },
     );
 
     const apiResponse = response.data;
@@ -239,21 +148,7 @@ export const login = async (data: LoginFormValues): Promise<LoginTokens> => {
 
     return apiResponse.success as LoginTokens;
   } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      const reason =
-        api?.error?.reason || err.message || "로그인에 실패했습니다.";
-      const code = api?.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        code,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.",
-    );
+    rethrowAsApiClientError(err, "로그인에 실패했습니다.");
   }
 };
 
@@ -282,21 +177,9 @@ export const signup = async (
     }
     return apiResponse.success;
   } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      const reason = api?.error?.reason;
-      const code = api?.error?.errorCode;
-      // 409/400 등 의미 있는 사유가 있으면 그대로 노출, 없으면 한국어 기본 문구로 대체
-      throw new ApiClientError(
-        reason ||
-          "서버 오류로 회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.",
-        code,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      "네트워크 오류가 발생했습니다. 인터넷 연결을 확인해 주세요.",
+    rethrowAsApiClientError(
+      err,
+      "서버 오류로 회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.",
     );
   }
 };
@@ -326,21 +209,7 @@ export const sendVerificationCode = async (
     }
     return apiResponse.success;
   } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      const reason =
-        api?.error?.reason || err.message || "인증번호 전송에 실패했습니다.";
-      const code = api?.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        code,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.",
-    );
+    rethrowAsApiClientError(err, "인증번호 전송에 실패했습니다.");
   }
 };
 
@@ -367,21 +236,7 @@ export const verifyVerificationCode = async (data: {
     }
     return apiResponse.success;
   } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      const reason =
-        api?.error?.reason || err.message || "이메일 인증에 실패했습니다.";
-      const code = api?.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        code,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.",
-    );
+    rethrowAsApiClientError(err, "이메일 인증에 실패했습니다.");
   }
 };
 
@@ -406,23 +261,7 @@ export const requestPasswordReset = async (
     }
     return apiResponse.success;
   } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      const reason =
-        api?.error?.reason ||
-        err.message ||
-        "비밀번호 재설정 요청에 실패했습니다.";
-      const code = api?.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        code,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.",
-    );
+    rethrowAsApiClientError(err, "비밀번호 재설정 요청에 실패했습니다.");
   }
 };
 
@@ -449,18 +288,7 @@ export const resetPassword = async (
     }
     return apiResponse.success;
   } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      throw new ApiClientError(
-        api?.error?.reason || err.message || "비밀번호 재설정에 실패했습니다.",
-        api?.error?.errorCode,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.",
-    );
+    rethrowAsApiClientError(err, "비밀번호 재설정에 실패했습니다.");
   }
 };
 
@@ -468,15 +296,9 @@ export const resetPassword = async (
  * 로그아웃 API
  */
 export const logout = async (): Promise<void> => {
-  await axiosInstance.post(
-    "/auth/logout",
-    {},
-    {
-      // Authorization 헤더는 axiosInstance의 요청 인터셉터에서
-      // accessToken을 자동으로 주입합니다.
-      withCredentials: true,
-    },
-  );
+  // Authorization 헤더는 axiosInstance의 요청 인터셉터에서
+  // accessToken을 자동으로 주입합니다.
+  await axiosInstance.post("/auth/logout", {});
   useAuthStore.getState().logout();
 };
 
@@ -492,7 +314,10 @@ export const changePassword = async (data: {
 }): Promise<string> => {
   const accessToken = readAccessToken();
   if (!accessToken) {
-    throw new Error("accessToken이 없습니다. 먼저 로그인 해주세요.");
+    throw new ApiClientError(
+      "accessToken이 없습니다. 먼저 로그인 해주세요.",
+      "AUTH_REQUIRED",
+    );
   }
 
   try {
@@ -517,45 +342,8 @@ export const changePassword = async (data: {
     }
     return apiResponse.success;
   } catch (err: unknown) {
-    if (axios.isAxiosError(err)) {
-      const api = err.response?.data as ApiResponse<unknown> | undefined;
-      const reason =
-        api?.error?.reason || err.message || "비밀번호 변경에 실패했습니다.";
-      const code = api?.error?.errorCode;
-      throw new ApiClientError(
-        reason,
-        code,
-        err.response?.status,
-        api?.error?.data,
-      );
-    }
-    throw new ApiClientError(
-      err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.",
-    );
+    rethrowAsApiClientError(err, "비밀번호 변경에 실패했습니다.");
   }
-};
-
-/**
- * OAuth 콜백에서 사용하는 1회성 프로필 조회
- * - 토큰을 직접 헤더에 붙여서 호출
- * - axiosInstance 인터셉터를 거치지 않음
- * @param token accessToken
- */
-export const getCurrentUserWithToken = async (
-  token: string,
-): Promise<LoginSuccessData> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/profile`, {
-    headers: { Authorization: `Bearer ${token}` },
-    credentials: "include",
-  });
-  const data = await res.json();
-  if (data?.resultType !== "SUCCESS" || !data?.success) {
-    throw new ApiClientError(
-      data?.error?.reason || "유저 조회 실패",
-      data?.error?.errorCode,
-    );
-  }
-  return data.success;
 };
 
 // 현재 로그인된 유저 정보 조회 (accessToken을 명시적으로 붙임)

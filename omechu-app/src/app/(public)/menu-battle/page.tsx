@@ -1,13 +1,15 @@
 ﻿"use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { BattleButton, Button, FoodBox, Header, Input, Toast } from "@/shared";
+import { useInfiniteQuery } from "@tanstack/react-query";
+
 import { fetchJSON } from "@/shared/api/fetchJSON";
 import { menuBattleAPI } from "@/shared/api/menuBattle.api";
+
+import { Button, FoodBox, Header, Input, Toast, useToast } from "@/shared";
 
 interface Menu {
   id: string;
@@ -29,89 +31,75 @@ export default function MenuBattlePage() {
   const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const {
+    show: showToast,
+    message: toastMessage,
+    triggerToast: openToast,
+  } = useToast();
 
-  const [menus, setMenus] = useState<Menu[]>([]);
-  const [lastMenuId, setLastMenuId] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMenus, setIsLoadingMenus] = useState(false);
   const observerRef = useRef<HTMLDivElement | null>(null);
   const batchSizeRef = useRef<number | null>(null);
 
-  const openToast = useCallback((message: string) => {
-    setToastMessage(message);
-    setShowToast(true);
-  }, []);
+  const {
+    data: menusData,
+    error: menusError,
+    fetchNextPage,
+    hasNextPage,
+    isFetching: isLoadingMenus,
+    isFetchingNextPage,
+  } = useInfiniteQuery<
+    Menu[],
+    Error,
+    { pages: Menu[][]; pageParams: number[] },
+    readonly ["menu", "allMenu"],
+    number
+  >({
+    queryKey: ["menu", "allMenu"] as const,
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) => fetchJSON<Menu[]>(`/menu/allMenu/${pageParam}`),
+    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
+      if (!lastPage || lastPage.length === 0) return undefined;
 
-  const fetchMenus = useCallback(async () => {
-    if (isLoadingMenus || !hasMore) return;
-
-    setIsLoadingMenus(true);
-    try {
-      const data = await fetchJSON<Menu[]>(`/menu/allMenu/${lastMenuId}`);
-      if (!data || data.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
+      // 첫 배치 크기 기준으로 마지막 페이지 감지.
       if (batchSizeRef.current === null) {
-        batchSizeRef.current = data.length;
+        batchSizeRef.current = lastPage.length;
+      } else if (lastPage.length < batchSizeRef.current) {
+        return undefined;
       }
 
-      // Cursor didn't move (or moved backward): stop to prevent repeated fetches.
-      const fetchedLastMenuId = Number(data[data.length - 1].id);
-      if (
-        !Number.isFinite(fetchedLastMenuId) ||
-        fetchedLastMenuId <= lastMenuId
-      ) {
-        setHasMore(false);
-        return;
+      const nextCursor = Number(lastPage[lastPage.length - 1]?.id);
+      if (!Number.isFinite(nextCursor) || nextCursor <= lastPageParam) {
+        return undefined;
       }
-
-      setMenus((prev) => {
-        const merged = [...prev, ...data];
-        return Array.from(
-          new Map(merged.map((menu) => [menu.id, menu])).values(),
-        );
-      });
-
-      setLastMenuId(fetchedLastMenuId);
-
-      // Last page guard: if current batch is smaller than initial batch, stop here.
-      if (batchSizeRef.current !== null && data.length < batchSizeRef.current) {
-        setHasMore(false);
-      }
-    } catch {
-      openToast("메뉴를 불러오지 못했습니다.");
-    } finally {
-      setIsLoadingMenus(false);
-    }
-  }, [hasMore, isLoadingMenus, lastMenuId, openToast]);
-
-  useEffect(() => {
-    void fetchMenus();
-  }, [fetchMenus]);
+      return nextCursor;
+    },
+  });
 
   useEffect(() => {
     if (!observerRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) void fetchMenus();
+        if (
+          entry?.isIntersecting &&
+          hasNextPage &&
+          !isLoadingMenus &&
+          !isFetchingNextPage
+        ) {
+          void fetchNextPage();
+        }
       },
       { threshold: 1 },
     );
 
     observer.observe(observerRef.current);
     return () => observer.disconnect();
-  }, [fetchMenus]);
+  }, [fetchNextPage, hasNextPage, isLoadingMenus, isFetchingNextPage]);
 
-  useEffect(() => {
-    if (!showToast) return;
-    const timer = setTimeout(() => setShowToast(false), 2500);
-    return () => clearTimeout(timer);
-  }, [showToast]);
+  const menus = useMemo<Menu[]>(() => {
+    const all = menusData?.pages.flat() ?? [];
+    return Array.from(new Map(all.map((menu) => [menu.id, menu])).values());
+  }, [menusData]);
 
   const filteredMenus = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -286,11 +274,17 @@ ${shareUrl}`;
           ))}
         </div>
 
-        {hasMore && <div ref={observerRef} className="h-10" />}
+        {hasNextPage && <div ref={observerRef} className="h-10" />}
 
         {isLoadingMenus && (
           <p className="text-caption-2 text-font-placeholder mt-4 text-center">
             메뉴 불러오는 중...
+          </p>
+        )}
+
+        {menusError && !isLoadingMenus && (
+          <p className="text-caption-2 mt-4 text-center text-red-500">
+            메뉴를 불러오지 못했습니다.
           </p>
         )}
       </section>
@@ -305,8 +299,9 @@ ${shareUrl}`;
               </p>
             </div>
 
-            <BattleButton
+            <Button
               width="md"
+              radius="md"
               disabled={
                 selectedMenus.length < MIN_MENU_SELECTION ||
                 selectedMenus.length > MAX_MENU_SELECTION
@@ -320,7 +315,7 @@ ${shareUrl}`;
               }`}
             >
               배틀방 생성
-            </BattleButton>
+            </Button>
           </div>
         </footer>
       </div>

@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 
-import { Header } from "@/shared";
 import {
   termsForServiceMain,
   termsForServiceServe,
 } from "@/shared/constants/terms";
+
+import { Header } from "@/shared";
 
 export function TermForService() {
   const router = useRouter();

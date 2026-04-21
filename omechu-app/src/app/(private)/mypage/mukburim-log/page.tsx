@@ -1,27 +1,24 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { useQuery } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
 import { format } from "date-fns";
 
+import { CustomDatePicker, MukburimFoodBox, PeriodTap } from "@/widgets/mypage";
+
 import {
-  getMukburimStatistics,
-  MUKBURIM_ERROR_CODE,
   type GetMukburimStatisticsResponse,
+  MUKBURIM_ERROR_CODE,
   type MukburimPeriod,
   type MukburimSortBy,
+  getMukburimStatistics,
 } from "@/entities/mukburim";
-import { PERIOD_OPTIONS } from "@/shared/constants/mypage";
+
+import { type PERIOD_OPTIONS } from "@/shared/constants/mypage";
 import { Header } from "@/shared/index";
-import {
-  MukburimFoodBox,
-  PeriodTap,
-  CustomDatePicker,
-} from "@/widgets/mypage/ui";
+import { HttpError } from "@/shared/lib/httpError";
 
 type Period = (typeof PERIOD_OPTIONS)[number];
 
@@ -77,14 +74,17 @@ export default function MukburimLogPage() {
       try {
         return await getMukburimStatistics(apiParams);
       } catch (error) {
-        if (isAxiosError(error)) {
-          const { status, data } = error.response ?? {};
-          const code = data?.error?.errorCode;
+        if (error instanceof HttpError) {
+          const { status, code } = error;
           if (
             (status === 404 && code === MUKBURIM_ERROR_CODE.NOT_FOUND) ||
             (status === 500 && code === MUKBURIM_ERROR_CODE.STATISTICS_FAILED)
           ) {
-            return data as GetMukburimStatisticsResponse;
+            return {
+              resultType: "FAIL",
+              error: null,
+              success: null,
+            } satisfies GetMukburimStatisticsResponse;
           }
         }
         throw error;

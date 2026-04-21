@@ -1,18 +1,8 @@
 "use client";
 
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { useParams, useRouter } from "next/navigation";
-
-import { useQuestionAnswerStore } from "@/entities/question";
-import { useTagStore } from "@/entities/tag";
-import {
-  BaseModal,
-  Header,
-  ModalWrapper,
-  PaginationButton,
-  ProgressBar,
-} from "@/shared";
 import {
   BudgetStep,
   MealTimeStep,
@@ -20,6 +10,17 @@ import {
   PurposeStep,
   WhoStep,
 } from "@/widgets/step";
+
+import { useQuestionAnswerStore } from "@/entities/question";
+import { useTagStore } from "@/entities/tag";
+
+import {
+  BaseModal,
+  Header,
+  ModalWrapper,
+  PaginationButton,
+  ProgressBar,
+} from "@/shared";
 
 const QUESTION_STEPS = 5;
 const RESULT_PATH = "/mainpage/result";
@@ -47,11 +48,6 @@ export default function QuestionAnswerPage() {
     questionReset();
     router.push("/mainpage");
     setShowModal(false);
-  };
-
-  const hanldeXClick = () => {
-    setShowModal(true);
-
   };
 
   useEffect(() => {

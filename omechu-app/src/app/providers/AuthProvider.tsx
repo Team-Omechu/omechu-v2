@@ -1,27 +1,36 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
-import { useAuthStore } from "@/entities/user/model/auth.store";
-import { setupAxiosInterceptors } from "@/shared/lib/axiosInstance";
+import { useAuthStore } from "@/entities/user";
+
+import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
-/**
- * AuthProvider
- * - Axios 인터셉터 초기화 (토큰 갱신, 401 처리)
- * - 앱 전체에서 한 번만 실행
- */
 export function AuthProvider({ children }: AuthProviderProps) {
-  const interceptorsInitialized = useRef(false);
-
   useEffect(() => {
-    if (!interceptorsInitialized.current) {
-      setupAxiosInterceptors(useAuthStore);
-      interceptorsInitialized.current = true;
-    }
+    const sb = createSupabaseBrowserClient();
+
+    const {
+      data: { subscription },
+    } = sb.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") return;
+
+      if (session) {
+        useAuthStore.getState().login({
+          accessToken: session.access_token,
+          refreshToken: session.refresh_token,
+          user: { id: session.user.id, email: session.user.email ?? "" },
+        });
+      } else {
+        useAuthStore.getState().logout();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return <>{children}</>;

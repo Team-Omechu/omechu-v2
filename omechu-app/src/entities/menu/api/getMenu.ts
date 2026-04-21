@@ -1,8 +1,8 @@
 import axios from "axios";
 
 import {
-  MenuListResponse,
-  RecommendMenuRequest,
+  type MenuListResponse,
+  type RecommendMenuRequest,
 } from "@/entities/menu/config/resultData";
 
 const BASE_URL = process.env.NEXT_PUBLIC_EMBED_API_URL ?? "";

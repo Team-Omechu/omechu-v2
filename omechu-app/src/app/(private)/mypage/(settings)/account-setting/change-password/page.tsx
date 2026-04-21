@@ -1,10 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { ApiClientError, changePassword } from "@/entities/user";
 
-import { changePassword, ApiClientError } from "@/entities/user";
 import {
   BaseModal,
   Button,

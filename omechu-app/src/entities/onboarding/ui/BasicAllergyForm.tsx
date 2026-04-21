@@ -1,35 +1,42 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { useOnboardingStore } from "@/entities/onboarding";
-import { Toast, useToast } from "@/shared";
+
 import { ALLERGY_OPTIONS } from "@/shared/constants/mypage";
+
 import {
   BaseModal,
   BottomButton,
+  Button,
   Header,
   ModalWrapper,
-  OnboardingButton,
   ProgressBar,
-} from "@/shared/index";
+  Toast,
+  useToast,
+} from "@/shared";
+
+type AllergyValue = (typeof ALLERGY_OPTIONS)[number]["value"];
 
 const allergyValueToLabel = ALLERGY_OPTIONS.reduce(
   (acc, cur) => {
     acc[cur.value] = cur.label;
     return acc;
   },
-  {} as Record<string, string>,
+  {} as Record<AllergyValue, string>,
 );
 
 interface BasicAllergyFormProps {
-  onCancel: () => void;
+  cancelHref: string;
   onSave: () => Promise<void>;
 }
 
-export function BasicAllergyForm({ onCancel, onSave }: BasicAllergyFormProps) {
+export function BasicAllergyForm({
+  cancelHref,
+  onSave,
+}: BasicAllergyFormProps) {
   const router = useRouter();
   const { allergy, toggleAllergy } = useOnboardingStore();
   const [showCancleModal, setShowCancleModal] = useState(false);
@@ -62,13 +69,19 @@ export function BasicAllergyForm({ onCancel, onSave }: BasicAllergyFormProps) {
           <div className="grid grid-cols-3 gap-4">
             {ALLERGY_OPTIONS.slice(0, -2).map(({ label, value }, idx) => (
               <div key={idx}>
-                <OnboardingButton
-                  selected={allergy.includes(allergyValueToLabel[value])}
+                <Button
+                  selected={allergy.includes(
+                    allergyValueToLabel[value] ?? value,
+                  )}
                   width="xs"
-                  onClick={() => toggleAllergy(allergyValueToLabel[value])}
+                  height="md"
+                  radius="sm"
+                  onClick={() =>
+                    toggleAllergy(allergyValueToLabel[value] ?? value)
+                  }
                 >
                   {label}
-                </OnboardingButton>
+                </Button>
               </div>
             ))}
           </div>
@@ -77,13 +90,19 @@ export function BasicAllergyForm({ onCancel, onSave }: BasicAllergyFormProps) {
               const actualIdx = ALLERGY_OPTIONS.length - 2 + idx;
               return (
                 <div key={actualIdx}>
-                  <OnboardingButton
-                    selected={allergy.includes(allergyValueToLabel[value])}
-                    width="sm"
-                    onClick={() => toggleAllergy(allergyValueToLabel[value])}
+                  <Button
+                    selected={allergy.includes(
+                      allergyValueToLabel[value] ?? value,
+                    )}
+                    height="md"
+                    radius="sm"
+                    onClick={() =>
+                      toggleAllergy(allergyValueToLabel[value] ?? value)
+                    }
+                    className="text-body-3-regular w-[120.5px]"
                   >
                     {label}
-                  </OnboardingButton>
+                  </Button>
                 </div>
               );
             })}
@@ -101,7 +120,7 @@ export function BasicAllergyForm({ onCancel, onSave }: BasicAllergyFormProps) {
             isCloseButtonShow={false}
             leftButtonText="그만하기"
             rightButtonText="계속하기"
-            onLeftButtonClick={onCancel}
+            onLeftButtonClick={() => router.push(cancelHref)}
             onRightButtonClick={() => setShowCancleModal(false)}
           />
         </ModalWrapper>

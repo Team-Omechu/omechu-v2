@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface UseToastReturn {
   show: boolean;
   message: string;
-  triggerToast: (msg: string) => void;
+  triggerToast: (msg: string, overrideDuration?: number) => void;
 }
 
 export interface UseToastOptions {
@@ -24,7 +24,7 @@ export function useToast(options?: UseToastOptions): UseToastReturn {
   const toastTimerRef = useRef<number | null>(null);
 
   const triggerToast = useCallback(
-    (msg: string) => {
+    (msg: string, overrideDuration?: number) => {
       setMessage(msg);
       setShow(true);
       if (toastTimerRef.current) {
@@ -33,7 +33,7 @@ export function useToast(options?: UseToastOptions): UseToastReturn {
       toastTimerRef.current = window.setTimeout(() => {
         setShow(false);
         toastTimerRef.current = null;
-      }, duration);
+      }, overrideDuration ?? duration);
     },
     [duration],
   );

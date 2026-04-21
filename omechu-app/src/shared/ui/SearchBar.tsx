@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useRef, ChangeEvent, KeyboardEvent, useMemo } from "react";
+import {
+  type ChangeEvent,
+  type KeyboardEvent,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { MENU_SUGGESTIONS } from "@/shared/constants/mypage";
 import { cn } from "@/shared/lib/cn.util";
@@ -114,7 +120,9 @@ export function SearchBar({
       );
     } else if (e.key === "Enter") {
       const selected =
-        selectedIndex >= 0 ? filteredSuggestions[selectedIndex] : inputValue;
+        selectedIndex >= 0
+          ? (filteredSuggestions[selectedIndex] ?? inputValue)
+          : inputValue;
       handleSearch(selected);
     } else if (e.key === "Escape") {
       setIsFocused(false);
@@ -165,6 +173,7 @@ export function SearchBar({
 
       {showSuggestions && (
         <ul
+          role="listbox"
           onMouseDown={(e) => e.preventDefault()}
           className="border-grey-dark-hover absolute top-full left-0 z-10 w-full rounded-b-[10px] border-2 border-t-0 bg-white shadow-md"
         >
@@ -176,14 +185,20 @@ export function SearchBar({
               {recentSearches.map((term) => (
                 <li
                   key={term}
-                  className="flex cursor-pointer items-center justify-between px-4 py-2 text-sm hover:bg-gray-100"
+                  className="flex items-center justify-between px-4 py-2 text-sm hover:bg-gray-100"
                 >
-                  <span onClick={() => handleSuggestionClick(term)}>
-                    {term}
-                  </span>
                   <button
+                    type="button"
+                    onClick={() => handleSuggestionClick(term)}
+                    className="flex-1 cursor-pointer bg-transparent p-0 text-left"
+                  >
+                    {term}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => removeRecent(term)}
                     className="hover:text-foundation-grey-darker text-gray-500"
+                    aria-label={`${term} 최근 검색 삭제`}
                   >
                     ✕
                   </button>
@@ -192,6 +207,7 @@ export function SearchBar({
               {recentSearches.length > 0 && (
                 <li className="flex justify-end px-4 py-2">
                   <button
+                    type="button"
                     className="hover:text-foundation-grey-darker text-xs text-gray-500"
                     onClick={() => {
                       setRecentSearches([]);
@@ -211,7 +227,16 @@ export function SearchBar({
               return (
                 <li
                   key={item}
+                  role="option"
+                  aria-selected={isSelected}
+                  tabIndex={0}
                   onClick={() => handleSuggestionClick(item)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleSuggestionClick(item);
+                    }
+                  }}
                   className={cn(
                     "cursor-pointer px-4 py-2 text-sm hover:bg-gray-100",
                     isSelected && "bg-gray-100 font-semibold",

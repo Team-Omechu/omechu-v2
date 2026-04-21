@@ -1,23 +1,25 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { TagCard } from "@/widgets/tag-card";
 
 import { useLocationAnswerStore } from "@/entities/location";
-import { MenuItem, useGetMenu } from "@/entities/menu";
+import { type MenuItem, useGetMenu } from "@/entities/menu";
 import { useQuestionAnswerStore } from "@/entities/question";
-import { useAuthStore } from "@/entities/user/model/auth.store";
+import { useAuthStore } from "@/entities/user";
+
 import {
+  BaseModal,
+  Button,
   Header,
   MainLoading,
   ModalWrapper,
-  BaseModal,
-  Toast,
   RecommendedFoodCard,
-  Button,
+  Toast,
+  useToast,
 } from "@/shared";
-import { TagCard } from "@/widgets/TagCard";
 
 export default function ResultPage() {
   const router = useRouter();
@@ -35,20 +37,13 @@ export default function ResultPage() {
 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
 
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const { show: showToast, message: toastMessage, triggerToast } = useToast();
 
   const [reshuffleAttemptCount, setReshuffleAttemptCount] = useState(0);
   const [showLoginModalForReshuffle, setShowLoginModalForReshuffle] =
     useState(false);
 
   const [showStopRecommendModal, setShowStopRecommendModal] = useState(false);
-
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setShowToast(true);
-    window.setTimeout(() => setShowToast(false), 2500);
-  };
 
   const handleStopAndGoHome = () => {
     setShowStopRecommendModal(false);
@@ -60,7 +55,7 @@ export default function ResultPage() {
   };
 
   const handleNext = () => {
-    if (openMenu != null) {
+    if (openMenu !== null && openMenu !== undefined) {
       setKeyword(openMenu);
       router.push(`/mainpage/result/${encodeURIComponent(openMenu)}?record=1`);
     } else {
@@ -128,14 +123,14 @@ export default function ResultPage() {
 
       <div className="mt-2 flex w-82.5 gap-2 py-2">
         <Button
-          className="hover:bg-grey-normal text-foundation-grey-darker border-font-disabled flex-1 rounded-md border bg-[#EEE] px-4 py-2"
+          className="hover:bg-grey-normal text-foundation-grey-darker border-font-disabled bg-brand-tertiary flex-1 rounded-md border px-4 py-2"
           onClick={handleReshuffle}
         >
           다시 추천
         </Button>
 
         <Button
-          className="bg-primary-normal hover:bg-primary-normal-hover flex-1 rounded-md px-4 py-2 text-[#FFF]"
+          className="bg-primary-normal hover:bg-primary-normal-hover text-brand-secondary flex-1 rounded-md px-4 py-2"
           onClick={handleNext}
         >
           선택하기

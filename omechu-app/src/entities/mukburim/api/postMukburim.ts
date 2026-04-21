@@ -1,4 +1,5 @@
-import { mukburimResponse } from "@/entities/mukburim/config/mukburim";
+import { type mukburimResponse } from "@/entities/mukburim/config/mukburim";
+
 import { axiosInstance } from "@/shared";
 
 export const postMukburim = async (

@@ -1,4 +1,4 @@
-import axios, { type AxiosResponse } from "axios";
+import type { AxiosResponse } from "axios";
 
 import { ApiClientError } from "@/entities/user/api/authApi";
 import type {
@@ -9,8 +9,10 @@ import type {
   WithdrawRequestBody,
   WithdrawResponse,
 } from "@/entities/user/model/profile.types";
+
 import type { ApiResponse } from "@/shared/config/api.types";
 import { axiosInstance } from "@/shared/lib/axiosInstance";
+import { HttpError } from "@/shared/lib/httpError";
 
 async function handleApiResponse<T>(
   request: Promise<AxiosResponse<ApiResponse<T>>>,
@@ -33,17 +35,18 @@ async function handleApiResponse<T>(
   } catch (error: unknown) {
     if (error instanceof ApiClientError) throw error;
 
-    if (axios.isAxiosError(error)) {
-      const api = error.response?.data as ApiResponse<unknown> | undefined;
+    if (error instanceof HttpError) {
       throw new ApiClientError(
-        api?.error?.reason ?? error.message ?? fallbackMessage,
-        api?.error?.errorCode,
-        error.response?.status,
-        api?.error?.data,
+        error.message || fallbackMessage,
+        error.code,
+        error.status,
+        error.details,
       );
     }
 
-    throw new ApiClientError("알 수 없는 오류가 발생했습니다.");
+    throw new ApiClientError(
+      error instanceof Error ? error.message : fallbackMessage,
+    );
   }
 }
 

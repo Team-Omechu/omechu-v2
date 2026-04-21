@@ -23,7 +23,7 @@ export function IngredientCard({
     ? allergies.join(",")
     : typeof allergies === "string"
       ? allergies
-      : allergies == null
+      : allergies === null || allergies === undefined
         ? ""
         : String(allergies);
 
@@ -43,6 +43,12 @@ export function IngredientCard({
       <div
         className="bg-background-secondary h-fit w-81.5 rounded-2xl p-5"
         onClick={onCardClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onCardClick?.();
+          }
+        }}
         role="button"
         aria-pressed={undefined}
         tabIndex={0}

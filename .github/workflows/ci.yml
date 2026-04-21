@@ -1,53 +1,100 @@
 # .github/workflows/ci.yml
+name: CI
 
-# 워크플로우의 이름
-name: Develop Branch CI
-
-# 어떤 이벤트에서 이 워크플로우를 실행할지 정의
 on:
   push:
-    branches: [develop]
+    branches: [develop, main]
   pull_request:
-    branches: [develop]
+    branches: [develop, main]
 
-# 실행될 작업(job)들을 정의
 jobs:
-  build-and-test:
-    # 작업이 실행될 환경
+  validate:
+    name: Lint / Typecheck / Format / Unit
     runs-on: ubuntu-latest
-
-    # 작업 단계(step)들을 정의
     steps:
-      # 1. 소스 코드 체크아웃
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      # 2. Node.js 환경 설정
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: "22"
+          node-version: "24"
 
-      # 3. Corepack 활성화 및 pnpm 설정
       - name: Enable Corepack and Setup pnpm
         run: corepack enable
 
-      # 4. 의존성 설치
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
+        working-directory: ./omechu-app
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('omechu-app/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         working-directory: ./omechu-app
 
-      # 5. Prettier 포맷팅 검사
-      - name: Check formatting with Prettier
-        run: pnpm format:check
+      - name: Run validation and unit tests
+        run: pnpm validate:ci
         working-directory: ./omechu-app
 
-      # 6. ESLint 린팅 실행 (next lint는 ESLint 9 flat config와 호환 이슈)
-      - name: Run ESLint
-        run: npx eslint src
+  smoke:
+    name: Playwright smoke
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Enable Corepack and Setup pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
         working-directory: ./omechu-app
 
-      # 7. 빌드 실행
-      - name: Build project
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: ./omechu-app
+
+      - name: Run smoke tests
+        run: pnpm test:e2e
+        working-directory: ./omechu-app
+
+  build:
+    name: Next.js build
+    runs-on: ubuntu-latest
+    needs: [validate, smoke]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Enable Corepack and Setup pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ./omechu-app
+
+      - name: Build
         run: pnpm build
         working-directory: ./omechu-app
+        env:
+          NEXT_TELEMETRY_DISABLED: "1"

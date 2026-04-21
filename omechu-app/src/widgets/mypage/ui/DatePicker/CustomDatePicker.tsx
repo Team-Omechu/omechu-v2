@@ -2,14 +2,14 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 import { isBefore, isSameMonth, startOfMonth } from "date-fns";
 import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 import { CustomInput } from "./CustomInput";
 import { DatePickerHeader } from "./DatePickerHeader";
-import "react-datepicker/dist/react-datepicker.css";
 
 function getDayClassName(viewMonth: Date, date: Date) {
   const monthStart = startOfMonth(viewMonth);
@@ -40,9 +40,11 @@ export function CustomDatePicker({ onChange, value }: CustomDatePickerProps) {
   const [endDate, setEndDate] = useState<Date | null>(value?.endDate ?? null);
   const [viewMonth, setViewMonth] = useState<Date>(new Date());
 
-  useEffect(() => {
-    onChange?.(startDate, endDate);
-  }, [startDate, endDate, onChange]);
+  const applyChange = (next: { start: Date | null; end: Date | null }) => {
+    setStartDate(next.start);
+    setEndDate(next.end);
+    onChange?.(next.start, next.end);
+  };
 
   return (
     <section className="flex w-full flex-col items-end">
@@ -51,11 +53,9 @@ export function CustomDatePicker({ onChange, value }: CustomDatePickerProps) {
           selected={startDate}
           dateFormat="yyyy.MM.dd"
           customInput={<CustomInput />}
-          onChange={(date) => {
-            setStartDate(date);
-            if (endDate && date && date > endDate) {
-              setEndDate(null);
-            }
+          onChange={(date: Date | null) => {
+            const nextEnd = endDate && date && date > endDate ? null : endDate;
+            applyChange({ start: date, end: nextEnd });
           }}
           selectsStart
           startDate={startDate}
@@ -71,10 +71,10 @@ export function CustomDatePicker({ onChange, value }: CustomDatePickerProps) {
           selected={endDate}
           dateFormat="yyyy.MM.dd"
           customInput={<CustomInput />}
-          onChange={(date) => {
+          onChange={(date: Date | null) => {
             if (startDate && date && date.getTime() < startDate.getTime())
               return;
-            setEndDate(date);
+            applyChange({ start: startDate, end: date });
           }}
           selectsEnd
           startDate={startDate}
@@ -87,10 +87,7 @@ export function CustomDatePicker({ onChange, value }: CustomDatePickerProps) {
       </section>
       {startDate && endDate && (
         <button
-          onClick={() => {
-            setStartDate(null);
-            setEndDate(null);
-          }}
+          onClick={() => applyChange({ start: null, end: null })}
           className="mt-2 mr-1 items-end text-xs text-gray-500"
         >
           선택 초기화

@@ -1,12 +1,13 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { ApiClientError, submitInquiry } from "@/entities/user";
-import { Button, FormField, Header, Input } from "@/shared";
+
 import { Toast } from "@/shared/ui/toast/Toast";
+
+import { Button, FormField, Header, Input } from "@/shared";
 
 export default function EmailInquiryPage() {
   const router = useRouter();
@@ -75,9 +76,10 @@ export default function EmailInquiryPage() {
             onChange={(e) => setTitle(e.target.value)}
           />
         </FormField>
-        <FormField label={"문의 내용"} id={""} className="-mt-2">
+        <FormField label={"문의 내용"} id="inquiry-content" className="-mt-2">
           <textarea
             required
+            id="inquiry-content"
             placeholder="궁금한 점이나 개선 의견을 자유롭게 남겨주세요."
             className="bg-brand-secondary text-body-4-regular placeholder:text-font-placeholder border-font-placeholder h-42.5 w-83.5 rounded-[10px] border p-3 outline-none"
             value={content}

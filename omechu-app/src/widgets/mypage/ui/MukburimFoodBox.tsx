@@ -2,9 +2,8 @@
 
 "use client";
 
-import { useState } from "react";
-
 import Image from "next/image";
+import { useState } from "react";
 
 const FALLBACK_IMAGE = "/image/image_empty.svg";
 

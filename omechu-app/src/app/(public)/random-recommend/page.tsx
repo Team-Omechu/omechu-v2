@@ -1,22 +1,20 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { RandomDrawSelector } from "@/widgets/random-draw";
+import { RandomRecommendModal } from "@/widgets/random-recommend-modal";
 
 import { useQuestionAnswerStore } from "@/entities/question";
 import {
   EMPTY_RANDOM_DRAW_SELECTION,
   type RandomDrawSelection,
-  type RandomDrawGroupKey,
-} from "@/entities/randomDraw";
+} from "@/entities/random-draw";
+
 import { Header, ModalWrapper } from "@/shared";
-import { RandomDrawSelector } from "@/widgets/RandomDraw";
-import { RandomRecommendModal } from "@/widgets/RandomRecommendModal";
 
 export default function RandomRecommendPage() {
-  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
 
   const { addition, addAddition, removeAddition } = useQuestionAnswerStore();
@@ -43,8 +41,7 @@ export default function RandomRecommendPage() {
     for (const v of addition) {
       if (!selectedValues.includes(v)) removeAddition(v);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedValues]);
+  }, [selectedValues, addition, addAddition, removeAddition]);
 
   // ✅ selector 내부에서 토글된 값이 넘어오면 selection 업데이트
   const handleSelectionChange = (next: RandomDrawSelection) => {
@@ -67,7 +64,7 @@ export default function RandomRecommendPage() {
         type="button"
         className="active:scale-[0.99]"
       >
-        <p className="text-center text-[1.25rem] font-bold text-[#FF364B]">
+        <p className="text-status-error text-center text-[1.25rem] font-bold">
           Press me!
         </p>
         <Image
@@ -75,6 +72,7 @@ export default function RandomRecommendPage() {
           alt={"randombutton"}
           width={190}
           height={127}
+          priority
         />
       </button>
 

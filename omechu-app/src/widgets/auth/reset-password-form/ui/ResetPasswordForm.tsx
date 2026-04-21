@@ -5,11 +5,13 @@ import { useCallback, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 
-import { ApiClientError, getAuthErrorMessage } from "@/entities/user";
 import {
-  resetPasswordSchema,
+  type ApiClientError,
   type ResetPasswordFormValues,
-} from "@/entities/user/model/auth.schema";
+  getAuthErrorMessage,
+  resetPasswordSchema,
+} from "@/entities/user";
+
 import { Button, FormField, Input, Toast, useToast } from "@/shared";
 
 type ResetPasswordFormProps = {

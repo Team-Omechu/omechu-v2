@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation";
 
-import { Header } from "@/shared";
 import {
-  termsForPersonalInfoServe,
   termsForPersonalInfoMain,
+  termsForPersonalInfoServe,
 } from "@/shared/constants/terms";
+
+import { Header } from "@/shared";
 
 export function TermForPersonalInfo() {
   const router = useRouter();

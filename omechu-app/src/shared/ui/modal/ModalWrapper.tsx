@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+
+import { motion } from "motion/react";
+
 import { lockBodyScroll, unlockBodyScroll } from "@/shared/lib/bodyScrollLock";
 import { cn } from "@/shared/lib/cn.util";
 
@@ -39,13 +42,25 @@ export function ModalWrapper({
         className,
       )}
     >
-      {/* dim overlay */}
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
 
-      {/* modal content */}
-      <div className="relative z-10" onClick={(e) => e.stopPropagation()}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 8 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 8 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
         {children}
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,23 +1,21 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useQueryClient } from "@tanstack/react-query";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 
 import {
-  ApiClientError,
-  getAuthErrorMessage,
-  fetchProfile,
-  useLoginMutation,
-  loginSchema,
+  type ApiClientError,
   type LoginFormValues,
+  getAuthErrorMessage,
+  loginSchema,
   useAuthStore,
+  useLoginMutation,
 } from "@/entities/user";
+
 import { Button, FormField, Input, Toast, useToast } from "@/shared";
 
 /**
@@ -32,7 +30,6 @@ export default function EmailLoginPage() {
   const justLoggedInRef = useRef(false);
 
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { show: showToast, message: toastMessage, triggerToast } = useToast();
 
   const { mutate: login, isPending, isSuccess } = useLoginMutation();
@@ -40,7 +37,6 @@ export default function EmailLoginPage() {
   const {
     control,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -50,8 +46,8 @@ export default function EmailLoginPage() {
     },
   });
 
-  const emailValue = watch("email");
-  const passwordValue = watch("password");
+  const emailValue = useWatch({ control, name: "email" });
+  const passwordValue = useWatch({ control, name: "password" });
   const trimmedEmailValue = emailValue?.trim();
   const trimmedPasswordValue = passwordValue?.trim();
 
@@ -64,16 +60,9 @@ export default function EmailLoginPage() {
   const onSubmit = useCallback(
     (data: LoginFormValues) => {
       login(data, {
-        onSuccess: async () => {
-          try {
-            await queryClient.prefetchQuery({
-              queryKey: ["user", "profile"],
-              queryFn: fetchProfile,
-            });
-            justLoggedInRef.current = true;
-          } catch (e) {
-            console.warn("[EmailLogin] prefetch profile failed", e);
-          }
+        onSuccess: () => {
+          // useLoginMutation 내부에서 이미 프로필 fetch + setUser 완료
+          justLoggedInRef.current = true;
         },
         onError: (error: unknown) => {
           const e = error as ApiClientError;
@@ -99,7 +88,7 @@ export default function EmailLoginPage() {
         },
       });
     },
-    [login, queryClient, triggerToast],
+    [login, triggerToast],
   );
 
   const user = useAuthStore((s) => s.user);
@@ -117,6 +106,7 @@ export default function EmailLoginPage() {
     }
   }, [isSuccess, user, router]);
 
+  // eslint-disable-next-line react-hooks/refs -- handleSubmit is from react-hook-form
   const handleFormSubmit = handleSubmit(onSubmit);
 
   return (

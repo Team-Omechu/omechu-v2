@@ -1,10 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/entities/user";
 
-import { useAuthStore } from "@/entities/user/model/auth.store";
 import { MainLoading } from "@/shared";
 
 interface ProtectedRouteProps {

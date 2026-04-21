@@ -1,16 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
 import Image from "next/image";
 import {
-  useRouter,
   useParams,
-  useSearchParams,
   usePathname,
+  useRouter,
+  useSearchParams,
 } from "next/navigation";
-
-import { isAxiosError } from "axios";
+import { useCallback, useEffect, useMemo } from "react";
 
 import { useLocationAnswerStore } from "@/entities/location";
 import { useGetMenuDetail } from "@/entities/menu";
@@ -20,13 +17,18 @@ import {
   buildGooglePlacePhotoUrl,
   useGetRestaurants,
 } from "@/entities/restaurant";
+
+import { HttpError } from "@/shared/lib/httpError";
+
 import {
   Header,
   IngredientCard,
+  type MenuDetail,
   RestaurantCard,
   SkeletonRecommendedFoodCard,
   Toast,
-  type MenuDetail,
+  useShareUrl,
+  useToast,
 } from "@/shared";
 
 export default function MenuDetailPage() {
@@ -43,34 +45,38 @@ export default function MenuDetailPage() {
   const { mutate } = usePostMukburim();
 
   // 토스트(공유/기록) 통합
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
-  const toastTimerRef = useRef<number | null>(null);
+  const {
+    show: showToast,
+    message: toastMessage,
+    triggerToast,
+  } = useToast({ duration: 2000 });
 
-  const openToast = (msg: string, ms = 2000) => {
-    setToastMessage(msg);
-    setShowToast(true);
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = window.setTimeout(() => setShowToast(false), ms);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current);
-    };
-  }, []);
-
-  //페이지네이션 상태 + 누적 리스트
-  const [page, setPage] = useState(1);
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [isEnd, setIsEnd] = useState(false);
+  const openToast = useCallback(
+    (msg: string, ms = 2000) => triggerToast(msg, ms),
+    [triggerToast],
+  );
 
   const { locationDenied } = useLocationAnswerStore();
 
-  const { data, isLoading, isFetching, error } = useGetRestaurants(page);
+  const {
+    data,
+    isLoading,
+    isFetching,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    error,
+  } = useGetRestaurants();
 
-  const isRestaurant404 =
-    isAxiosError(error) && error.response?.status === 404;
+  // 누적 리스트는 모든 페이지를 ID로 dedupe 해서 파생.
+  const restaurants = useMemo<Restaurant[]>(() => {
+    const all = data?.pages.flatMap((p) => p.items ?? []) ?? [];
+    return Array.from(new Map(all.map((r) => [r.id, r])).values());
+  }, [data]);
+
+  const isEnd = !hasNextPage;
+
+  const isRestaurant404 = error instanceof HttpError && error.status === 404;
 
   // 위치 허용 여부
   const showRestaurantLoadFail = locationDenied || isRestaurant404;
@@ -78,7 +84,7 @@ export default function MenuDetailPage() {
   const shouldRecord = searchParams.get("record") === "1";
 
   // URL에서 record 파라미터 제거
-  const cleanQuery = () => {
+  const cleanQuery = useCallback(() => {
     const next = new URLSearchParams(searchParams.toString());
     if (next.has("record")) {
       next.delete("record");
@@ -86,7 +92,7 @@ export default function MenuDetailPage() {
         scroll: false,
       });
     }
-  };
+  }, [router, searchParams, pathname]);
 
   useEffect(() => {
     if (!decodeMenuId || !shouldRecord) return;
@@ -95,97 +101,33 @@ export default function MenuDetailPage() {
       onSuccess: () => {
         openToast("먹부림 기록에 등록되었습니다.", 2000);
       },
-      onError: () => {},
+      onError: (err) => {
+        openToast("먹부림 기록 등록에 실패했어요. 잠시 후 다시 시도해 주세요.");
+        console.warn("[RandomRecommend] Mukburim record failed:", err);
+      },
       onSettled: () => {
         cleanQuery();
       },
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [decodeMenuId, shouldRecord]);
-
-  useEffect(() => {
-    if (!data) return;
-
-    const items = data.items ?? [];
-
-    if (page > 1 && items.length === 0) {
-      setIsEnd(true);
-      return;
-    }
-
-    if (items.length > 0) {
-      setRestaurants((prev) => {
-        const prevIds = new Set(prev.map((r) => r.id));
-        const merged = [...prev];
-
-        for (const item of items) {
-          if (!prevIds.has(item.id)) merged.push(item);
-        }
-        return merged;
-      });
-    }
-  }, [data, page]);
+  }, [decodeMenuId, shouldRecord, mutate, openToast, cleanQuery]);
 
   const handleLoadMore = () => {
-    if (isEnd || isFetching) return;
-    setPage((p) => p + 1);
+    if (!hasNextPage || isFetching || isFetchingNextPage) return;
+    void fetchNextPage();
   };
 
-  //공유 로직 (Web Share -> Clipboard fallback)
-  const handleShare = async () => {
-    try {
-      const url = typeof window !== "undefined" ? window.location.href : "";
-      if (!url) return;
+  const { share } = useShareUrl({
+    onCopied: () => openToast("링크가 복사됐어요.", 2000),
+    onFailed: () => alert("공유에 실패했어요. 다시 시도해 주세요."),
+  });
 
-      const nav = typeof window !== "undefined" ? window.navigator : null;
-
-      if (
-        nav &&
-        typeof (nav as Navigator & { share?: unknown }).share === "function"
-      ) {
-        await (
-          nav as Navigator & {
-            share: (data: {
-              title?: string;
-              text?: string;
-              url?: string;
-            }) => Promise<void>;
-          }
-        ).share({
-          title: detailMenu?.name ? `${detailMenu.name} 추천!` : "오늘의 메뉴",
-          text: detailMenu?.name
-            ? `오늘은 ${detailMenu.name} 어때?`
-            : "오늘의 메뉴 확인해봐!",
-          url,
-        });
-        return;
-      }
-
-      if (
-        nav &&
-        nav.clipboard &&
-        typeof nav.clipboard.writeText === "function"
-      ) {
-        await nav.clipboard.writeText(url);
-        openToast("링크가 복사됐어요.", 2000);
-        return;
-      }
-
-      const textarea = document.createElement("textarea");
-      textarea.value = url;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
-      document.body.appendChild(textarea);
-      textarea.focus();
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-
-      openToast("링크가 복사됐어요.", 2000);
-    } catch {
-      alert("공유에 실패했어요. 다시 시도해 주세요.");
-    }
-  };
+  const handleShare = () =>
+    share({
+      title: detailMenu?.name ? `${detailMenu.name} 추천!` : "오늘의 메뉴",
+      text: detailMenu?.name
+        ? `오늘은 ${detailMenu.name} 어때?`
+        : "오늘의 메뉴 확인해봐!",
+    });
 
   return (
     <div className="flex flex-col items-center">
@@ -283,7 +225,7 @@ export default function MenuDetailPage() {
               type="button"
               onClick={handleLoadMore}
               disabled={isEnd || isFetching}
-              className="mr-2 mb-5 w-full text-center text-font-placeholder disabled:opacity-50"
+              className="text-font-placeholder mr-2 mb-5 w-full text-center disabled:opacity-50"
             >
               {isFetching
                 ? "불러오는 중..."

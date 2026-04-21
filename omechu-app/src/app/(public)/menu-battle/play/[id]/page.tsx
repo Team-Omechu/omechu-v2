@@ -1,21 +1,29 @@
-﻿"use client";
-
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+"use client";
 
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
-  BattleResponse,
-  Menu,
-  Player,
-  Ranking,
-  Winner,
-} from "@/entities/menubattle";
-import { Button, Header, Input, Toast } from "@/shared";
+  BattleBoard,
+  BattleResult,
+  Roulette,
+  type RouletteHandle,
+} from "@/widgets/menu-battle";
+
+import {
+  type BattleResponse,
+  type Menu,
+  type Player,
+  type Ranking,
+  type Winner,
+} from "@/entities/menu-battle";
+
 import { menuBattleAPI } from "@/shared/api/menuBattle.api";
-import { BattleBoard, BattleResult } from "@/widgets/menubattle";
-import { Roulette, RouletteHandle } from "@/widgets/menubattle/ui/Roulette";
+
+import { Button, Header, Input, Toast, useToast } from "@/shared";
 
 const BAR_COLORS = ["#FF9029", "#00A3FF", "#5AD886", "#FDDC3F", "#C48CFD"];
 
@@ -30,10 +38,14 @@ const mergeSpinResults = (prev: SpinResult[], incoming: SpinResult[]) => {
   return Array.from(map.values());
 };
 
+const battleQueryKey = (battleId: string | undefined) =>
+  ["battle", battleId] as const;
+
 export default function PlayPage() {
   const { id: battleId } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
 
   const battleNameFromQuery = searchParams.get("battleName");
   const initialNickname = searchParams.get("nickname");
@@ -50,125 +62,107 @@ export default function PlayPage() {
   const [showNicknameModal, setShowNicknameModal] = useState(!initialNickname);
   const [isSubmittingNickname, setIsSubmittingNickname] = useState(false);
 
-  const [toastMessage, setToastMessage] = useState("");
-  const [showToast, setShowToast] = useState(false);
+  const {
+    show: showToast,
+    message: toastMessage,
+    triggerToast: openToast,
+  } = useToast();
 
-  const [menus, setMenus] = useState<Menu[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [creatorNickname, setCreatorNickname] = useState("");
-  const [spinHistory, setSpinHistory] = useState<SpinResult[]>([]);
-  const [finished, setFinished] = useState(false);
-  const [isCreator, setIsCreator] = useState(false);
-  const [isSpinning, setIsSpinning] = useState(false);
   const [isSubmittingSpin, setIsSubmittingSpin] = useState(false);
   const [isFinishing, setIsFinishing] = useState(false);
-  const [winner, setWinner] = useState<Winner | null>(null);
-  const [rankings, setRankings] = useState<Ranking[]>([]);
 
+  const isSpinningRef = useRef(false);
   const rouletteRef = useRef<RouletteHandle | null>(null);
 
-  const openToast = useCallback((message: string) => {
-    setToastMessage(message);
-    setShowToast(true);
-  }, []);
+  // 배틀 상태: 2초 폴링. finished면 폴링 중단.
+  const { data: battleData, error: battleError } = useQuery<BattleResponse>({
+    queryKey: battleQueryKey(battleId),
+    queryFn: () =>
+      menuBattleAPI.getBattle(battleId!) as Promise<BattleResponse>,
+    enabled: !!battleId,
+    refetchInterval: (query) =>
+      query.state.data?.status === "finished" ? false : 2000,
+  });
 
-  const updateFromBattle = useCallback((data: BattleResponse) => {
-    setMenus(
-      data.menus.map((menu, index) => ({
-        menuId: menu.menuId,
-        menuName: menu.menuName,
-        centerAngle: menu.boundaryAngle,
-        color: BAR_COLORS[index % BAR_COLORS.length],
-      })),
-    );
+  const finished = battleData?.status === "finished";
 
-    setPlayers(
-      data.participants.map((participant) => ({
-        id: participant.nickname,
-        name: participant.nickname,
-        joinedAt: new Date(participant.joinedAt).getTime(),
-      })),
-    );
+  // 순위: 동일 주기 폴링.
+  const { data: rankingsData } = useQuery<Ranking[]>({
+    queryKey: ["battle", battleId, "rankings"] as const,
+    queryFn: async () => {
+      const data = await menuBattleAPI.getRankings(battleId!);
+      if (Array.isArray(data)) return data;
+      const rankings = (data as { rankings?: Ranking[] })?.rankings;
+      return Array.isArray(rankings) ? rankings : [];
+    },
+    enabled: !!battleId,
+    refetchInterval: finished ? false : 2000,
+  });
+  const rankings = rankingsData ?? [];
 
-    setSpinHistory((prev) => mergeSpinResults(prev, data.spinResults));
-    setCreatorNickname(data.creatorNickname);
-    setFinished(data.status === "finished");
+  // 생성자 여부: 닉네임이 정해졌을 때만 조회.
+  const { data: isCreatorData } = useQuery<boolean>({
+    queryKey: ["battle", battleId, "isCreator", nickname] as const,
+    queryFn: async () => {
+      const info = await menuBattleAPI.isCreator(battleId!, nickname);
+      return info.isCreator;
+    },
+    enabled: !!battleId && !!nickname,
+  });
+  const isCreator =
+    isCreatorData ??
+    (battleData ? battleData.creatorNickname === nickname : false);
 
-    const rankedWinner = data.spinResults.find((result) => result.rank === 1);
-    if (rankedWinner) {
-      setWinner({
-        nickname: rankedWinner.nickname,
-        closestMenuName: rankedWinner.closestMenuName,
-        distanceToBoundary: rankedWinner.distanceToBoundary,
-        rank: rankedWinner.rank,
-      });
-    }
-  }, []);
+  // 배틀 응답에서 파생되는 UI 상태.
+  const menus: Menu[] = useMemo(() => {
+    if (!battleData) return [];
+    return battleData.menus.map((menu, index) => ({
+      menuId: menu.menuId,
+      menuName: menu.menuName,
+      centerAngle: menu.boundaryAngle,
+      color: BAR_COLORS[index % BAR_COLORS.length] ?? BAR_COLORS[0]!,
+    }));
+  }, [battleData]);
+
+  const players: Player[] = useMemo(() => {
+    if (!battleData) return [];
+    return battleData.participants.map((participant) => ({
+      id: participant.nickname,
+      name: participant.nickname,
+      joinedAt: new Date(participant.joinedAt).getTime(),
+    }));
+  }, [battleData]);
+
+  const creatorNickname = battleData?.creatorNickname ?? "";
+  const spinHistory: SpinResult[] = useMemo(
+    () => battleData?.spinResults ?? [],
+    [battleData],
+  );
+
+  const winner: Winner | null = useMemo(() => {
+    const ranked = battleData?.spinResults.find((result) => result.rank === 1);
+    if (!ranked) return null;
+    return {
+      nickname: ranked.nickname,
+      closestMenuName: ranked.closestMenuName,
+      distanceToBoundary: ranked.distanceToBoundary,
+      rank: ranked.rank,
+    };
+  }, [battleData]);
 
   const hasMyStopped = useMemo(
     () => !!nickname && spinHistory.some((item) => item.nickname === nickname),
     [nickname, spinHistory],
   );
 
-  const fetchRankings = useCallback(
-    async (silent = false) => {
-      if (!battleId) return;
-      try {
-        const data = await menuBattleAPI.getRankings(battleId);
-        const normalized = Array.isArray(data)
-          ? data
-          : Array.isArray((data as { rankings?: Ranking[] })?.rankings)
-            ? ((data as { rankings: Ranking[] }).rankings ?? [])
-            : [];
-        setRankings(normalized);
-      } catch {
-        if (!silent) openToast("순위를 불러오지 못했습니다.");
-      }
-    },
-    [battleId, openToast],
-  );
-
-  const syncBattle = useCallback(
-    async (silent = false) => {
-      if (!battleId) return;
-      try {
-        const data = (await menuBattleAPI.getBattle(
-          battleId,
-        )) as BattleResponse;
-        updateFromBattle(data);
-
-        if (nickname) {
-          setIsCreator(data.creatorNickname === nickname);
-          try {
-            const creatorInfo = await menuBattleAPI.isCreator(
-              battleId,
-              nickname,
-            );
-            setIsCreator(creatorInfo.isCreator);
-          } catch {
-            // keep fallback
-          }
-        } else {
-          setIsCreator(false);
-        }
-
-        await fetchRankings(silent);
-      } catch {
-        if (!silent) openToast("배틀방 정보를 불러오지 못했습니다.");
-      }
-    },
-    [battleId, nickname, fetchRankings, openToast, updateFromBattle],
-  );
-
+  // 배틀 로드 실패 시 토스트.
+  const toastedErrorRef = useRef<unknown>(null);
   useEffect(() => {
-    void syncBattle();
-  }, [syncBattle]);
-
-  useEffect(() => {
-    if (!battleId || finished) return;
-    const timer = window.setInterval(() => void syncBattle(true), 2000);
-    return () => window.clearInterval(timer);
-  }, [battleId, finished, syncBattle]);
+    if (battleError && toastedErrorRef.current !== battleError) {
+      toastedErrorRef.current = battleError;
+      openToast("배틀방 정보를 불러오지 못했습니다.");
+    }
+  }, [battleError, openToast]);
 
   useEffect(() => {
     if (!battleId || !nickname || finished) return;
@@ -189,12 +183,6 @@ export default function PlayPage() {
   }, [battleId, nickname, finished]);
 
   useEffect(() => {
-    if (!showToast) return;
-    const timer = window.setTimeout(() => setShowToast(false), 2500);
-    return () => window.clearTimeout(timer);
-  }, [showToast]);
-
-  useEffect(() => {
     if (
       showNicknameModal ||
       finished ||
@@ -203,13 +191,12 @@ export default function PlayPage() {
       menus.length === 0
     )
       return;
-    if (isSpinning) return;
+    if (isSpinningRef.current) return;
+    isSpinningRef.current = true;
     rouletteRef.current?.start();
-    setIsSpinning(true);
   }, [
     finished,
     hasMyStopped,
-    isSpinning,
     isSubmittingSpin,
     menus.length,
     showNicknameModal,
@@ -217,6 +204,9 @@ export default function PlayPage() {
 
   const isValidNickname = (value: string) =>
     /^[a-zA-Z0-9가-힣]{1,20}$/.test(value);
+
+  const invalidateBattle = () =>
+    queryClient.invalidateQueries({ queryKey: battleQueryKey(battleId) });
 
   const handleConfirmNickname = async () => {
     const trimmed = nickname.trim();
@@ -228,11 +218,8 @@ export default function PlayPage() {
 
     try {
       setIsSubmittingNickname(true);
-      const joinResult = await menuBattleAPI.joinBattle(battleId, trimmed);
+      await menuBattleAPI.joinBattle(battleId, trimmed);
       setNickname(trimmed);
-      if (typeof joinResult?.isCreator === "boolean") {
-        setIsCreator(joinResult.isCreator);
-      }
       setShowNicknameModal(false);
 
       window.history.replaceState(
@@ -241,7 +228,7 @@ export default function PlayPage() {
         `/menu-battle/play/${battleId}?nickname=${encodeURIComponent(trimmed)}&battleName=${encodeURIComponent(battleName)}`,
       );
 
-      await syncBattle();
+      await invalidateBattle();
     } catch (error) {
       try {
         const battle = (await menuBattleAPI.getBattle(
@@ -253,7 +240,6 @@ export default function PlayPage() {
 
         if (alreadyJoined) {
           setNickname(trimmed);
-          setIsCreator(battle.creatorNickname === trimmed);
           setShowNicknameModal(false);
 
           window.history.replaceState(
@@ -262,7 +248,7 @@ export default function PlayPage() {
             `/menu-battle/play/${battleId}?nickname=${encodeURIComponent(trimmed)}&battleName=${encodeURIComponent(battleName)}`,
           );
 
-          await syncBattle();
+          await invalidateBattle();
           return;
         }
       } catch {
@@ -282,53 +268,55 @@ export default function PlayPage() {
   const handleStop = async () => {
     if (!battleId || !nickname || finished || hasMyStopped) return;
 
-    if (!isSpinning) {
+    if (!isSpinningRef.current) {
+      isSpinningRef.current = true;
       rouletteRef.current?.start();
-      setIsSpinning(true);
       return;
     }
 
     // Stop immediately on click, then reconcile with server result.
     rouletteRef.current?.stop();
-    setIsSpinning(false);
+    isSpinningRef.current = false;
 
     try {
       setIsSubmittingSpin(true);
       const result = await menuBattleAPI.spin(battleId, nickname);
       await rouletteRef.current?.animateToAngle(result.stoppedAngle);
-      setSpinHistory((prev) =>
-        mergeSpinResults(prev, [
-          {
-            nickname: result.nickname,
-            stoppedAngle: result.stoppedAngle,
-            closestMenuName: result.closestMenuName,
-            distanceToBoundary: result.distanceToBoundary,
-            rank: result.rank,
-            spunAt: result.spunAt,
-          },
-        ]),
+
+      // Optimistic update — 즉시 spinHistory에 반영.
+      queryClient.setQueryData<BattleResponse>(
+        battleQueryKey(battleId),
+        (prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            spinResults: mergeSpinResults(prev.spinResults, [
+              {
+                nickname: result.nickname,
+                stoppedAngle: result.stoppedAngle,
+                closestMenuName: result.closestMenuName,
+                distanceToBoundary: result.distanceToBoundary,
+                rank: result.rank,
+                spunAt: result.spunAt,
+              },
+            ]),
+          };
+        },
       );
-      await syncBattle();
+      await invalidateBattle();
     } catch {
       openToast("스핀에 실패했습니다. 잠시 후 다시 시도해주세요.");
     } finally {
       setIsSubmittingSpin(false);
     }
   };
+
   const handleFinish = async () => {
     if (!battleId || !nickname || !isCreator || finished) return;
     try {
       setIsFinishing(true);
-      const result = await menuBattleAPI.finish(battleId, nickname);
-      if (result && typeof result === "object" && "winner" in result) {
-        const winnerFromResult = (result as { winner?: Winner }).winner;
-        if (winnerFromResult) {
-          setWinner(winnerFromResult);
-        }
-      }
-      setFinished(true);
-      await syncBattle(true);
-      await fetchRankings(true);
+      await menuBattleAPI.finish(battleId, nickname);
+      await invalidateBattle();
     } catch {
       openToast("배틀 마감에 실패했습니다.");
     } finally {

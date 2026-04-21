@@ -1,6 +1,5 @@
-import Image from "next/image";
-
 import type { Metadata } from "next";
+import Image from "next/image";
 
 import { Header } from "@/shared";
 
@@ -34,10 +33,11 @@ export default function LoginLayout({
       {/* 로고 - 고정 위치 */}
       <div className="mt-12 flex justify-center">
         <Image
-          src="/logo/logo.png"
+          src="/logo/logo.svg"
           alt="Omechu Logo"
           width={139}
           height={92}
+          style={{ width: "auto", height: "auto" }}
           priority
         />
       </div>

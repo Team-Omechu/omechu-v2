@@ -2,13 +2,15 @@
 
 import { useRouter } from "next/navigation";
 
-import {
-  ApiClientError,
-  useRequestPasswordResetMutation,
-  type FindPasswordFormValues,
-} from "@/entities/user";
-import { Header, Toast, useToast } from "@/shared";
 import { ForgotPasswordForm } from "@/widgets/auth";
+
+import {
+  type ApiClientError,
+  type FindPasswordFormValues,
+  useRequestPasswordResetMutation,
+} from "@/entities/user";
+
+import { Header, Toast, useToast } from "@/shared";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();

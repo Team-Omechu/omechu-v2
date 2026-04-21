@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { cva, VariantProps } from "class-variance-authority";
+import { type VariantProps, cva } from "class-variance-authority";
 
 import { CloseEyeIcon, OpenEyeIcon, SearchIcon } from "@/shared/assets/icons";
 import { cn } from "@/shared/lib/cn.util";

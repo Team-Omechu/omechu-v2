@@ -5,12 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import clsx from "clsx";
 
-import {
-  ApiClientError,
-  useAuthStore,
-  useProfile,
-  withdrawAccount,
-} from "@/entities/user";
+import { useAuthStore, useProfile, withdraw } from "@/entities/user";
 
 import { CheckIcon } from "@/shared/assets/icons";
 
@@ -68,17 +63,12 @@ export default function DeleteAccountPage() {
 
     setIsPending(true);
     try {
-      await withdrawAccount({
-        confirmed: true,
-        reason: selectedReason,
-      });
+      await withdraw(selectedReason);
       setShowModal(true);
-    } catch (err) {
-      if (err instanceof ApiClientError) {
-        triggerToast(err.message || "회원 탈퇴에 실패했습니다.");
-      } else {
-        triggerToast("회원 탈퇴에 실패했습니다.");
-      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "회원 탈퇴에 실패했습니다.";
+      triggerToast(msg || "회원 탈퇴에 실패했습니다.");
     } finally {
       setIsPending(false);
     }

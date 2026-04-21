@@ -1,14 +1,16 @@
-// Supabase 기반 Public API (새 경로 — 권장)
+// Supabase 기반 Public API (권장)
 export {
   signUpWithEmail,
   signInWithEmail,
   signOut as signOutSupabase,
-  signInWithGoogle,
+  beginGoogleLogin,
+  signInWithGoogleCode,
   signInWithKakaoCode,
   sendVerificationCodeEmail,
   verifyEmailCode,
   requestPasswordReset as requestPasswordResetSupabase,
   updatePassword,
+  changePassword,
   getCurrentUser as getCurrentUserSupabase,
   withdraw,
   type SignUpInput,
@@ -20,41 +22,17 @@ export {
   updateProfile as updateProfileSupabase,
   setPreferences,
   setAllergies,
-  submitInquiry as submitInquirySupabase,
+  submitInquiry,
   saveAgreement,
   type PreferKind,
   type ExerciseKind,
 } from "./api/supabaseProfile";
 
-// 레거시 axios 기반 (마이그레이션 완료 후 제거 예정)
-export {
-  ApiClientError,
-  type ApiResponse,
-  type ApiError,
-  type LoginSuccessData,
-  type LoginTokens,
-  type SignupSuccessData,
-  type SendVerificationCodeSuccessData,
-  type VerifyVerificationCodeSuccessData,
-  type RequestPasswordResetSuccessData,
-  login,
-  signup,
-  sendVerificationCode,
-  verifyVerificationCode,
-  requestPasswordReset,
-  resetPassword,
-  logout,
-  changePassword,
-  getCurrentUser,
-} from "./api/authApi";
+export { ApiClientError } from "@/shared/lib/apiClientError";
+export type { ApiResponse, ApiError } from "@/shared/config/api.types";
 
-export {
-  fetchProfile,
-  updateProfile,
-  withdrawAccount,
-  submitInquiry,
-} from "./api/profileApi";
-
+// TODO(supabase-migration): 추천 제외 메뉴 관리.
+// 현재 레거시 axios 기반 — user_except_menu 테이블 + RLS로 이전 필요.
 export {
   fetchRecommendManagement,
   exceptMenu,

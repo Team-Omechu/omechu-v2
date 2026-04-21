@@ -1,13 +1,11 @@
 import { type Metadata } from "next";
 
 import {
+  fetchMenuDetailForMetadata,
   generateMenuMetadata,
   generateMinimalMetadata,
-} from "@/shared/lib/generateMenuMetadata";
-import {
-  fetchBattleWinnerForMetadata,
-  fetchMenuDetailForMetadata,
-} from "@/shared/lib/metadataFetchers";
+} from "@/entities/menu";
+import { fetchBattleWinnerForMetadata } from "@/entities/menu-battle";
 
 interface LayoutProps {
   children: React.ReactNode;

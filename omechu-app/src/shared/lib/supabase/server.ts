@@ -1,10 +1,13 @@
 // Server Supabase client.
 // Next 16 RSC / Route Handler / Server Action에서 사용.
 // cookies()를 통해 세션 쿠키를 읽고 갱신한다.
+//
+// 서비스 롤 키가 필요한 admin 작업은 Supabase Edge Function
+// (supabase/functions/*)에서 수행한다. Next 서버에서 service_role을
+// 직접 다루지 않도록 의도적으로 admin client는 제공하지 않는다.
 import { cookies } from "next/headers";
 
 import { createServerClient } from "@supabase/ssr";
-import { createClient as createSbClient } from "@supabase/supabase-js";
 import "server-only";
 
 export async function createClient() {
@@ -30,16 +33,4 @@ export async function createClient() {
       },
     },
   );
-}
-
-// 서버 전용. service_role 키가 필요한 어드민 작업용.
-// ❗ 클라이언트 번들에 절대 들어가면 안 된다.
-export function createAdminClient() {
-  const secret = process.env.SUPABASE_SECRET_KEY;
-  if (!secret) {
-    throw new Error("SUPABASE_SECRET_KEY is required for admin client");
-  }
-  return createSbClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, secret, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
 }

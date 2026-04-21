@@ -1,4 +1,5 @@
-import { ApiClientError } from "@/entities/user/api/authApi";
+// TODO(supabase-migration): user_except_menu 테이블 + RLS로 이전 필요.
+// 현재 NEXT_PUBLIC_API_URL(UMC 백엔드) 의존 — 백엔드 서버 부재로 동작하지 않음.
 import type {
   ExceptMenuRequest,
   ExceptMenuResponse,
@@ -8,6 +9,7 @@ import type {
 } from "@/entities/user/model/recommend.types";
 
 import type { ApiResponse } from "@/shared/config/api.types";
+import { ApiClientError } from "@/shared/lib/apiClientError";
 import { axiosInstance } from "@/shared/lib/axiosInstance";
 import { HttpError } from "@/shared/lib/httpError";
 

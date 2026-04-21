@@ -1,3 +1,5 @@
+// TODO(supabase-migration): `meal_alert` 테이블 + RLS로 이전 필요.
+// 현재 NEXT_PUBLIC_API_URL(UMC 백엔드) 의존 — 백엔드 서버 부재로 동작하지 않음.
 import type {
   MealAlertPatchBody,
   MealAlertToggleResponse,

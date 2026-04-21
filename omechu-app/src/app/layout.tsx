@@ -99,24 +99,30 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="ko" className={notoSansKR.variable}>
       <body className="bg-gray-200">
         <Script id="website-jsonld" type="application/ld+json">
           {JSON.stringify(siteJsonLd)}
         </Script>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-JP48NBPEDV"
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-JP48NBPEDV');
-          `}
-        </Script>
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}');
+              `}
+            </Script>
+          </>
+        )}
         {/* 모바일 앱 컨테이너 - max-width 제한, 중앙 정렬 */}
         <div className="bg-background-primary relative mx-auto flex min-h-screen w-full max-w-120 min-w-93.75 flex-col overflow-x-hidden shadow-xl">
           <Providers>

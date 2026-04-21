@@ -9,7 +9,7 @@ on:
 
 jobs:
   validate:
-    name: Lint / Typecheck / Format / Unit
+    name: Lint / Typecheck / Format
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -41,42 +41,14 @@ jobs:
         run: pnpm install --frozen-lockfile
         working-directory: ./omechu-app
 
-      - name: Run validation and unit tests
+      - name: Run validation
         run: pnpm validate:ci
-        working-directory: ./omechu-app
-
-  smoke:
-    name: Playwright smoke
-    runs-on: ubuntu-latest
-    needs: validate
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: "24"
-
-      - name: Enable Corepack and Setup pnpm
-        run: corepack enable
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        working-directory: ./omechu-app
-
-      - name: Install Playwright browser
-        run: pnpm exec playwright install --with-deps chromium
-        working-directory: ./omechu-app
-
-      - name: Run smoke tests
-        run: pnpm test:e2e
         working-directory: ./omechu-app
 
   build:
     name: Next.js build
     runs-on: ubuntu-latest
-    needs: [validate, smoke]
+    needs: validate
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6

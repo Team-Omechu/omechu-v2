@@ -10,7 +10,7 @@ import {
 import { useCallback, useEffect, useMemo } from "react";
 
 import { useLocationAnswerStore } from "@/entities/location";
-import { useGetMenuDetail } from "@/entities/menu";
+import { type MenuDetail, useGetMenuDetail } from "@/entities/menu";
 import { usePostMukburim } from "@/entities/mukburim";
 import type { Restaurant } from "@/entities/restaurant";
 import {
@@ -23,7 +23,6 @@ import { HttpError } from "@/shared/lib/httpError";
 import {
   Header,
   IngredientCard,
-  type MenuDetail,
   RestaurantCard,
   SkeletonRecommendedFoodCard,
   Toast,

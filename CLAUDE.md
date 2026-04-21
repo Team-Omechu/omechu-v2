@@ -18,7 +18,6 @@ Claude Code(claude.ai/code)가 이 저장소 작업 시 참고할 가이드.
 - **Styling**: Tailwind CSS 4 (CSS-first config)
 - **State**: Zustand (client) / TanStack Query (server)
 - **Forms**: React Hook Form + Zod 4
-- **Testing**: Vitest (unit) / Playwright (e2e smoke)
 - **Monitoring**: Sentry + Vercel Analytics + Speed Insights
 - **Package Manager**: pnpm (강제 — `npm`/`yarn` 금지)
 - **Deploy**: Vercel Hobby + Supabase Free (마이그레이션 진행 중)
@@ -31,11 +30,17 @@ Claude Code(claude.ai/code)가 이 저장소 작업 시 참고할 가이드.
 omechu-renewal/
 ├── omechu-app/              # Next.js app
 │   ├── src/
-│   ├── e2e/                 # Playwright smoke
 │   ├── docs/CONVENTIONS.md  # 코드 스타일 + Git + Lint Policy
 │   ├── eslint.config.mjs
 │   ├── commitlint.config.mjs
 │   └── ...
+├── supabase/
+│   └── functions/           # Deno edge functions
+│       ├── _shared/         #   cors.ts, supabase.ts (admin/authed client)
+│       ├── google-login/    #   Google OAuth code → Supabase 세션
+│       ├── kakao-login/     #   Kakao OAuth code → Supabase 세션
+│       ├── google-places/   #   Google Places proxy
+│       └── withdraw/        #   회원 탈퇴
 ├── .husky/                  # Git hooks (pre-commit, commit-msg, pre-push)
 ├── .github/workflows/ci.yml
 ├── AGENTS.md                # AI agent 규칙 (Claude Code / Codex 등)
@@ -56,13 +61,8 @@ pnpm format          # Prettier 쓰기
 pnpm format:check    # Prettier 검사
 pnpm typecheck       # tsc --noEmit
 
-pnpm test            # = test:unit
-pnpm test:unit       # Vitest (one-shot)
-pnpm test:unit:watch # Vitest watch
-pnpm test:e2e        # Playwright
-
 pnpm validate        # lint + typecheck + format:check
-pnpm validate:ci     # validate + test:unit (CI용)
+pnpm validate:ci     # = validate (CI용)
 ```
 
 ## Architecture — FSD 4-Layer
@@ -151,10 +151,37 @@ import { useAuthStore } from "@/entities/user";
 
 ## Authentication
 
-- JWT + Axios interceptor (refresh token queue)
-- Zustand persist (localStorage)
-- Client-side 보호: `app/(private)/layout.tsx`의 `ProtectedRoute`
-- Supabase Auth 전환 예정
+Supabase Auth 기반. 소셜 로그인(Google/Kakao)은 **Supabase 네이티브 provider 대신 Edge Function 경로** 사용.
+
+### 이유
+
+Supabase 네이티브 OAuth 를 쓰면 리다이렉트 체인에 `<project-ref>.supabase.co` 가 노출된다. 포폴 도메인 일관성(`omechu.log8.kr` 단일화)을 위해 edge function 통일 방식 채택. Custom domain(Supabase Pro $25/mo) 대체재.
+
+### 구성
+
+| 역할 | 경로 |
+|---|---|
+| FE Google 진입 | `entities/user/api/supabaseAuth.ts` · `beginGoogleLogin()` |
+| FE 콜백 | `app/auth/google/callback/page.tsx`, `app/auth/kakao/callback/page.tsx` |
+| Edge Function | `supabase/functions/google-login/index.ts`, `supabase/functions/kakao-login/index.ts` |
+| 이메일 매직링크 콜백 | `app/auth/callback/route.ts` (소셜 아님) |
+| 세션 스토어 | Zustand persist (`auth.store.ts`) + Supabase client 세션 |
+| 보호 라우팅 | `app/(private)/layout.tsx` `ProtectedRoute` |
+
+### Flow (Google/Kakao 동일)
+
+```
+FE authorize URL → IDP → FE /auth/{provider}/callback?code=...
+→ POST edge function(code, redirectUri)
+→ edge: token exchange + userinfo + admin.createUser + generateLink(magiclink) + verifyOtp
+→ FE setSession(access/refresh)
+```
+
+### 운영 체크리스트
+
+1. Google/Kakao 콘솔 리다이렉트 URI 에 `https://omechu.log8.kr/auth/{provider}/callback` 등록.
+2. Supabase Dashboard의 Google/Kakao provider 는 **OFF** 유지 (edge function 과 충돌 방지).
+3. Edge function 시크릿은 `supabase secrets set` 으로 등록, `.env*` 값은 문서·로컬 테스트용.
 
 ## State Management
 
@@ -180,26 +207,25 @@ import { useAuthStore } from "@/entities/user";
 
 ## Environment Variables
 
-```bash
-NEXT_PUBLIC_API_URL=<backend-api-url>
-SUPABASE_PROJECT_REF=xztldvunnasjaxnzqpct
-NEXT_PUBLIC_SUPABASE_URL=https://xztldvunnasjaxnzqpct.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_TW1dRfU6xM4uxpt2jodk8w_AIO67EMq
-SUPABASE_SECRET_KEY=<server-only-supabase-secret-key>
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=<google-maps-api-key>
-GOOGLE_MAP_SERVER_API_KEY=<server-side-google-key>
-NEXT_PUBLIC_EMBED_API_URL=<embed-api-url>
-NEXT_PUBLIC_SENTRY_DSN=<sentry-dsn>
-SENTRY_AUTH_TOKEN=<sentry-auth-token>
-SENTRY_ORG=omechu
-SENTRY_PROJECT=omechu-fe
-NEXT_PUBLIC_SITE_URL=https://omechu.log8.kr
-```
+| 키 | 범위 | 용도 |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | public | 레거시 백엔드 base URL (마이그레이션 중) |
+| `SUPABASE_PROJECT_REF` · `NEXT_PUBLIC_SUPABASE_URL` · `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public | Supabase 클라이언트 초기화 |
+| `SUPABASE_SECRET_KEY` | server | Supabase service role (서버 전용) |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` · `NEXT_PUBLIC_GOOGLE_REDIRECT_URI` | public | Google authorize URL 구성 (FE) |
+| `GOOGLE_CLIENT_ID` · `GOOGLE_CLIENT_SECRET` | server (edge) | `google-login` edge function 토큰 교환 |
+| `NEXT_PUBLIC_KAKAO_REDIRECT_URI` · `NEXT_PUBLIC_KAKAO_JS_KEY` | public | Kakao authorize/JS SDK |
+| `KAKAO_REST_API_KEY` · `KAKAO_CLIENT_SECRET` | server (edge) | `kakao-login` edge function 토큰 교환 |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` · `GOOGLE_MAP_SERVER_API_KEY` | split | 클라 지도 / 서버 proxy |
+| `NEXT_PUBLIC_SITE_URL` | public | SEO canonical |
+| `NEXT_PUBLIC_SENTRY_DSN` · `SENTRY_*` | mixed | Sentry |
+| `NEXT_PUBLIC_GA_ID` | public | GA4 측정 ID (`G-XXXXXXXXXX`) |
 
-`NEXT_PUBLIC_SUPABASE_*`는 브라우저/SSR용 공개 설정.
-`SUPABASE_SECRET_KEY`는 서버 전용. 절대 클라이언트 코드나 공개 저장소에 넣지 말 것.
+- `NEXT_PUBLIC_*` 는 브라우저 번들 포함 → 공개값만.
+- `SUPABASE_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`, `KAKAO_CLIENT_SECRET`, `SENTRY_AUTH_TOKEN` 은 서버 전용. 커밋 금지.
+- Edge function 시크릿은 `.env*` 가 아니라 `supabase secrets set` 으로 등록한다. `.env*` 의 값은 문서·로컬 재현용.
 
-테스트 환경에선 `.env.test` 사용. `.env.local`에 의존하지 말 것.
+샘플은 `omechu-app/.env.example` 참고.
 
 ## Image Handling
 
@@ -212,9 +238,8 @@ NEXT_PUBLIC_SITE_URL=https://omechu.log8.kr
 - [x] FSD 4계층 + Public API barrel 강제
 - [x] ESLint / Prettier / Husky / Commitlint / CI 정비
 - [x] tsconfig strict 확장 (noUncheckedIndexedAccess 등)
-- [x] Vitest / Playwright smoke 인프라
+- [x] JWT + Redis → Supabase Auth (이메일/OTP + Edge Function 기반 Google/Kakao)
 - [ ] Socket.IO 배틀 → Supabase Realtime
-- [ ] JWT + Redis → Supabase Auth
 - [ ] MySQL → Supabase Postgres
 - [ ] S3 → Supabase Storage
 - [ ] 개인화 추천 엔진 고도화

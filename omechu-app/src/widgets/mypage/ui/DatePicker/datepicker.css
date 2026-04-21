@@ -11,7 +11,6 @@
 
   display: flex !important;
   flex-direction: column !important;
-  /* justify-content: center !important; */
   align-items: center !important;
 
   border-radius: 16px !important;
@@ -28,7 +27,7 @@
 .react-datepicker__header {
   text-align: center;
   width: 286px !important;
-  background-color: --var(--color-brand-secondary) !important;
+  background-color: var(--color-brand-secondary) !important;
   border: none !important;
   padding: 4px 0 !important;
   position: relative;
@@ -88,7 +87,7 @@
   display: flex;
   align-items: center;
 
-  color: --var(--color-font-high) !important;
+  color: var(--color-font-high) !important;
   font-size: 16px;
   text-align: center !important;
   line-height: 32px !important;
@@ -96,16 +95,10 @@
 
 .react-datepicker__day--in-range,
 .react-datepicker__day--in-selecting-range {
-  color: --var(--color-font-high) !important;
+  color: var(--color-font-high) !important;
   background-color: #eeeeee !important;
   border-radius: 0.3rem;
 }
-
-/* .react-datepicker__day--in-selecting-range {
-  color: #fff !important;
-  background-color: #242424 !important;
-  border-radius: 0.3rem;
-} */
 
 .react-datepicker__day--range-start,
 .react-datepicker__day--range-end {
@@ -120,21 +113,11 @@
   border-radius: 0.3rem;
 }
 
-/* .react-datepicker__month-text--selected,
-.react-datepicker__month-text--in-selecting-range,
-.react-datepicker__month-text--in-range,
-.react-datepicker__quarter-text--selected,
-.react-datepicker__quarter-text--in-selecting-range,
-.react-datepicker__quarter-text--in-range,
-.react-datepicker__year-text--selected 
-
-/* 지난달 날짜: 완전히 숨김 */
 .dp-prev-month {
   visibility: hidden;
   pointer-events: none;
 }
 
-/* 다음달 날짜: 회색 */
 .dp-next-month {
   color: #9ca3af;
 }

@@ -1,3 +1,8 @@
+// TODO(supabase-migration): 배틀 전체 플로우 재설계 필요.
+// - `menu_battle`, `battle_participant`, `battle_spin` 테이블 + RLS
+// - create/spin/finish은 원자성을 위해 Postgres RPC 함수 (Edge Function도 가능)
+// - 참가자 join/leave, spin 결과 broadcast는 Supabase Realtime
+// 현재 NEXT_PUBLIC_API_URL(UMC 백엔드) 의존 — 백엔드 서버 부재로 동작하지 않음.
 import { fetchJSON } from "./fetchJSON";
 
 export const menuBattleAPI = {

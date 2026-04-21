@@ -1,5 +1,6 @@
-// OAuth / Magic link callback.
-// Supabase가 URL에 `code`를 붙여 리다이렉트 → exchangeCodeForSession으로 세션 쿠키 설정.
+// 이메일 확인 / 매직링크 / 비밀번호 재설정 콜백 전용.
+// URL에 `code`가 실려 들어오면 exchangeCodeForSession으로 세션 쿠키를 설정한다.
+// 소셜 로그인(Google/Kakao)은 전용 /auth/{provider}/callback + edge function 경로 사용.
 import { NextResponse } from "next/server";
 
 import { createClient as createSupabaseServerClient } from "@/shared/lib/supabase/server";

@@ -17,8 +17,3 @@ pnpm-lock.yaml
 pnpm-workspace.yaml
 next-env.d.ts
 .next/
-
-# Playwright artifacts
-test-results/
-playwright-report/
-

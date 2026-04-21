@@ -1,6 +1,7 @@
 import { type Metadata } from "next";
 
-import { type MenuDetail } from "@/shared/config/menu";
+import { type MenuDetail } from "@/entities/menu/model/menu.types";
+
 import { BASE_URL } from "@/shared/constants/url";
 
 const MAX_DISPLAY_MENUS = 5;

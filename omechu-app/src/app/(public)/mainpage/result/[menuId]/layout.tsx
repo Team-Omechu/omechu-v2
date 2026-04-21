@@ -2,10 +2,10 @@ import { type Metadata } from "next";
 import Script from "next/script";
 
 import {
+  fetchMenuDetailForMetadata,
   generateMenuMetadata,
   generateRecipeJsonLd,
-} from "@/shared/lib/generateMenuMetadata";
-import { fetchMenuDetailForMetadata } from "@/shared/lib/metadataFetchers";
+} from "@/entities/menu";
 
 interface LayoutProps {
   children: React.ReactNode;

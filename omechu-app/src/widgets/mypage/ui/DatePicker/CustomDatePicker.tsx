@@ -10,6 +10,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import { CustomInput } from "./CustomInput";
 import { DatePickerHeader } from "./DatePickerHeader";
+import "./datepicker.css";
 
 function getDayClassName(viewMonth: Date, date: Date) {
   const monthStart = startOfMonth(viewMonth);

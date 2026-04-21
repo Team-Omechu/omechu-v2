@@ -29,4 +29,5 @@ export function Providers({ children }: ProvidersProps) {
 // 개별 export
 export { AuthProvider } from "./AuthProvider";
 export { ProtectedRoute } from "./ProtectedRoute";
+export { GuestRoute } from "./GuestRoute";
 export { OnboardingGuard } from "./OnboardingGuard";

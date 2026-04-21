@@ -13,6 +13,8 @@ type WrappedResponse<T> = {
   success?: T;
 };
 
+// TODO(supabase-migration): Supabase `menu` 테이블 조회로 이전.
+// 현재 NEXT_PUBLIC_API_URL(UMC 백엔드) 페이징 의존 — 백엔드 부재 시 빈 배열 반환.
 async function fetchAllMenus(): Promise<Menu[]> {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   if (!apiUrl) return [];

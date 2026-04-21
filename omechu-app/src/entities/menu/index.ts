@@ -8,8 +8,19 @@ export type {
   MenuItem,
   MenuListResponse,
   menuType,
-  TagData,
 } from "./config/resultData";
+export type { Menu, MenuDetail } from "./model/menu.types";
 export { useGetMenu } from "./model/useGetMenu";
 export { useGetMenuDetail } from "./model/useGetMenuDetail";
 export { useGetRandomMenu } from "./model/useGetRandomMenu";
+export {
+  generateMenuMetadata,
+  generateMinimalMetadata,
+  generateRecipeJsonLd,
+  generateSummaryMetadata,
+} from "./lib/generateMenuMetadata";
+export {
+  fetchMenuDetailForMetadata,
+  fetchRandomMenuForMetadata,
+  fetchRecommendMenuForMetadata,
+} from "./lib/metadataFetchers";

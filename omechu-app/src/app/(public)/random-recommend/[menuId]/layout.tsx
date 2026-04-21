@@ -2,11 +2,11 @@ import { type Metadata } from "next";
 import { cache } from "react";
 
 import {
+  fetchMenuDetailForMetadata,
   generateMenuMetadata,
   generateMinimalMetadata,
   generateRecipeJsonLd,
-} from "@/shared/lib/generateMenuMetadata";
-import { fetchMenuDetailForMetadata } from "@/shared/lib/metadataFetchers";
+} from "@/entities/menu";
 
 const getCachedMenuDetail = cache(fetchMenuDetailForMetadata);
 

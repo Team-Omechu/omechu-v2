@@ -1,12 +1,14 @@
+import { GuestRoute } from "@/app/providers";
+
 /**
- * 인증 관련 페이지 공통 레이아웃
- * - 기본 컨테이너만 제공
- * - Header, 로고는 각 하위 레이아웃에서 처리
+ * (auth) 라우트 그룹 공통 레이아웃
+ * - 이미 로그인된 유저가 로그인/회원가입/비밀번호 찾기 페이지에 접근하면 /mainpage로 리다이렉트
+ * - 개별 페이지 레이아웃(로고 등)은 하위 login/layout.tsx에서 처리
  */
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="flex flex-1 flex-col">{children}</div>;
+  return <GuestRoute>{children}</GuestRoute>;
 }

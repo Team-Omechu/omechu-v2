@@ -1,71 +1,74 @@
-// Kakao OAuth 로그인 → Supabase 세션 발급.
+// Google OAuth 로그인 → Supabase 세션 발급.
 // 흐름:
-//   1. 클라이언트가 카카오 redirect로 authorization code 수신
-//   2. POST /kakao-login { code, redirectUri }
+//   1. 클라이언트가 Google OAuth redirect로 authorization code 수신
+//   2. POST /google-login { code, redirectUri }
 //   3. 서버:
-//      - 카카오 토큰 교환 + /v2/user/me 조회
-//      - Supabase admin API로 provider_id 기반 유저 생성/조회
+//      - Google 토큰 교환 + userinfo 조회
+//      - Supabase admin API로 provider_id(sub) 기반 유저 생성/조회
 //      - generateLink(magiclink) → verifyOtp로 세션 발행
 //   4. 클라이언트는 받은 access/refresh 토큰으로 supabase.auth.setSession 호출.
 //
-// Supabase 네이티브 Kakao provider 대신 이 경로를 쓰는 이유(google-login과 동일):
+// Supabase 네이티브 Google provider 대신 이 경로를 쓰는 이유:
 // OAuth 리다이렉트 체인에서 Supabase 프로젝트 서브도메인 노출을 피하고
-// omechu.log8.kr/auth/kakao/callback 한 도메인으로 통일하기 위함.
+// omechu.log8.kr/auth/google/callback 한 도메인으로 통일하기 위함.
 
 import { admin } from "../_shared/supabase.ts";
 import { fail, handleOptions, ok } from "../_shared/cors.ts";
 
-interface KakaoTokenResponse {
+interface GoogleTokenResponse {
   access_token: string;
   refresh_token?: string;
+  id_token?: string;
+  expires_in?: number;
 }
 
-interface KakaoUserResponse {
-  id: number;
-  kakao_account?: {
-    email?: string | null;
-    profile?: { nickname?: string | null } | null;
-  };
+interface GoogleUserInfoResponse {
+  sub: string;
+  email?: string;
+  email_verified?: boolean;
+  name?: string;
+  picture?: string;
 }
 
 async function exchangeCode(
   code: string,
   redirectUri: string,
 ): Promise<{ providerId: string; email: string | null; nickname: string | null }> {
-  const restKey = Deno.env.get("KAKAO_REST_API_KEY");
-  if (!restKey) throw new Error("KAKAO_REST_API_KEY missing");
+  const clientId = Deno.env.get("GOOGLE_CLIENT_ID");
+  const clientSecret = Deno.env.get("GOOGLE_CLIENT_SECRET");
+  if (!clientId) throw new Error("GOOGLE_CLIENT_ID missing");
+  if (!clientSecret) throw new Error("GOOGLE_CLIENT_SECRET missing");
 
   const body = new URLSearchParams({
     grant_type: "authorization_code",
-    client_id: restKey,
+    client_id: clientId,
+    client_secret: clientSecret,
     redirect_uri: redirectUri,
     code,
   });
-  const clientSecret = Deno.env.get("KAKAO_CLIENT_SECRET");
-  if (clientSecret) body.set("client_secret", clientSecret);
 
-  const tokenRes = await fetch("https://kauth.kakao.com/oauth/token", {
+  const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body,
   });
   if (!tokenRes.ok) {
-    throw new Error(`kakao token exchange failed: ${await tokenRes.text()}`);
+    throw new Error(`google token exchange failed: ${await tokenRes.text()}`);
   }
-  const token = (await tokenRes.json()) as KakaoTokenResponse;
+  const token = (await tokenRes.json()) as GoogleTokenResponse;
 
-  const meRes = await fetch("https://kapi.kakao.com/v2/user/me", {
+  const meRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
     headers: { Authorization: `Bearer ${token.access_token}` },
   });
   if (!meRes.ok) {
-    throw new Error(`kakao /me failed: ${await meRes.text()}`);
+    throw new Error(`google userinfo failed: ${await meRes.text()}`);
   }
-  const me = (await meRes.json()) as KakaoUserResponse;
+  const me = (await meRes.json()) as GoogleUserInfoResponse;
 
   return {
-    providerId: String(me.id),
-    email: me.kakao_account?.email ?? null,
-    nickname: me.kakao_account?.profile?.nickname ?? null,
+    providerId: me.sub,
+    email: me.email ?? null,
+    nickname: me.name ?? null,
   };
 }
 
@@ -86,15 +89,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const kakao = await exchangeCode(code, redirectUri);
+    const google = await exchangeCode(code, redirectUri);
 
     const supa = admin();
-    // 1) provider_id로 기존 유저 조회
     const existingByProvider = await supa
       .from("profiles")
       .select("id")
-      .eq("provider", "kakao")
-      .eq("provider_id", kakao.providerId)
+      .eq("provider", "google")
+      .eq("provider_id", google.providerId)
       .maybeSingle();
 
     let userId: string;
@@ -102,46 +104,41 @@ Deno.serve(async (req) => {
     if (existingByProvider.data?.id) {
       userId = existingByProvider.data.id;
     } else {
-      // 2) 없으면 이메일 기반 기존 auth 유저 매칭 or 신규 생성
-      const fakeEmail =
-        kakao.email ?? `kakao_${kakao.providerId}@kakao.omechu.local`;
+      const fallbackEmail =
+        google.email ?? `google_${google.providerId}@google.omechu.local`;
       const createRes = await supa.auth.admin.createUser({
-        email: fakeEmail,
+        email: fallbackEmail,
         email_confirm: true,
-        app_metadata: { provider: "kakao", providers: ["kakao"] },
+        app_metadata: { provider: "google", providers: ["google"] },
         user_metadata: {
-          provider_id: kakao.providerId,
-          nickname: kakao.nickname,
+          provider_id: google.providerId,
+          nickname: google.nickname,
         },
       });
       if (createRes.error) {
-        // already-registered: 이메일 재사용 케이스
         const list = await supa.auth.admin.listUsers();
-        const existing = list.data.users.find((u) => u.email === fakeEmail);
+        const existing = list.data.users.find((u) => u.email === fallbackEmail);
         if (!existing) return fail(req, "A001", createRes.error.message, 500);
         userId = existing.id;
-        // profile에 provider_id 동기화
         await supa
           .from("profiles")
-          .update({ provider: "kakao", provider_id: kakao.providerId })
+          .update({ provider: "google", provider_id: google.providerId })
           .eq("id", userId);
       } else {
         userId = createRes.data.user!.id;
       }
     }
 
-    // 3) Magic link 생성 → 토큰 해시 추출
     const { data: linkData, error: linkErr } =
       await supa.auth.admin.generateLink({
         type: "magiclink",
         email:
-          kakao.email ?? `kakao_${kakao.providerId}@kakao.omechu.local`,
+          google.email ?? `google_${google.providerId}@google.omechu.local`,
       });
     if (linkErr || !linkData) {
       return fail(req, "A002", linkErr?.message ?? "generateLink failed", 500);
     }
 
-    // 4) verifyOtp로 세션 발급
     const { data: session, error: verifyErr } = await supa.auth.verifyOtp({
       token_hash: linkData.properties.hashed_token,
       type: "magiclink",
@@ -159,6 +156,6 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    return fail(req, "K001", msg, 500);
+    return fail(req, "G001", msg, 500);
   }
 });

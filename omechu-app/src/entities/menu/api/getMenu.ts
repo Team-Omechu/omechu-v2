@@ -1,3 +1,5 @@
+// TODO(supabase-migration): ML 추천 embed 서버 의존. Supabase 기반 대체 전략 필요
+// (자체 Edge Function + 자체 추천 로직, 또는 Vercel AI SDK 등). 백엔드 부재로 동작하지 않음.
 import axios from "axios";
 
 import {

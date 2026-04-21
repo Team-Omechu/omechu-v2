@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { type TagData } from "@/shared/types/tag";
+import { type TagData } from "@/entities/tag/model/tag.types";
 
 export type TagState = {
   mealTimeTag: TagData | null;

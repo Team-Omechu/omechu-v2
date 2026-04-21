@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { ApiClientError, changePassword } from "@/entities/user";
+import { changePassword } from "@/entities/user";
 
 import {
   BaseModal,
@@ -66,11 +66,9 @@ export default function ChangePasswordPage() {
       await changePassword({ currentPassword, newPassword });
       setShowModal(true);
     } catch (err) {
-      if (err instanceof ApiClientError) {
-        triggerToast(err.message || "비밀번호 변경에 실패했습니다.");
-      } else {
-        triggerToast("비밀번호 변경에 실패했습니다.");
-      }
+      const message =
+        err instanceof Error ? err.message : "비밀번호 변경에 실패했습니다.";
+      triggerToast(message);
     } finally {
       setIsPending(false);
     }

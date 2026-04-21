@@ -13,3 +13,7 @@ export type {
   BattleFinishedPayload,
 } from "./model/socket";
 export type { BattleResponse } from "./model/api";
+export {
+  type BattleWinnerMenu,
+  fetchBattleWinnerForMetadata,
+} from "./lib/metadataFetchers";

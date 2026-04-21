@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { ApiClientError, submitInquiry } from "@/entities/user";
+import { submitInquiry } from "@/entities/user";
 
 import { Toast } from "@/shared/ui/toast/Toast";
 
@@ -25,14 +25,14 @@ export default function EmailInquiryPage() {
     setIsPending(true);
 
     try {
-      await submitInquiry({ title, content });
+      await submitInquiry(title, content);
 
       setToastMessage("문의가 정상적으로 접수되었습니다.");
       setToastState("success");
       setShowToast(true);
     } catch (error) {
       const message =
-        error instanceof ApiClientError
+        error instanceof Error
           ? error.message
           : "문의 접수에 실패했습니다. 다시 시도해주세요.";
 

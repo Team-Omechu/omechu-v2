@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { logout, useAuthStore } from "@/entities/user";
+import { useAuthStore, useLogoutMutation } from "@/entities/user";
 
 import { ArrowIcon } from "@/shared/assets/icons";
 
@@ -12,13 +12,14 @@ import { BaseModal, Button, Header, ModalWrapper } from "@/shared";
 export default function AccountSettingPage() {
   const router = useRouter();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const { mutateAsync: logoutAsync } = useLogoutMutation();
 
   const user = useAuthStore((s) => s.user);
   const email = user?.email || "-";
 
   const handleLogoutConfirm = async () => {
     try {
-      await logout();
+      await logoutAsync();
       router.push("/");
     } catch {
       setShowLogoutModal(false);

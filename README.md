@@ -58,10 +58,11 @@
 | | |
 |---|---|
 | [아키텍처](#아키텍처) | [주요 기능](#주요-기능) |
-| [설치 및 실행](#설치-및-실행) | [폴더 구조](#폴더-구조) |
-| [기술 스택](#기술-스택) | [협업 규칙](#협업-규칙) |
-| [트러블슈팅](#트러블슈팅--해결-과정) | [AI 활용](#ai-활용-내역) |
-| [로드맵](#로드맵) | [기여자](#기여자) |
+| [설치 및 실행](#설치-및-실행) | [인증 아키텍처](#인증-아키텍처) |
+| [폴더 구조](#폴더-구조) | [협업 규칙](#협업-규칙) |
+| [기술 스택](#기술-스택) | [트러블슈팅](#트러블슈팅--해결-과정) |
+| [AI 활용](#ai-활용-내역) | [로드맵](#로드맵) |
+| [기여자](#기여자) | |
 
 ---
 
@@ -73,7 +74,7 @@
 * **클라이언트 상태**: Zustand로 온보딩 진행/모달/뷰 로컬 상태 관리
 * **네트워크 계층 분리**: `axiosInstance`(인증) · `axiosPublicInstance`(공개 업로드)
 * **실시간 통신**: Socket.IO → **Supabase Realtime으로 마이그레이션 예정**
-* **인증**: JWT → **Supabase Auth로 마이그레이션 예정**
+* **인증**: Supabase Auth + Edge Function 기반 소셜 로그인(Google/Kakao) — 자세한 내용은 아래 [인증 아키텍처](#인증-아키텍처) 참고
 * **이미지 안정화**: 한글 파일명 **NFC 정규화**, 확장자 소문자, onError 폴백/재시도
 * **API Routes**: Google Places/Geocode 프록시로 API 키 보호
 * **하네스 엔지니어링**: `pnpm validate:ci`가 lint + typecheck + format + `harness:check`(meta-check) + Vitest 유닛 + Playwright smoke까지 전부 CI 게이트
@@ -195,22 +196,97 @@ pnpm harness:check   # 하네스 자기 점검 (필수 파일·스크립트·CI 
 
 ```env
 NEXT_PUBLIC_API_URL=https://api.example.com
+
+# Supabase
 SUPABASE_PROJECT_REF=xztldvunnasjaxnzqpct
 NEXT_PUBLIC_SUPABASE_URL=https://xztldvunnasjaxnzqpct.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_TW1dRfU6xM4uxpt2jodk8w_AIO67EMq
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_xxxxxxxxxxxxxxxxxxxxxx
 SUPABASE_SECRET_KEY=your_supabase_secret_key_here
+
+# 소셜 로그인 (edge function 통일 방식 — 자세한 설명은 "인증 아키텍처" 섹션 참고)
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+NEXT_PUBLIC_GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=...
+
+NEXT_PUBLIC_KAKAO_REDIRECT_URI=http://localhost:3000/auth/kakao/callback
+NEXT_PUBLIC_KAKAO_JS_KEY=...
+KAKAO_REST_API_KEY=...
+KAKAO_CLIENT_SECRET=...
+
+# Maps / SEO / Monitoring
 NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=...
 GOOGLE_MAP_SERVER_API_KEY=...
-NEXT_PUBLIC_EMBED_API_URL=https://embed.example.com
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 NEXT_PUBLIC_SENTRY_DSN=...
 SENTRY_AUTH_TOKEN=...
 SENTRY_ORG=omechu
 SENTRY_PROJECT=omechu-fe
+NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
 ```
 
-> `NEXT_PUBLIC_SUPABASE_*` 값은 클라이언트/SSR 공개 설정용입니다. `SUPABASE_SECRET_KEY`는 서버 전용이며 git에 커밋하면 안 됩니다.
+> `NEXT_PUBLIC_*` 값은 브라우저/SSR 공개 설정용입니다. `SUPABASE_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`, `KAKAO_CLIENT_SECRET`, `SENTRY_AUTH_TOKEN`은 서버 전용이며 git에 커밋하면 안 됩니다.
+>
+> Edge function 시크릿(`GOOGLE_CLIENT_SECRET`, `KAKAO_CLIENT_SECRET`, `KAKAO_REST_API_KEY`)은 실제로는 `supabase secrets set` 으로 Supabase에 등록합니다. `.env` 에 적는 값은 문서·로컬 테스트용.
 
 > 이미지 최적화를 위해 `sharp`가 자동으로 설치됩니다.
+
+---
+
+## 인증 아키텍처
+
+오메추는 **Supabase Auth** 를 인증 기반으로 쓰되, Google / Kakao 소셜 로그인은 **Supabase 네이티브 provider 대신 Edge Function 경로**를 사용합니다.
+
+### 왜 Edge Function 인가?
+
+Supabase 네이티브 OAuth 를 쓰면 리다이렉트 체인 중간에 `https://<project-ref>.supabase.co/auth/v1/callback` 이 노출됩니다. 포폴 도메인 일관성을 위해 `omechu.log8.kr/auth/{provider}/callback` 한 도메인으로 통일하는 것이 목표였고, 그 결과 Edge Function 통일 방식을 채택했습니다.
+
+### 플로우 (Google / Kakao 동일 구조)
+
+```mermaid
+sequenceDiagram
+  participant U as 사용자
+  participant FE as Next.js FE
+  participant IDP as Google / Kakao
+  participant EF as Supabase Edge Function<br/>(google-login / kakao-login)
+  participant SB as Supabase Auth
+
+  U->>FE: "Google로 로그인" 클릭
+  FE->>IDP: authorize URL 리다이렉트
+  IDP->>U: 동의 화면
+  U->>IDP: 승인
+  IDP->>FE: /auth/{provider}/callback?code=...
+  FE->>EF: POST { code, redirectUri }
+  EF->>IDP: token exchange + userinfo
+  EF->>SB: admin.createUser / generateLink(magiclink)
+  EF->>SB: verifyOtp → session
+  EF-->>FE: { accessToken, refreshToken, userId }
+  FE->>SB: supabase.auth.setSession(...)
+  FE->>U: 홈으로 이동
+```
+
+### 구성 요소
+
+| 역할 | 경로 |
+|---|---|
+| FE 진입점 (Google) | `src/entities/user/api/supabaseAuth.ts` · `beginGoogleLogin()` |
+| FE 진입점 (Kakao) | 카카오 JS SDK 또는 authorize URL 직접 |
+| FE 콜백 | `src/app/auth/google/callback/page.tsx`, `src/app/auth/kakao/callback/page.tsx` |
+| Edge Function | `supabase/functions/google-login/index.ts`, `supabase/functions/kakao-login/index.ts` |
+| 이메일 매직링크 공통 콜백 | `src/app/auth/callback/route.ts` (소셜 아님, 이메일 인증 전용) |
+
+### 배포 시 체크
+
+1. Google Cloud Console — "승인된 리디렉션 URI" 에 `https://omechu.log8.kr/auth/google/callback` 추가, JS 원본에 `https://omechu.log8.kr` 추가. Supabase 네이티브 Google provider 는 OFF.
+2. Kakao Developers — 로그인 리다이렉트 URI 에 `https://omechu.log8.kr/auth/kakao/callback` 추가. Supabase 네이티브 Kakao provider 도 OFF.
+3. Supabase — edge function 시크릿 등록:
+   ```bash
+   supabase secrets set \
+     GOOGLE_CLIENT_ID=... GOOGLE_CLIENT_SECRET=... \
+     KAKAO_REST_API_KEY=... KAKAO_CLIENT_SECRET=...
+   supabase functions deploy google-login
+   supabase functions deploy kakao-login
+   ```
 
 ---
 

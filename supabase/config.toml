@@ -328,12 +328,13 @@ skip_nonce_check = false
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
 
-# Google OAuth (네이티브 지원)
+# Google OAuth — 네이티브 provider 비활성화. 대신 `google-login` edge function 경유로
+# 리다이렉트 체인에서 <project-ref>.supabase.co 노출을 피한다. (자세한 내용: README 인증 아키텍처)
 [auth.external.google]
-enabled = true
-client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
-secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
-skip_nonce_check = true
+enabled = false
+client_id = ""
+secret = ""
+skip_nonce_check = false
 
 # Allow Solana wallet holders to sign in to your project via the Sign in with Solana (SIWS, EIP-4361) standard.
 # You can configure "web3" rate limit in the [auth.rate_limit] section and set up [auth.captcha] if self-hosting.
@@ -385,6 +386,10 @@ deno_version = 2
 
 # 로그인 전 호출되므로 JWT 검증 비활성화
 [functions.kakao-login]
+verify_jwt = false
+
+# 로그인 전 호출되므로 JWT 검증 비활성화
+[functions.google-login]
 verify_jwt = false
 
 # 익명/로그인 양쪽 다 호출 가능해야 함

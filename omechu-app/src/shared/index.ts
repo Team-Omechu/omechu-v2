@@ -3,25 +3,8 @@
 // FSD 규칙: shared는 다른 레이어에 의존하지 않음
 // ============================================
 
-// Types
-export type { TagData } from "./types/tag";
-export type { RandomMenu, MenuListResponse } from "./types/menu";
-export type { BattleResponse } from "./types/battle";
-
 // Config
 export type { ApiResponse, ApiError } from "./config/api.types";
-export {
-  filteredChoSeong,
-  consonantGroupMap,
-  HANGUL_CHO_SEONG,
-} from "./config/choSeong";
-export type { MenuDetail, Menu } from "./config/menu";
-export {
-  type StepKey,
-  stepOrder,
-  slugToIndex,
-  indexToSlug,
-} from "./config/userInfoEditSteps";
 
 // Terms Config
 export type { TermsItem, TermsType, TermsConfig } from "./constants/terms";

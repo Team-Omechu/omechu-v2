@@ -32,11 +32,6 @@ export type MenuListResponse = {
   results: MenuItem[];
 };
 
-export type TagData = {
-  tag: string;
-  description: string;
-};
-
 export type menuType = {
   id: number;
   title: string;

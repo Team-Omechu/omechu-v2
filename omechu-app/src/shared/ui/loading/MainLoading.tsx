@@ -9,10 +9,10 @@ export function MainLoading() {
   return (
     <div
       className="fixed inset-0 z-[60] bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: "url('/image/loading-bg.png')" }}
+      style={{ backgroundImage: "url('/image/loading-bg.webp')" }}
     >
       <div
-        className="animate-food-cycle absolute top-1/2 left-1/2 h-[170px] w-[175px] -translate-x-1/2 -translate-y-1/2 bg-[url('/image/food-sprite.svg')]"
+        className="animate-food-cycle absolute top-1/2 left-1/2 h-[170px] w-[175px] -translate-x-1/2 -translate-y-1/2 bg-[url('/image/food-sprite.webp')]"
         style={{ backgroundSize: "525px 170px" }}
         role="status"
         aria-label="로딩 중"

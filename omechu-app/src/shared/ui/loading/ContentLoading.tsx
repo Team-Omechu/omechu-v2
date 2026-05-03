@@ -8,7 +8,7 @@ export function ContentLoading() {
   return (
     <div className="flex flex-1 items-center justify-center py-16">
       <div
-        className="animate-food-cycle h-[170px] w-[175px] origin-center scale-[0.7] bg-[url('/image/food-sprite.svg')]"
+        className="animate-food-cycle h-[170px] w-[175px] origin-center scale-[0.7] bg-[url('/image/food-sprite.webp')]"
         style={{ backgroundSize: "525px 170px" }}
         role="status"
         aria-label="로딩 중"

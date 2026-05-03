@@ -4,6 +4,7 @@ import {
   type ExerciseKind,
   type PreferKind,
   fetchProfile as fetchSupabaseProfile,
+  setAllergiesByLabels,
   setPreferences,
   updateProfile as updateSupabaseProfile,
 } from "@/entities/user/api/supabaseProfile";
@@ -110,6 +111,9 @@ export function useUpdateProfileMutation() {
         updateSupabaseProfile(dbUpdates),
         data.prefer !== undefined
           ? setPreferences(data.prefer.map((p) => REVERSE_PREFER_MAP[p]))
+          : Promise.resolve(),
+        data.allergy !== undefined
+          ? setAllergiesByLabels(data.allergy)
           : Promise.resolve(),
       ]);
 

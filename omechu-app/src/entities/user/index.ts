@@ -23,6 +23,7 @@ export {
   updateProfile as updateProfileSupabase,
   setPreferences,
   setAllergies,
+  setAllergiesByLabels,
   submitInquiry,
   saveAgreement,
   type PreferKind,

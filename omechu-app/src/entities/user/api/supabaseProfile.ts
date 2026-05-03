@@ -91,6 +91,17 @@ export async function setAllergies(allergyIds: number[]) {
   return data;
 }
 
+export async function setAllergiesByLabels(labels: string[]) {
+  if (labels.length === 0) return setAllergies([]);
+  const sb = createSupabaseBrowserClient();
+  const { data, error } = await sb
+    .from("allergy_min")
+    .select("id, allergy")
+    .in("allergy", labels);
+  if (error) throw error;
+  return setAllergies((data ?? []).map((r) => r.id as number));
+}
+
 export async function submitInquiry(title: string, content: string) {
   const sb = createSupabaseBrowserClient();
   const { data: user } = await sb.auth.getUser();

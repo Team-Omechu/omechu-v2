@@ -94,6 +94,7 @@ export function BasicAllergyForm({
                     selected={allergy.includes(
                       allergyValueToLabel[value] ?? value,
                     )}
+                    width="auto"
                     height="md"
                     radius="sm"
                     onClick={() =>

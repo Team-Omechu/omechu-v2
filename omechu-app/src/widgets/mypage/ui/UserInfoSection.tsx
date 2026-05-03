@@ -1,6 +1,3 @@
-//! 26.01.12 작업 중
-// TODO : onClick 수정
-
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -36,14 +33,17 @@ export function UserInfoSection({
     >
       <div className="border-font-placeholder flex h-fit w-full flex-col gap-2.5 border-b px-6 py-4">
         <div className="flex justify-between">
-          <span className="text-body-3-bold">
-            <span className="text-body-3-bold relative mr-4.5">
-              {name}
-              <button onClick={onNicknameClick}>
-                <WriteIcon className="absolute -top-1 -right-4 w-3.5" />
-              </button>
-            </span>
-            <span className="text-body-4-medium">의 기본 상태</span>
+          <span className="inline-flex items-center gap-1">
+            <span className="text-body-3-bold">{name}</span>
+            <button
+              type="button"
+              onClick={onNicknameClick}
+              aria-label="닉네임 변경"
+              className="inline-flex items-center justify-center p-1"
+            >
+              <WriteIcon className="w-3.5" />
+            </button>
+            <span className="text-body-4-medium ml-1">의 기본 상태</span>
           </span>
           <button
             onClick={() => router.push("mypage/basic-state")}

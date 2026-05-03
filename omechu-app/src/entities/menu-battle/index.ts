@@ -7,13 +7,12 @@ export type {
   Winner,
   Ranking,
 } from "./model/menuBattle.types";
-export type {
-  ParticipantJoinedPayload,
-  SpinCompletedPayload,
-  BattleFinishedPayload,
-} from "./model/socket";
 export type { BattleResponse } from "./model/api";
 export {
   type BattleWinnerMenu,
   fetchBattleWinnerForMetadata,
 } from "./lib/metadataFetchers";
+export { ensureBattleSession } from "./lib/ensureBattleSession";
+export { useEnsureBattleSession } from "./lib/useEnsureBattleSession";
+export { useBattleRealtime } from "./lib/useBattleRealtime";
+export { menuBattleAPI } from "./api/menuBattleApi";

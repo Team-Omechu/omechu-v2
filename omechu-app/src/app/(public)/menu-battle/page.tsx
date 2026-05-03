@@ -1,12 +1,14 @@
-﻿"use client";
+"use client";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "motion/react";
 
-import { menuBattleAPI } from "@/shared/api/menuBattle.api";
+import { menuBattleAPI, useEnsureBattleSession } from "@/entities/menu-battle";
+
 import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
 
 import {
@@ -14,7 +16,6 @@ import {
   FoodBox,
   Header,
   Input,
-  ModalWrapper,
   Spinner,
   Toast,
   useToast,
@@ -48,13 +49,15 @@ async function fetchAllMenus(): Promise<Menu[]> {
 
 export default function MenuBattlePage() {
   const router = useRouter();
+  useEnsureBattleSession();
 
   const [joinCode, setJoinCode] = useState("");
   const [battleName, setBattleName] = useState("오늘의 메뉴 배틀");
-  const [roomNumber, setRoomNumber] = useState("");
+  const [createdBattleId, setCreatedBattleId] = useState("");
   const [search, setSearch] = useState("");
   const [selectedMenus, setSelectedMenus] = useState<string[]>([]);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateSheet, setShowCreateSheet] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     show: showToast,
@@ -117,41 +120,37 @@ export default function MenuBattlePage() {
       return;
     }
 
-    const payload = {
-      menuIds: selectedMenus.map(Number),
-    };
-
     try {
-      const result = await menuBattleAPI.createBattle(payload);
-      setRoomNumber(result.battleId);
-      setShowCreateModal(true);
-    } catch (error) {
-      console.error("[MenuBattle] create battle failed", {
-        payload,
-        error,
+      setIsSubmitting(true);
+      const result = await menuBattleAPI.createBattle({
+        title: battleName,
+        menuIds: selectedMenus.map(Number),
       });
-      if (error instanceof Error && error.message) {
-        openToast(`배틀방 생성 실패: ${error.message}`);
-        return;
-      }
-      openToast("배틀방 생성에 실패했습니다.");
+      setCreatedBattleId(result.battleId);
+      setShowCreateSheet(true);
+    } catch (error) {
+      const msg =
+        error instanceof Error && error.message
+          ? error.message
+          : "배틀방 생성에 실패했습니다.";
+      openToast(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const makeBattlePlayUrl = useCallback(
     (battleId: string) => {
-      const params = new URLSearchParams({
-        battleName,
-      });
+      const params = new URLSearchParams({ battleName });
       return `/menu-battle/play/${battleId}?${params.toString()}`;
     },
     [battleName],
   );
 
   const handleShare = async () => {
-    const shareUrl = `${window.location.origin}${makeBattlePlayUrl(roomNumber)}`;
+    const shareUrl = `${window.location.origin}${makeBattlePlayUrl(createdBattleId)}`;
     const shareMessage = `💌 오늘의 메뉴 배틀에 초대합니다.
-🔑  입장 코드: ${roomNumber}
+🔑  입장 코드: ${createdBattleId}
 
 코드를 입력하거나 아래 링크를 눌러서 지금 바로 배틀에 참여하세요!
 
@@ -177,6 +176,11 @@ ${shareUrl}`;
     }
   };
 
+  const selectionCount = selectedMenus.length;
+  const canCreate =
+    selectionCount >= MIN_MENU_SELECTION &&
+    selectionCount <= MAX_MENU_SELECTION;
+
   return (
     <main className="pb-32">
       <Header
@@ -196,17 +200,20 @@ ${shareUrl}`;
             <Input
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value)}
-              placeholder="예: 2314"
+              placeholder="예: 482031"
+              inputMode="numeric"
+              maxLength={6}
               className="border-font-disabled text-font-high text-caption-1 h-10 flex-1 border bg-white"
             />
-            <button
+            <motion.button
               type="button"
               onClick={handleEnterByCode}
+              whileTap={{ scale: 0.96 }}
               className="bg-font-medium text-caption-1 disabled:bg-font-disabled h-10 w-16 rounded-xl text-white"
               disabled={!joinCode.trim()}
             >
               입장
-            </button>
+            </motion.button>
           </div>
         </div>
       </section>
@@ -234,15 +241,25 @@ ${shareUrl}`;
 
       <section className="mt-6 px-4">
         <div className="grid grid-cols-3 justify-items-center gap-4">
-          {filteredMenus.map((food) => (
-            <FoodBox
-              key={food.id}
-              src={food.image_link || "/sample/sample-pasta.png"}
-              title={food.name}
-              isSelected={selectedMenus.includes(food.id)}
-              onClick={() => toggleMenu(food.id)}
-            />
-          ))}
+          {filteredMenus.map((food) => {
+            const selected = selectedMenus.includes(food.id);
+            return (
+              <motion.div
+                key={food.id}
+                whileTap={{ scale: 0.94 }}
+                animate={{ scale: selected ? 1.04 : 1 }}
+                transition={{ type: "spring", stiffness: 360, damping: 22 }}
+                className="w-full"
+              >
+                <FoodBox
+                  src={food.image_link || "/sample/sample-pasta.png"}
+                  title={food.name}
+                  isSelected={selected}
+                  onClick={() => toggleMenu(food.id)}
+                />
+              </motion.div>
+            );
+          })}
         </div>
 
         {isLoadingMenus && (
@@ -263,65 +280,81 @@ ${shareUrl}`;
           <div className="flex items-center justify-between">
             <div>
               <p className="text-body-4 text-font-high">선택된 메뉴</p>
-              <p className="text-body-4 text-font-placeholder">
-                {selectedMenus.length}개
-              </p>
+              <motion.p
+                key={selectionCount}
+                initial={{ scale: 0.85, opacity: 0.6 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 420, damping: 20 }}
+                className={`text-body-4 ${
+                  canCreate
+                    ? "text-statelayer-default"
+                    : "text-font-placeholder"
+                }`}
+              >
+                {selectionCount}개
+              </motion.p>
             </div>
 
-            <Button
-              width="md"
-              radius="md"
-              disabled={
-                selectedMenus.length < MIN_MENU_SELECTION ||
-                selectedMenus.length > MAX_MENU_SELECTION
-              }
-              onClick={handleCreateBattle}
-              className={`px-6 ${
-                selectedMenus.length < MIN_MENU_SELECTION ||
-                selectedMenus.length > MAX_MENU_SELECTION
-                  ? "bg-statelayer-disabled text-white"
-                  : "bg-statelayer-default text-white"
-              }`}
-            >
-              배틀방 생성
-            </Button>
+            <motion.div whileTap={{ scale: canCreate ? 0.96 : 1 }}>
+              <Button
+                width="md"
+                radius="md"
+                disabled={!canCreate || isSubmitting}
+                onClick={handleCreateBattle}
+                className={`px-6 ${
+                  canCreate
+                    ? "bg-statelayer-default text-white"
+                    : "bg-statelayer-disabled text-white"
+                }`}
+              >
+                배틀방 생성
+              </Button>
+            </motion.div>
           </div>
         </footer>
       </div>
 
-      {showCreateModal && (
-        <ModalWrapper
-          className="px-6"
-          onClose={() => setShowCreateModal(false)}
-        >
-          <div className="relative w-full max-w-sm rounded-2xl bg-white px-3.75 py-3.75 text-center">
-            <button
-              type="button"
-              onClick={() => setShowCreateModal(false)}
-              className="absolute top-3.75 right-3.75"
-              aria-label="닫기"
-            >
-              <Image src="/x/close_big.svg" alt="닫기" width={20} height={20} />
-            </button>
+      <AnimatePresence>
+        {showCreateSheet && (
+          <motion.div
+            key="sheet-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="bg-surface-dimmed fixed inset-0 z-40"
+            onClick={() => setShowCreateSheet(false)}
+          />
+        )}
 
-            <div className="pt-6">
+        {showCreateSheet && (
+          <motion.div
+            key="sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 360, damping: 32 }}
+            className="fixed bottom-0 left-1/2 z-50 w-full max-w-120 -translate-x-1/2 rounded-t-3xl bg-white px-6 pt-3 pb-8 shadow-2xl"
+          >
+            <div className="mx-auto mb-5 h-1.5 w-10 rounded-full bg-gray-200" />
+
+            <div className="text-center">
               <h3 className="text-body-3-medium wrap-break-word">
                 [{battleName}] 생성 완료!
               </h3>
-            </div>
-
-            <p className="text-caption-1 text-font-placeholder mt-2">
-              아래 링크를 친구들과 공유하세요
-            </p>
-
-            <div className="border-font-disabled mt-3 rounded-xl border px-4 py-3">
-              <p className="text-caption-2 text-font-placeholder">방 번호</p>
-              <p className="text-body-4-medium text-font-high mt-1">
-                {roomNumber}
+              <p className="text-caption-1 text-font-placeholder mt-1">
+                아래 코드를 친구들과 공유하세요
               </p>
             </div>
 
-            <div className="mt-3 flex gap-3">
+            <div className="border-line-strong mt-5 rounded-2xl border-2 border-dashed bg-gray-50 px-4 py-5 text-center">
+              <p className="text-caption-2 text-font-placeholder">방 번호</p>
+              <p className="text-font-high mt-1 text-3xl font-bold tracking-[0.2em] tabular-nums">
+                {createdBattleId}
+              </p>
+            </div>
+
+            <div className="mt-5 flex gap-3">
               <Button
                 width="md"
                 bgColor="grey"
@@ -334,14 +367,23 @@ ${shareUrl}`;
               <Button
                 width="md"
                 className="bg-statelayer-default flex-1 text-white"
-                onClick={() => router.push(makeBattlePlayUrl(roomNumber))}
+                onClick={() => router.push(makeBattlePlayUrl(createdBattleId))}
               >
                 바로 참여하기
               </Button>
             </div>
-          </div>
-        </ModalWrapper>
-      )}
+
+            <button
+              type="button"
+              onClick={() => setShowCreateSheet(false)}
+              className="text-font-placeholder absolute top-4 right-4"
+              aria-label="닫기"
+            >
+              <Image src="/x/close_big.svg" alt="닫기" width={20} height={20} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Toast
         show={showToast}

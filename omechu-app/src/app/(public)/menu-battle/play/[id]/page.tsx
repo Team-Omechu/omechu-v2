@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "motion/react";
 
 import {
   BattleBoard,
@@ -19,24 +20,14 @@ import {
   type Player,
   type Ranking,
   type Winner,
+  menuBattleAPI,
+  useBattleRealtime,
+  useEnsureBattleSession,
 } from "@/entities/menu-battle";
 
-import { menuBattleAPI } from "@/shared/api/menuBattle.api";
-
-import { Button, Header, Input, ModalWrapper, Toast, useToast } from "@/shared";
+import { Button, Header, Input, Toast, useToast } from "@/shared";
 
 const BAR_COLORS = ["#FF9029", "#00A3FF", "#5AD886", "#FDDC3F", "#C48CFD"];
-
-type SpinResult = BattleResponse["spinResults"][number];
-
-const toSpinKey = (result: SpinResult) => `${result.nickname}-${result.spunAt}`;
-
-const mergeSpinResults = (prev: SpinResult[], incoming: SpinResult[]) => {
-  const map = new Map<string, SpinResult>();
-  for (const item of prev) map.set(toSpinKey(item), item);
-  for (const item of incoming) map.set(toSpinKey(item), item);
-  return Array.from(map.values());
-};
 
 const battleQueryKey = (battleId: string | undefined) =>
   ["battle", battleId] as const;
@@ -50,16 +41,10 @@ export default function PlayPage() {
   const battleNameFromQuery = searchParams.get("battleName");
   const initialNickname = searchParams.get("nickname");
 
-  const battleName = useMemo(
-    () =>
-      battleNameFromQuery
-        ? decodeURIComponent(battleNameFromQuery)
-        : "오늘의 메뉴 배틀",
-    [battleNameFromQuery],
-  );
+  const { ready: sessionReady, error: sessionError } = useEnsureBattleSession();
 
   const [nickname, setNickname] = useState(initialNickname ?? "");
-  const [showNicknameModal, setShowNicknameModal] = useState(!initialNickname);
+  const [showNicknameSheet, setShowNicknameSheet] = useState(!initialNickname);
   const [isSubmittingNickname, setIsSubmittingNickname] = useState(false);
 
   const {
@@ -74,46 +59,30 @@ export default function PlayPage() {
   const isSpinningRef = useRef(false);
   const rouletteRef = useRef<RouletteHandle | null>(null);
 
-  // 배틀 상태: 2초 폴링. finished면 폴링 중단.
+  // 폴링 제거 — Realtime push로 갱신
+  useBattleRealtime(battleId);
+
   const { data: battleData, error: battleError } = useQuery<BattleResponse>({
     queryKey: battleQueryKey(battleId),
-    queryFn: () =>
-      menuBattleAPI.getBattle(battleId!) as Promise<BattleResponse>,
-    enabled: !!battleId,
-    refetchInterval: (query) =>
-      query.state.data?.status === "finished" ? false : 2000,
+    queryFn: () => menuBattleAPI.getBattle(battleId!),
+    enabled: !!battleId && sessionReady,
   });
+
+  const { data: rankingsData } = useQuery<Ranking[]>({
+    queryKey: ["battle", battleId, "rankings"] as const,
+    queryFn: () => menuBattleAPI.getRankings(battleId!),
+    enabled: !!battleId && sessionReady,
+  });
+  const rankings = useMemo(() => rankingsData ?? [], [rankingsData]);
 
   const finished = battleData?.status === "finished";
 
-  // 순위: 동일 주기 폴링.
-  const { data: rankingsData } = useQuery<Ranking[]>({
-    queryKey: ["battle", battleId, "rankings"] as const,
-    queryFn: async () => {
-      const data = await menuBattleAPI.getRankings(battleId!);
-      if (Array.isArray(data)) return data;
-      const rankings = (data as { rankings?: Ranking[] })?.rankings;
-      return Array.isArray(rankings) ? rankings : [];
-    },
-    enabled: !!battleId,
-    refetchInterval: finished ? false : 2000,
-  });
-  const rankings = rankingsData ?? [];
+  const battleName = useMemo(() => {
+    if (battleData?.battleId && battleNameFromQuery)
+      return decodeURIComponent(battleNameFromQuery);
+    return "오늘의 메뉴 배틀";
+  }, [battleData?.battleId, battleNameFromQuery]);
 
-  // 생성자 여부: 닉네임이 정해졌을 때만 조회.
-  const { data: isCreatorData } = useQuery<boolean>({
-    queryKey: ["battle", battleId, "isCreator", nickname] as const,
-    queryFn: async () => {
-      const info = await menuBattleAPI.isCreator(battleId!, nickname);
-      return info.isCreator;
-    },
-    enabled: !!battleId && !!nickname,
-  });
-  const isCreator =
-    isCreatorData ??
-    (battleData ? battleData.creatorNickname === nickname : false);
-
-  // 배틀 응답에서 파생되는 UI 상태.
   const menus: Menu[] = useMemo(() => {
     if (!battleData) return [];
     return battleData.menus.map((menu, index) => ({
@@ -134,41 +103,49 @@ export default function PlayPage() {
   }, [battleData]);
 
   const creatorNickname = battleData?.creatorNickname ?? "";
-  const spinHistory: SpinResult[] = useMemo(
+  const isCreator = creatorNickname === nickname;
+
+  const spinHistory = useMemo(
     () => battleData?.spinResults ?? [],
     [battleData],
   );
 
   const winner: Winner | null = useMemo(() => {
-    const ranked = battleData?.spinResults.find((result) => result.rank === 1);
-    if (!ranked) return null;
+    const top = rankings[0] ?? null;
+    if (!top) return null;
     return {
-      nickname: ranked.nickname,
-      closestMenuName: ranked.closestMenuName,
-      distanceToBoundary: ranked.distanceToBoundary,
-      rank: ranked.rank,
+      nickname: top.nickname,
+      closestMenuName: top.closestMenuName,
+      distanceToBoundary: top.distanceToBoundary,
+      rank: 1,
     };
-  }, [battleData]);
+  }, [rankings]);
 
   const hasMyStopped = useMemo(
     () => !!nickname && spinHistory.some((item) => item.nickname === nickname),
     [nickname, spinHistory],
   );
 
-  // 배틀 로드 실패 시 토스트.
+  const totalPlayers = players.length;
+  const stoppedCount = spinHistory.length;
+
   const toastedErrorRef = useRef<unknown>(null);
   useEffect(() => {
-    if (battleError && toastedErrorRef.current !== battleError) {
-      toastedErrorRef.current = battleError;
-      openToast("배틀방 정보를 불러오지 못했습니다.");
+    const err = battleError ?? sessionError;
+    if (err && toastedErrorRef.current !== err) {
+      toastedErrorRef.current = err;
+      openToast(
+        err instanceof Error && err.message
+          ? err.message
+          : "배틀방 정보를 불러오지 못했습니다.",
+      );
     }
-  }, [battleError, openToast]);
+  }, [battleError, sessionError, openToast]);
 
-  // 배틀 참가자 leave는 Supabase Realtime presence 이전 시 재구현 예정.
-
+  // 닉네임 확정된 후 자동으로 룰렛 회전 시작
   useEffect(() => {
     if (
-      showNicknameModal ||
+      showNicknameSheet ||
       finished ||
       hasMyStopped ||
       isSubmittingSpin ||
@@ -183,7 +160,7 @@ export default function PlayPage() {
     hasMyStopped,
     isSubmittingSpin,
     menus.length,
-    showNicknameModal,
+    showNicknameSheet,
   ]);
 
   const isValidNickname = (value: string) =>
@@ -204,7 +181,7 @@ export default function PlayPage() {
       setIsSubmittingNickname(true);
       await menuBattleAPI.joinBattle(battleId, trimmed);
       setNickname(trimmed);
-      setShowNicknameModal(false);
+      setShowNicknameSheet(false);
 
       window.history.replaceState(
         null,
@@ -214,36 +191,11 @@ export default function PlayPage() {
 
       await invalidateBattle();
     } catch (error) {
-      try {
-        const battle = (await menuBattleAPI.getBattle(
-          battleId,
-        )) as BattleResponse;
-        const alreadyJoined = battle.participants.some(
-          (participant) => participant.nickname === trimmed,
-        );
-
-        if (alreadyJoined) {
-          setNickname(trimmed);
-          setShowNicknameModal(false);
-
-          window.history.replaceState(
-            null,
-            "",
-            `/menu-battle/play/${battleId}?nickname=${encodeURIComponent(trimmed)}&battleName=${encodeURIComponent(battleName)}`,
-          );
-
-          await invalidateBattle();
-          return;
-        }
-      } catch {
-        // ignore fallback errors
-      }
-
-      if (error instanceof Error && error.message) {
-        openToast(error.message);
-      } else {
-        openToast("입장에 실패했습니다. 닉네임을 확인해주세요.");
-      }
+      openToast(
+        error instanceof Error && error.message
+          ? error.message
+          : "입장에 실패했습니다.",
+      );
     } finally {
       setIsSubmittingNickname(false);
     }
@@ -258,7 +210,6 @@ export default function PlayPage() {
       return;
     }
 
-    // Stop immediately on click, then reconcile with server result.
     rouletteRef.current?.stop();
     isSpinningRef.current = false;
 
@@ -266,30 +217,13 @@ export default function PlayPage() {
       setIsSubmittingSpin(true);
       const result = await menuBattleAPI.spin(battleId, nickname);
       await rouletteRef.current?.animateToAngle(result.stoppedAngle);
-
-      // Optimistic update — 즉시 spinHistory에 반영.
-      queryClient.setQueryData<BattleResponse>(
-        battleQueryKey(battleId),
-        (prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            spinResults: mergeSpinResults(prev.spinResults, [
-              {
-                nickname: result.nickname,
-                stoppedAngle: result.stoppedAngle,
-                closestMenuName: result.closestMenuName,
-                distanceToBoundary: result.distanceToBoundary,
-                rank: result.rank,
-                spunAt: result.spunAt,
-              },
-            ]),
-          };
-        },
-      );
       await invalidateBattle();
-    } catch {
-      openToast("스핀에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    } catch (error) {
+      openToast(
+        error instanceof Error && error.message
+          ? error.message
+          : "스핀에 실패했습니다.",
+      );
     } finally {
       setIsSubmittingSpin(false);
     }
@@ -301,14 +235,20 @@ export default function PlayPage() {
       setIsFinishing(true);
       await menuBattleAPI.finish(battleId, nickname);
       await invalidateBattle();
-    } catch {
-      openToast("배틀 마감에 실패했습니다.");
+    } catch (error) {
+      openToast(
+        error instanceof Error && error.message
+          ? error.message
+          : "배틀 마감에 실패했습니다.",
+      );
     } finally {
       setIsFinishing(false);
     }
   };
 
-  const ready = !showNicknameModal && !!nickname;
+  const ready = !showNicknameSheet && !!nickname;
+  const progressPct =
+    totalPlayers === 0 ? 0 : Math.min(100, (stoppedCount / totalPlayers) * 100);
 
   return (
     <main className="px-4 text-center">
@@ -322,6 +262,26 @@ export default function PlayPage() {
 
       {ready && (
         <>
+          {/* 진행 게이지 */}
+          {totalPlayers > 0 && !finished && (
+            <div className="mt-4 px-1">
+              <div className="text-caption-2 text-font-placeholder mb-1.5 flex justify-between">
+                <span>결정 완료</span>
+                <span className="tabular-nums">
+                  {stoppedCount} / {totalPlayers}
+                </span>
+              </div>
+              <div className="bg-component-default h-1.5 w-full overflow-hidden rounded-full">
+                <motion.div
+                  className="bg-statelayer-default h-full rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPct}%` }}
+                  transition={{ type: "spring", stiffness: 280, damping: 30 }}
+                />
+              </div>
+            </div>
+          )}
+
           <BattleBoard players={players} creatorNickname={creatorNickname} />
 
           <div className="py-10">
@@ -335,42 +295,54 @@ export default function PlayPage() {
           <Roulette ref={rouletteRef} menus={menus} disabled={finished} />
 
           {!finished && !hasMyStopped && (
-            <button
+            <motion.button
               type="button"
               onClick={handleStop}
               disabled={isSubmittingSpin}
+              whileTap={{ scale: 0.94 }}
               className="bg-statelayer-default mt-4 w-40 rounded-xl py-3 font-semibold text-white disabled:opacity-40"
             >
               STOP
-            </button>
+            </motion.button>
           )}
 
           {!finished && isCreator && hasMyStopped && (
-            <button
+            <motion.button
               type="button"
               onClick={handleFinish}
               disabled={isFinishing}
+              whileTap={{ scale: 0.96 }}
               className="bg-statelayer-default mt-6 rounded-xl px-8 py-3 text-white disabled:opacity-40"
             >
               배틀 마감하기
-            </button>
+            </motion.button>
           )}
 
           {!finished && rankings.length > 0 && (
             <section className="my-8 space-y-3 text-left">
-              {rankings.map((result) => (
-                <div
-                  key={result.nickname}
-                  className="flex items-center justify-between rounded-xl border bg-white px-4 py-2.5"
-                >
-                  <p className="text-body-3 text-font-high">
-                    {result.rank}. {result.nickname}({result.closestMenuName})
-                  </p>
-                  <p className="text-body-3 text-font-high">
-                    {Math.round(result.distanceToBoundary)}
-                  </p>
-                </div>
-              ))}
+              <AnimatePresence initial={false}>
+                {rankings.map((result) => (
+                  <motion.div
+                    key={result.nickname}
+                    layout
+                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 360,
+                      damping: 26,
+                    }}
+                    className="flex items-center justify-between rounded-xl border bg-white px-4 py-2.5"
+                  >
+                    <p className="text-body-3 text-font-high">
+                      {result.rank}. {result.nickname}({result.closestMenuName})
+                    </p>
+                    <p className="text-body-3 text-font-high tabular-nums">
+                      {Math.round(result.distanceToBoundary)}
+                    </p>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </section>
           )}
 
@@ -378,43 +350,73 @@ export default function PlayPage() {
         </>
       )}
 
-      {showNicknameModal && (
-        <ModalWrapper
-          className="px-6"
-          onClose={() => router.push("/menu-battle")}
-        >
-          <div className="border-font-disabled relative w-full max-w-[335px] rounded-[20px] border bg-white px-6 py-8 text-center">
+      <AnimatePresence>
+        {showNicknameSheet && (
+          <motion.div
+            key="nick-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="bg-surface-dimmed fixed inset-0 z-40"
+            onClick={() => router.push("/menu-battle")}
+          />
+        )}
+
+        {showNicknameSheet && (
+          <motion.div
+            key="nick-sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 360, damping: 32 }}
+            className="fixed bottom-0 left-1/2 z-50 w-full max-w-120 -translate-x-1/2 rounded-t-3xl bg-white px-6 pt-3 pb-8 shadow-2xl"
+          >
+            <div className="mx-auto mb-5 h-1.5 w-10 rounded-full bg-gray-200" />
+
+            <div className="text-center">
+              <h3 className="text-body-3-medium wrap-break-word">
+                {battleName}
+              </h3>
+              <p className="text-caption-1 text-font-placeholder mt-1">
+                닉네임을 입력하고 입장해주세요
+              </p>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3">
+              <Input
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="닉네임 (영문/숫자/한글 1~20자)"
+                maxLength={20}
+                className="border-font-medium h-12 w-full rounded-xl border bg-white"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleConfirmNickname();
+                }}
+              />
+              <motion.div whileTap={{ scale: 0.97 }}>
+                <Button
+                  width="xl"
+                  className="bg-statelayer-default h-12 w-full text-white"
+                  onClick={handleConfirmNickname}
+                  disabled={isSubmittingNickname || !sessionReady}
+                >
+                  입장하기
+                </Button>
+              </motion.div>
+            </div>
+
             <button
               type="button"
               onClick={() => router.push("/menu-battle")}
-              className="text-font-placeholder absolute top-3 right-3 text-xl"
+              className="text-font-placeholder absolute top-4 right-4"
               aria-label="닫기"
             >
               <Image src="/x/close_big.svg" alt="닫기" width={20} height={20} />
             </button>
-
-            <div className="flex flex-col items-center gap-3.5">
-              <h3 className="text-body-3-medium w-full wrap-break-word">
-                {battleName}
-              </h3>
-              <Input
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                placeholder="닉네임을 입력하세요"
-                className="border-font-medium h-10 w-full max-w-[287px] rounded-md border bg-white"
-              />
-              <Button
-                width="xl"
-                className="bg-statelayer-default h-12 w-full max-w-[287px] text-white"
-                onClick={handleConfirmNickname}
-                disabled={isSubmittingNickname}
-              >
-                입장하기
-              </Button>
-            </div>
-          </div>
-        </ModalWrapper>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Toast
         show={showToast}

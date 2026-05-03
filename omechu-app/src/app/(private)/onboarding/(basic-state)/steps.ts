@@ -1,5 +1,3 @@
-//! 26.01.12 작업 중
-
 export const BASIC_STATE_STEPS = ["state", "food", "allergy"] as const;
 export type BasicStateStep = (typeof BASIC_STATE_STEPS)[number];
 

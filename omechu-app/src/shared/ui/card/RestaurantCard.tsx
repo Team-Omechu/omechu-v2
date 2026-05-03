@@ -1,5 +1,3 @@
-//! 26.01.05 작업
-
 "use client";
 
 import Image from "next/image";

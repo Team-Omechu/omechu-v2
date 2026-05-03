@@ -1,4 +1,3 @@
-//! 26.01.06 작업 완료
 import Image from "next/image";
 
 import { Button } from "@/shared/ui/button/Button";

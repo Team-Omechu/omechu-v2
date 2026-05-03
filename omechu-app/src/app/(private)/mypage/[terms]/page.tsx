@@ -1,4 +1,3 @@
-//! 26.01.13 작업
 import { notFound } from "next/navigation";
 
 import {

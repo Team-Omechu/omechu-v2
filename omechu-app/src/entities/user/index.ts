@@ -22,7 +22,6 @@ export {
   fetchProfile as fetchProfileSupabase,
   updateProfile as updateProfileSupabase,
   setPreferences,
-  setAllergies,
   setAllergiesByLabels,
   submitInquiry,
   saveAgreement,

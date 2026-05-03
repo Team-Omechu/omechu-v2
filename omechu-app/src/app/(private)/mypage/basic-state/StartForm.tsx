@@ -1,5 +1,3 @@
-//! 26.01.13 작업
-
 "use client";
 
 import { useRouter } from "next/navigation";

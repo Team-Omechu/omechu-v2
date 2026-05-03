@@ -49,7 +49,7 @@ export default function RandomRecommendPage() {
   };
 
   return (
-    <div className="flex h-screen w-full flex-col items-center">
+    <div className="flex min-h-dvh w-full flex-col items-center">
       <Header title="랜덤 추천" showBackButton={false} />
 
       <div className="mt-8 flex flex-col gap-2 p-4">

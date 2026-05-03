@@ -18,7 +18,7 @@ export default function GlobalError({
   return (
     <html lang="ko">
       <body>
-        <div className="flex min-h-screen items-center justify-center px-6">
+        <div className="flex min-h-dvh items-center justify-center px-6">
           <div className="w-full max-w-md space-y-4 text-center">
             <h1 className="text-2xl font-bold">문제가 발생했습니다</h1>
             <p className="text-sm text-gray-600">

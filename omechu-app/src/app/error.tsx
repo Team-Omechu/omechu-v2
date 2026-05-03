@@ -16,7 +16,7 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6">
+    <div className="flex min-h-dvh items-center justify-center px-6">
       <div className="w-full max-w-[375px] space-y-4 text-center">
         <h1 className="text-font-high text-2xl font-bold">
           문제가 발생했습니다

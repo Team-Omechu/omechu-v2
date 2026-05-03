@@ -267,6 +267,50 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* 음식 sprite cycle 애니메이션 (MainLoading / ContentLoading 공용) */
+@keyframes food-cycle {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: -525px 0;
+  }
+}
+
+.animate-food-cycle {
+  animation: food-cycle 0.5s steps(3) infinite;
+}
+
+/*
+  데스크탑 단일 스크롤 정책:
+  - window(=html)가 유일한 스크롤 컨테이너.
+  - scrollbar-gutter:stable 로 트랙 폭 항상 reserve → 모달 lock 시 layout shift 방지.
+  - 데스크탑은 thin + 브랜드 톤. 모바일은 overlay라 영향 없음.
+*/
+html {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-statelayer-disabled) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: var(--color-statelayer-disabled);
+  border-radius: 9999px;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: var(--color-font-low);
+}
+
 /* 접근성: 사용자가 모션 감소를 선호하면 트랜지션 최소화 */
 @media (prefers-reduced-motion: reduce) {
   *,

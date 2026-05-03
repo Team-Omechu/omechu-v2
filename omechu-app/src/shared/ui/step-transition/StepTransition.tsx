@@ -24,10 +24,13 @@ export function StepTransition({ children }: StepTransitionProps) {
     <AnimatePresence mode="wait" initial={false}>
       <m.div
         key={pathname}
-        initial={{ opacity: 0, x: 8 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -6 }}
-        transition={{ duration: 0.16, ease: [0.32, 0.72, 0, 1] }}
+        initial={{ opacity: 0, scale: 0.985, x: 6 }}
+        animate={{ opacity: 1, scale: 1, x: 0 }}
+        exit={{ opacity: 0, scale: 0.99, x: -4 }}
+        transition={{
+          default: { type: "spring", stiffness: 380, damping: 34, mass: 0.9 },
+          opacity: { duration: 0.18 },
+        }}
         className="flex flex-1 flex-col"
       >
         {children}

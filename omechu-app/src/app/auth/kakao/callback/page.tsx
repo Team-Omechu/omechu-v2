@@ -33,7 +33,7 @@ export default function KakaoCallbackPage() {
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
+      <main className="flex min-h-dvh items-center justify-center">
         <p className="text-sm text-red-500">카카오 로그인 실패: {error}</p>
       </main>
     );

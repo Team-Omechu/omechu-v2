@@ -121,13 +121,9 @@ export default function RootLayout({
             </Script>
           </>
         )}
-        {/* 모바일 앱 컨테이너 - max-width 제한, 중앙 정렬 */}
-        <div className="bg-background-primary relative mx-auto flex min-h-screen w-full max-w-120 min-w-93.75 flex-col overflow-x-hidden shadow-xl">
-          <Providers>
-            <main className="bg-background-primary scrollbar-hide flex flex-1 flex-col overflow-y-scroll">
-              {children}
-            </main>
-          </Providers>
+        {/* 모바일 앱 컨테이너 - max-width 제한, 중앙 정렬. 스크롤은 window가 단독 책임. */}
+        <div className="bg-background-primary relative mx-auto flex min-h-dvh w-full max-w-120 min-w-93.75 flex-col overflow-x-hidden shadow-xl">
+          <Providers>{children}</Providers>
         </div>
         <Analytics />
         <SpeedInsights />

@@ -311,7 +311,7 @@ export default function PlayPage() {
   const ready = !showNicknameModal && !!nickname;
 
   return (
-    <main className="min-h-screen px-4 text-center">
+    <main className="px-4 text-center">
       <Header
         title={battleName}
         showBackButton={false}
@@ -379,7 +379,10 @@ export default function PlayPage() {
       )}
 
       {showNicknameModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+        <ModalWrapper
+          className="px-6"
+          onClose={() => router.push("/menu-battle")}
+        >
           <div className="border-font-disabled relative w-full max-w-[335px] rounded-[20px] border bg-white px-6 py-8 text-center">
             <button
               type="button"
@@ -410,7 +413,7 @@ export default function PlayPage() {
               </Button>
             </div>
           </div>
-        </div>
+        </ModalWrapper>
       )}
 
       <Toast

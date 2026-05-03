@@ -13,8 +13,8 @@ import { useAuthStore } from "@/entities/user";
 import {
   BaseModal,
   Button,
+  ContentLoading,
   Header,
-  MainLoading,
   ModalWrapper,
   RecommendedFoodCard,
   Toast,
@@ -99,7 +99,7 @@ export default function ResultPage() {
   if (isLoading || isRefetching) return <MainLoading />;
 
   return (
-    <div className="flex h-screen flex-col items-center">
+    <div className="flex min-h-dvh flex-col items-center">
       <Header
         title="맞춤 추천"
         onBackClick={() => router.back()}

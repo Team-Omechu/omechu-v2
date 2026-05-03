@@ -111,7 +111,7 @@ export default function QuestionAnswerPage() {
   const showNext = isQuestionStep; // 1~5 (5면 result로 이동)
 
   return (
-    <div className="relative flex h-screen w-auto flex-col">
+    <div className="relative flex min-h-dvh w-auto flex-col">
       {/* header: 질문 스텝에서만 표시 */}
       <Header
         title="맞춤 추천"

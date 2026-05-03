@@ -32,11 +32,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "omechu-s3-bucket.s3.ap-northeast-2.amazonaws.com",
-      },
-      {
-        protocol: "https",
-        hostname: "omechu-service-s3-bucket.s3.ap-northeast-2.amazonaws.com",
+        hostname: "xztldvunnasjaxnzqpct.supabase.co",
+        pathname: "/storage/v1/object/public/**",
       },
       {
         protocol: "https",

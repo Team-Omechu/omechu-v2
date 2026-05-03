@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   FloatingActionButton,
@@ -27,7 +27,6 @@ const TAB = {
 
 export default function RecommendedListPage() {
   const router = useRouter();
-  const mainRef = useRef<HTMLDivElement>(null);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,15 +35,12 @@ export default function RecommendedListPage() {
   const { show, message, triggerToast } = useToast();
 
   useEffect(() => {
-    const el = mainRef.current;
-    if (!el) return;
-
     const handleScroll = () => {
-      setShowFAB(el.scrollTop > 200);
+      setShowFAB(window.scrollY > 200);
     };
 
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const { data, isLoading } = useRecommendManagement();
@@ -91,11 +87,7 @@ export default function RecommendedListPage() {
   };
 
   const scrollToTop = () => {
-    if (mainRef.current) {
-      mainRef.current.scrollTo({ top: 0, behavior: "smooth" });
-    } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
@@ -105,10 +97,7 @@ export default function RecommendedListPage() {
         onBackClick={() => router.push("/mypage")}
       />
 
-      <main
-        ref={mainRef}
-        className="relative mt-2 flex h-[91.5dvh] flex-col items-center gap-5 overflow-y-auto"
-      >
+      <main className="relative mt-2 flex flex-col items-center gap-5 pb-8">
         <SelectTab
           tabs={["추천 목록", "제외 목록"]}
           selectedIndex={selectedIndex}

@@ -86,7 +86,7 @@ export default function MainPage() {
   }, [data, setExceptions]);
 
   return (
-    <div className="scrollbar-hide relative flex h-screen w-full justify-center overflow-hidden bg-linear-to-b from-pink-200 to-purple-300">
+    <div className="scrollbar-hide relative flex h-dvh w-full justify-center overflow-hidden bg-linear-to-b from-pink-200 to-purple-300">
       <Header variant="mypage" className="absolute top-0 left-0 z-20" />
 
       <div className="pointer-events-none absolute inset-0 bg-black/65" />

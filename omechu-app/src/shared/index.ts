@@ -28,7 +28,7 @@ export { MotionProvider } from "./providers/MotionProvider";
 
 // UI Components
 export { Header } from "./ui/header";
-export { MainLoading } from "./ui/main-loading";
+export { ContentLoading, MainLoading, Spinner } from "./ui/loading";
 export { StepTransition } from "./ui/step-transition";
 export { ProgressBar } from "./ui/progress-bar";
 export { SearchBar } from "./ui/search-bar";

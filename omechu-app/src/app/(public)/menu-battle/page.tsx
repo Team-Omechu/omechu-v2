@@ -9,7 +9,15 @@ import { useQuery } from "@tanstack/react-query";
 import { menuBattleAPI } from "@/shared/api/menuBattle.api";
 import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
 
-import { Button, FoodBox, Header, Input, Toast, useToast } from "@/shared";
+import {
+  Button,
+  FoodBox,
+  Header,
+  Input,
+  ModalWrapper,
+  Toast,
+  useToast,
+} from "@/shared";
 
 interface Menu {
   id: string;
@@ -169,7 +177,7 @@ ${shareUrl}`;
   };
 
   return (
-    <main className="min-h-screen pb-32">
+    <main className="pb-32">
       <Header
         title="오늘의 메뉴 배틀"
         showBackButton={false}
@@ -281,7 +289,10 @@ ${shareUrl}`;
       </div>
 
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-6">
+        <ModalWrapper
+          className="px-6"
+          onClose={() => setShowCreateModal(false)}
+        >
           <div className="relative w-full max-w-sm rounded-2xl bg-white px-3.75 py-3.75 text-center">
             <button
               type="button"
@@ -328,7 +339,7 @@ ${shareUrl}`;
               </Button>
             </div>
           </div>
-        </div>
+        </ModalWrapper>
       )}
 
       <Toast

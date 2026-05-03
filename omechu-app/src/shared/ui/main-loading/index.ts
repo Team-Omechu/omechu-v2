@@ -1,1 +1,0 @@
-export { MainLoading } from "./MainLoading";

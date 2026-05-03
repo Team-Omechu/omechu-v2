@@ -27,8 +27,13 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
+    // 모바일 max-w-120(375px) 기준. 큰 데스크톱 사이즈 변환 불필요.
+    deviceSizes: [384, 750, 1080],
+    imageSizes: [64, 128, 256, 384],
     formats: ["image/avif", "image/webp"],
-    qualities: [75, 90],
+    qualities: [75],
+    // Vercel transform 캐시 1년 보유 — 재변환 빈도 ↓ (Hobby 5K/월 한도 보호)
+    minimumCacheTTL: 31536000,
     remotePatterns: [
       {
         protocol: "https",

@@ -11,8 +11,6 @@ import { THEME_COLOR } from "@/shared/constants/theme";
 import { BASE_URL } from "@/shared/constants/url";
 import { siteJsonLd } from "@/shared/lib/siteJsonLd";
 
-import { PageTransition } from "@/shared";
-
 import "./globals.css";
 
 const notoSansKR = Noto_Sans_KR({
@@ -127,7 +125,7 @@ export default function RootLayout({
         <div className="bg-background-primary relative mx-auto flex min-h-screen w-full max-w-120 min-w-93.75 flex-col overflow-x-hidden shadow-xl">
           <Providers>
             <main className="bg-background-primary scrollbar-hide flex flex-1 flex-col overflow-y-scroll">
-              <PageTransition>{children}</PageTransition>
+              {children}
             </main>
           </Providers>
         </div>

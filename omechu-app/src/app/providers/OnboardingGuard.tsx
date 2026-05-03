@@ -12,7 +12,7 @@ interface OnboardingGuardProps {
 /**
  * OnboardingGuard
  * - 세션 복구 및 온보딩 미완료 사용자 리다이렉트 처리
- * - 로그인 후 닉네임이 없으면 /onboarding으로 이동
+ * - 로그인 후 닉네임이 없으면 /mypage로 이동 (마이페이지에서 닉네임 모달 자동 오픈)
  *
  * 참고: "이미 로그인한 유저가 /login 등에 접근"에 대한 차단은
  *  (auth)/layout.tsx의 GuestRoute가 담당함
@@ -35,7 +35,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
       if (from401) return;
 
       if (!sessionUser.nickname) {
-        router.push("/onboarding");
+        router.push("/mypage");
       }
     }
   }, [isSuccess, isError, sessionUser, isLoggedIn, router]);

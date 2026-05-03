@@ -81,7 +81,8 @@ export default function SignupPage() {
     signup(data, {
       onSuccess: () => {
         // 회원가입 성공 → 토큰이 useSignupMutation의 onSuccess에서 자동 저장됨
-        router.push("/onboarding");
+        // 닉네임/기본상태 미입력 상태이므로 /mypage 진입 시 자동 모달이 열림
+        router.push("/mypage");
       },
       onError: (error: unknown) => {
         const e = error as ApiClientError;

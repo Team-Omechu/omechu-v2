@@ -17,7 +17,7 @@ import { Toast, useToast } from "@/shared";
 
 /**
  * 이메일 로그인 페이지
- * - 로그인 후 닉네임 유무에 따라 /mainpage 또는 /onboarding으로 이동
+ * - 로그인 후 닉네임 유무에 따라 /mainpage 또는 /mypage(닉네임 모달 자동 오픈)로 이동
  * - 폼 자체는 widgets/auth/EmailLoginForm이 담당
  */
 export default function LoginPage() {
@@ -68,7 +68,7 @@ export default function LoginPage() {
     if (!isSuccess || !user?.id) return;
 
     navigatedRef.current = true;
-    router.push(user.nickname?.trim() ? "/mainpage" : "/onboarding");
+    router.push(user.nickname?.trim() ? "/mainpage" : "/mypage");
   }, [isSuccess, user, router]);
 
   return (

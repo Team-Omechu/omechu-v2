@@ -106,7 +106,6 @@ const toArray = (v: unknown): unknown[] =>
   Array.isArray(v) ? v : v ? [v] : [];
 
 type OnboardingState = {
-  nickname: string;
   exercise: string | null;
   prefer: string[];
   bodyType: string[];
@@ -116,7 +115,6 @@ type OnboardingState = {
 };
 
 type OnboardingActions = {
-  setNickname: (nickname: string) => void;
   setExercise: (exercise: string | null) => void;
   setPrefer: (prefer: string[]) => void;
   setBodyType: (bodyType: string[]) => void;
@@ -137,7 +135,6 @@ type OnboardingActions = {
 };
 
 const initialState: OnboardingState = {
-  nickname: "",
   exercise: null,
   prefer: [],
   bodyType: [],
@@ -150,7 +147,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
   persist(
     (set, get) => ({
       ...initialState,
-      setNickname: (nickname) => set({ nickname }),
       setExercise: (exercise) => set({ exercise }),
       setPrefer: (prefer) => set({ prefer }),
       setBodyType: (bodyType: string[]) => set({ bodyType }),
@@ -160,8 +156,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
         if (!raw) return;
 
         const profile = raw as Record<string, unknown>;
-        const nickname =
-          (profile?.nickname as string) ?? (profile?.name as string) ?? "";
 
         const exercise = normExercise(
           (profile?.exercise as string) ?? (profile?.state as string) ?? null,
@@ -187,7 +181,6 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
         );
 
         set({
-          nickname,
           exercise,
           prefer: preferArr,
           bodyType,
@@ -232,9 +225,7 @@ export const useOnboardingStore = create<OnboardingState & OnboardingActions>()(
       blockPreferHydrate: () => set({ preferHydrateBlocked: true }),
 
       softReset: () => {
-        const { nickname } = get();
         set({
-          nickname,
           exercise: null,
           prefer: [],
           bodyType: [],

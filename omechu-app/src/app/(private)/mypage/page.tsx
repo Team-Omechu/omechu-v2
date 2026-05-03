@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { CustomerSupportSection, UserInfoSection } from "@/widgets/mypage";
 
@@ -11,6 +11,8 @@ import { CloseIcon } from "@/shared/assets/icons/index";
 
 import { BaseModal, ContentLoading, Header, ModalWrapper } from "@/shared";
 
+const NICKNAME_REGEX = /^[A-Za-z가-힣]{2,12}$/;
+
 export default function MypageMain() {
   const router = useRouter();
   const { profile, loading, error } = useProfile();
@@ -18,14 +20,28 @@ export default function MypageMain() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [autoOpened, setAutoOpened] = useState(false);
+
+  // 첫 진입 시 닉네임이 비어있으면 자동으로 입력 모달 오픈
+  useEffect(() => {
+    if (autoOpened) return;
+    if (!profile) return;
+    if (!profile.nickname?.trim()) {
+      setInputValue("");
+      setIsModalOpen(true);
+      setAutoOpened(true);
+    }
+  }, [profile, autoOpened]);
 
   const handleCloseModal = () => {
     setInputValue("");
     setIsModalOpen(false);
   };
 
+  const isNicknameValid = NICKNAME_REGEX.test(inputValue.trim());
+
   const handleSubmitNickname = () => {
-    if (!inputValue.trim() || updateProfileMutation.isPending) return;
+    if (!isNicknameValid || updateProfileMutation.isPending) return;
 
     updateProfileMutation.mutate(
       { nickname: inputValue.trim() },
@@ -77,8 +93,6 @@ export default function MypageMain() {
             setIsModalOpen(true);
           }}
         />
-        {/* 임시 주석 처리! */}
-        {/* <SetAlarmSection /> */}
         <CustomerSupportSection />
       </main>
 
@@ -91,21 +105,27 @@ export default function MypageMain() {
             onLeftButtonClick={handleCloseModal}
             onRightButtonClick={handleSubmitNickname}
           >
-            <div className="relative z-50 flex w-full flex-col items-center justify-center gap-4 px-1">
+            <div className="relative z-50 flex w-full flex-col items-center justify-center gap-2 px-1">
               <div className="text-body-2-bold text-font-high">닉네임 변경</div>
-              <input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder={userInfo.name}
-                className="border-font-disabled h-12 w-full rounded-[10px] border pr-9 pl-4"
-              />
-              <button
-                type="button"
-                onClick={() => setInputValue("")}
-                className="absolute right-4 bottom-3.5"
-              >
-                <CloseIcon className="h-5 w-5" />
-              </button>
+              <div className="relative w-full">
+                <input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder={userInfo.name}
+                  className="border-font-disabled h-12 w-full rounded-[10px] border pr-9 pl-4"
+                />
+                <button
+                  type="button"
+                  onClick={() => setInputValue("")}
+                  className="absolute top-1/2 right-3 -translate-y-1/2"
+                  aria-label="입력값 지우기"
+                >
+                  <CloseIcon className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-caption-1-regular text-font-placeholder w-full text-left">
+                * 한·영 2~12자로 입력해 주세요
+              </p>
             </div>
           </BaseModal>
         </ModalWrapper>

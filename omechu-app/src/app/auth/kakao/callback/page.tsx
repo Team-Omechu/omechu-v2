@@ -40,7 +40,7 @@ export default function KakaoCallbackPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center">
+    <main className="flex min-h-dvh items-center justify-center">
       <p>카카오 로그인 처리 중…</p>
     </main>
   );

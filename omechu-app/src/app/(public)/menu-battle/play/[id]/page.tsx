@@ -23,7 +23,7 @@ import {
 
 import { menuBattleAPI } from "@/shared/api/menuBattle.api";
 
-import { Button, Header, Input, Toast, useToast } from "@/shared";
+import { Button, Header, Input, ModalWrapper, Toast, useToast } from "@/shared";
 
 const BAR_COLORS = ["#FF9029", "#00A3FF", "#5AD886", "#FDDC3F", "#C48CFD"];
 

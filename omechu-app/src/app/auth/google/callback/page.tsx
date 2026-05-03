@@ -40,7 +40,7 @@ export default function GoogleCallbackPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center">
+    <main className="flex min-h-dvh items-center justify-center">
       <p>구글 로그인 처리 중…</p>
     </main>
   );

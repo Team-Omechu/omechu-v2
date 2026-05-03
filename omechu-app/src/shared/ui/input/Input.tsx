@@ -5,7 +5,7 @@ import React from "react";
 import { type VariantProps, cva } from "class-variance-authority";
 
 import { CloseEyeIcon, OpenEyeIcon, SearchIcon } from "@/shared/assets/icons";
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
 const inputBaseStyles = cva(
   [

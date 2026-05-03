@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { useQuestionAnswerStore, whoOptions } from "@/entities/question";
+import { WHO_OPTIONS, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 
 import { Button } from "@/shared";
@@ -22,7 +22,7 @@ export function WhoStep() {
 
   return (
     <QuestionAnswerLayout title={"혼자 식사하시나요\n누구와 함께 하시나요?"}>
-      {whoOptions.map(({ label, value, description }) => (
+      {WHO_OPTIONS.map(({ label, value, description }) => (
         <Button
           key={value}
           onClick={() => handleSelect(label, description)}

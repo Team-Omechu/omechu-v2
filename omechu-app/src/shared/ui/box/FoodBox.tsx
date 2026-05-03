@@ -4,7 +4,7 @@
 
 import Image from "next/image";
 
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
 interface FoodBoxProps {
   src: string;

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { mealTimeOptions, useQuestionAnswerStore } from "@/entities/question";
+import { MEAL_TIME_OPTIONS, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 
 import { Button } from "@/shared";
@@ -22,7 +22,7 @@ export function MealTimeStep() {
 
   return (
     <QuestionAnswerLayout title="언제 먹는 건가요?">
-      {mealTimeOptions.map(({ label, value, description }) => (
+      {MEAL_TIME_OPTIONS.map(({ label, value, description }) => (
         <Button
           key={value}
           onClick={() => handleSelect(label, description)}

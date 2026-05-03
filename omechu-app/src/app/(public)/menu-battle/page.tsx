@@ -2,12 +2,12 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
-import { fetchJSON } from "@/shared/api/fetchJSON";
 import { menuBattleAPI } from "@/shared/api/menuBattle.api";
+import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
 
 import { Button, FoodBox, Header, Input, Toast, useToast } from "@/shared";
 
@@ -20,6 +20,22 @@ interface Menu {
 const MIN_MENU_SELECTION = 2;
 const MAX_MENU_SELECTION = 8;
 const MENU_SELECTION_MESSAGE = "메뉴는 2개에서 8개 사이로 선택해야 합니다";
+
+async function fetchAllMenus(): Promise<Menu[]> {
+  const sb = createSupabaseBrowserClient();
+  const { data, error } = await sb
+    .from("menu")
+    .select("id, name, image_link")
+    .order("id");
+  if (error) throw error;
+  return (
+    (data ?? []) as { id: number; name: string; image_link: string | null }[]
+  ).map((m) => ({
+    id: String(m.id),
+    name: m.name,
+    image_link: m.image_link,
+  }));
+}
 
 export default function MenuBattlePage() {
   const router = useRouter();
@@ -37,69 +53,15 @@ export default function MenuBattlePage() {
     triggerToast: openToast,
   } = useToast();
 
-  const observerRef = useRef<HTMLDivElement | null>(null);
-  const batchSizeRef = useRef<number | null>(null);
-
   const {
-    data: menusData,
+    data: menus = [],
     error: menusError,
-    fetchNextPage,
-    hasNextPage,
-    isFetching: isLoadingMenus,
-    isFetchingNextPage,
-  } = useInfiniteQuery<
-    Menu[],
-    Error,
-    { pages: Menu[][]; pageParams: number[] },
-    readonly ["menu", "allMenu"],
-    number
-  >({
+    isLoading: isLoadingMenus,
+  } = useQuery<Menu[]>({
     queryKey: ["menu", "allMenu"] as const,
-    initialPageParam: 0,
-    queryFn: ({ pageParam }) => fetchJSON<Menu[]>(`/menu/allMenu/${pageParam}`),
-    getNextPageParam: (lastPage, _allPages, lastPageParam) => {
-      if (!lastPage || lastPage.length === 0) return undefined;
-
-      // 첫 배치 크기 기준으로 마지막 페이지 감지.
-      if (batchSizeRef.current === null) {
-        batchSizeRef.current = lastPage.length;
-      } else if (lastPage.length < batchSizeRef.current) {
-        return undefined;
-      }
-
-      const nextCursor = Number(lastPage[lastPage.length - 1]?.id);
-      if (!Number.isFinite(nextCursor) || nextCursor <= lastPageParam) {
-        return undefined;
-      }
-      return nextCursor;
-    },
+    queryFn: fetchAllMenus,
+    staleTime: 5 * 60 * 1000,
   });
-
-  useEffect(() => {
-    if (!observerRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (
-          entry?.isIntersecting &&
-          hasNextPage &&
-          !isLoadingMenus &&
-          !isFetchingNextPage
-        ) {
-          void fetchNextPage();
-        }
-      },
-      { threshold: 1 },
-    );
-
-    observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isLoadingMenus, isFetchingNextPage]);
-
-  const menus = useMemo<Menu[]>(() => {
-    const all = menusData?.pages.flat() ?? [];
-    return Array.from(new Map(all.map((menu) => [menu.id, menu])).values());
-  }, [menusData]);
 
   const filteredMenus = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -273,8 +235,6 @@ ${shareUrl}`;
             />
           ))}
         </div>
-
-        {hasNextPage && <div ref={observerRef} className="h-10" />}
 
         {isLoadingMenus && (
           <p className="text-caption-2 text-font-placeholder mt-4 text-center">

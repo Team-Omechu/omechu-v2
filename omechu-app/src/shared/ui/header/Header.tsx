@@ -7,10 +7,10 @@ import { useState } from "react";
 
 import { type VariantProps, cva } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
-import { BaseModal } from "./modal/BaseModal";
-import { ModalWrapper } from "./modal/ModalWrapper";
+import { BaseModal } from "../modal/BaseModal";
+import { ModalWrapper } from "../modal/ModalWrapper";
 
 const headerStyles = cva(
   ["flex items-center justify-between", "w-full", "px-5 pt-5 pb-2.5"],

@@ -164,25 +164,7 @@ export default function PlayPage() {
     }
   }, [battleError, openToast]);
 
-  // TODO(supabase-migration): 배틀 참가자 leave를 Supabase Realtime presence 또는
-  // Postgres RPC로 이전 필요. 현재 NEXT_PUBLIC_API_URL(UMC 백엔드) 의존.
-  useEffect(() => {
-    if (!battleId || !nickname || finished) return;
-
-    const leave = () => {
-      void fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/menu/battles/${battleId}/participants/${encodeURIComponent(nickname)}`,
-        { method: "DELETE", credentials: "include", keepalive: true },
-      );
-    };
-
-    const handleBeforeUnload = () => leave();
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      leave();
-    };
-  }, [battleId, nickname, finished]);
+  // 배틀 참가자 leave는 Supabase Realtime presence 이전 시 재구현 예정.
 
   useEffect(() => {
     if (

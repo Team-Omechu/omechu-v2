@@ -1,7 +1,12 @@
-// TODO(supabase-migration): supabaseProfile의 updateProfile + setPreferences + setAllergies + saveAgreement 조합으로 이전 가능.
-// 현재 NEXT_PUBLIC_API_URL(UMC 백엔드) 의존 — 백엔드 서버 부재로 동작하지 않음.
-import type { ApiResponse } from "@/shared/config/api.types";
-import { axiosInstance } from "@/shared/lib/axiosInstance";
+import {
+  type ExerciseKind,
+  type PreferKind,
+  setAllergies,
+  setPreferences,
+  updateProfileSupabase,
+} from "@/entities/user";
+
+import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
 
 export interface OnboardingRequestData {
   nickname: string;
@@ -17,18 +22,52 @@ export interface OnboardingSuccessData {
   allergy: string[];
 }
 
+const EXERCISE_KO_TO_KIND: Record<string, ExerciseKind> = {
+  "다이어트 중": "cutting",
+  "증량 중": "bulking",
+  "유지 중": "maintenance",
+};
+
+const PREFER_KO_TO_KIND: Record<string, PreferKind> = {
+  한식: "korean",
+  양식: "western",
+  중식: "chinese",
+  일식: "japanese",
+  다른나라: "other",
+};
+
+async function resolveAllergyIds(names: string[]): Promise<number[]> {
+  if (names.length === 0) return [];
+  const sb = createSupabaseBrowserClient();
+  const { data, error } = await sb
+    .from("allergy_min")
+    .select("id, allergy")
+    .in("allergy", names);
+  if (error) throw error;
+  return (data ?? []).map((r) => r.id as number);
+}
+
 export const completeOnboarding = async (
   data: OnboardingRequestData,
 ): Promise<OnboardingSuccessData> => {
-  const response = await axiosInstance.patch<
-    ApiResponse<OnboardingSuccessData>
-  >("/user/complete", data);
+  const exerciseKind = data.exercise
+    ? (EXERCISE_KO_TO_KIND[data.exercise] ?? null)
+    : null;
 
-  const apiResponse = response.data;
+  const preferKinds = data.prefer
+    .map((p) => PREFER_KO_TO_KIND[p])
+    .filter((k): k is PreferKind => Boolean(k));
 
-  if (apiResponse.resultType === "FAIL" || !apiResponse.success) {
-    throw new Error(apiResponse.error?.reason || "정보 저장에 실패했습니다.");
-  }
+  const allergyIds = await resolveAllergyIds(data.allergy);
 
-  return apiResponse.success;
+  await Promise.all([
+    updateProfileSupabase({
+      nickname: data.nickname,
+      exercise: exerciseKind,
+    }),
+    setPreferences(preferKinds),
+    setAllergies(allergyIds),
+  ]);
+
+  return data;
 };

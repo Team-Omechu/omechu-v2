@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 
-import { motion } from "motion/react";
+import { m } from "motion/react";
 
 import { lockBodyScroll, unlockBodyScroll } from "@/shared/lib/bodyScrollLock";
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
 type ModalWrapperProps = {
   children: React.ReactNode;
@@ -42,7 +42,7 @@ export function ModalWrapper({
         className,
       )}
     >
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -51,7 +51,7 @@ export function ModalWrapper({
         onClick={onClose}
       />
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0, scale: 0.95, y: 8 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 8 }}
@@ -60,7 +60,7 @@ export function ModalWrapper({
         onClick={(e) => e.stopPropagation()}
       >
         {children}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

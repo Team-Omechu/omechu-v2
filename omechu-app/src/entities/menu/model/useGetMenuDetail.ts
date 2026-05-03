@@ -9,8 +9,7 @@ const MENU_DETAIL_GC_TIME_MS = 5 * 60 * 1000;
 export function useGetMenuDetail(menuName?: string) {
   return useQuery<MenuDetail>({
     queryKey: ["menuDetail", (menuName ?? "").trim()],
-    queryFn: ({ queryKey, signal }) =>
-      getMenuDetail(queryKey[1] as string, { signal }),
+    queryFn: ({ queryKey }) => getMenuDetail(queryKey[1] as string),
     enabled: !!menuName,
     staleTime: MENU_DETAIL_STALE_TIME_MS,
     refetchOnWindowFocus: false,

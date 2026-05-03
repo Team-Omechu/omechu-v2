@@ -1,81 +1,87 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef } from "react";
+import Link from "next/link";
+import { useState } from "react";
 
-import { EmailLoginForm } from "@/widgets/auth";
+import { beginGoogleLogin, beginKakaoLogin } from "@/entities/user";
 
-import {
-  type ApiClientError,
-  type LoginFormValues,
-  getAuthErrorMessage,
-  useAuthStore,
-  useLoginMutation,
-} from "@/entities/user";
-
-import { Toast, useToast } from "@/shared";
+import { AuthButton, Toast, useToast } from "@/shared";
 
 /**
- * 이메일 로그인 페이지
- * - 로그인 후 닉네임 유무에 따라 /mainpage 또는 /onboarding으로 이동
- * - 폼 자체는 widgets/auth/EmailLoginForm이 담당
+ * 소셜 로그인 메인 페이지
+ * - 카카오, 구글 로그인 버튼 (default)
+ * - 이메일 로그인/회원가입 링크
  */
 export default function LoginPage() {
-  const navigatedRef = useRef(false);
-  const justLoggedInRef = useRef(false);
+  const [kakaoLoading, setKakaoLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { show, message, triggerToast } = useToast();
 
-  const router = useRouter();
-  const { show: showToast, message: toastMessage, triggerToast } = useToast();
-  const { mutate: login, isPending, isSuccess } = useLoginMutation();
+  const handleKakao = () => {
+    try {
+      setKakaoLoading(true);
+      beginKakaoLogin();
+    } catch (e) {
+      setKakaoLoading(false);
+      triggerToast(
+        e instanceof Error ? e.message : "카카오 로그인을 시작할 수 없습니다.",
+      );
+    }
+  };
 
-  const handleFormSubmit = useCallback(
-    (data: LoginFormValues) => {
-      login(data, {
-        onSuccess: () => {
-          // useLoginMutation 내부에서 프로필 fetch + setUser 완료됨
-          justLoggedInRef.current = true;
-        },
-        onError: (error: unknown) => {
-          const e = error as ApiClientError;
+  const handleGoogle = () => {
+    try {
+      setGoogleLoading(true);
+      beginGoogleLogin();
+    } catch (e) {
+      setGoogleLoading(false);
+      triggerToast(
+        e instanceof Error ? e.message : "구글 로그인을 시작할 수 없습니다.",
+      );
+    }
+  };
 
-          const MISSING_INPUT_ERROR_CODE = "C001";
-          const USER_NOT_FOUND_ERROR_CODE = "E002";
-
-          const trimmedEmail = data.email.trim();
-          const trimmedPassword = data.password.trim();
-
-          const resolvedCode =
-            e?.code === MISSING_INPUT_ERROR_CODE &&
-            trimmedEmail &&
-            trimmedPassword
-              ? USER_NOT_FOUND_ERROR_CODE
-              : e?.code;
-
-          triggerToast(
-            getAuthErrorMessage(resolvedCode, "로그인에 실패했습니다."),
-          );
-        },
-      });
-    },
-    [login, triggerToast],
-  );
-
-  const user = useAuthStore((s) => s.user);
-
-  useEffect(() => {
-    if (navigatedRef.current) return;
-    if (!justLoggedInRef.current) return;
-    if (!isSuccess || !user?.id) return;
-
-    navigatedRef.current = true;
-    router.push(user.nickname?.trim() ? "/mainpage" : "/onboarding");
-  }, [isSuccess, user, router]);
+  const anyLoading = kakaoLoading || googleLoading;
 
   return (
-    <div className="flex w-full flex-col items-center">
-      <EmailLoginForm isPending={isPending} onFormSubmit={handleFormSubmit} />
+    <div className="flex flex-col items-center">
+      <div className="mt-20 flex w-80 flex-col gap-6">
+        <AuthButton
+          variant="kakao"
+          icon="/kakao/kakao.svg"
+          iconAlt="카카오 아이콘"
+          type="button"
+          onClick={handleKakao}
+          isLoading={kakaoLoading}
+          disabled={anyLoading}
+        >
+          카카오 로그인
+        </AuthButton>
 
-      <Toast message={toastMessage} show={showToast} className="bottom-20" />
+        <AuthButton
+          variant="google"
+          icon="/google/google.svg"
+          iconAlt="구글 아이콘"
+          type="button"
+          onClick={handleGoogle}
+          isLoading={googleLoading}
+          disabled={anyLoading}
+        >
+          구글로 로그인
+        </AuthButton>
+      </div>
+
+      <div className="text-caption-1-regular mt-10 flex items-center gap-3">
+        <Link href="/login/email" className="text-font-medium hover:underline">
+          이메일 로그인
+        </Link>
+        <span className="text-caption-2-medium text-font-placeholder">ㅣ</span>
+        <Link href="/signup" className="text-font-medium hover:underline">
+          이메일 회원가입
+        </Link>
+      </div>
+
+      <Toast message={message} show={show} />
     </div>
   );
 }

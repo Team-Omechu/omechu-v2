@@ -9,9 +9,9 @@ import {
 } from "react";
 
 import { MENU_SUGGESTIONS } from "@/shared/constants/mypage";
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
-import { SearchIcon } from "../assets/icons";
+import { SearchIcon } from "../../assets/icons";
 
 interface SearchBarProps {
   inputValue: string;

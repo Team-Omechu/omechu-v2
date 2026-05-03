@@ -1,7 +1,7 @@
 // ! 26.01.04 작업 완료
 import Image from "next/image";
 
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
 interface RecommendedFoodCardProps {
   menuDesc: string;

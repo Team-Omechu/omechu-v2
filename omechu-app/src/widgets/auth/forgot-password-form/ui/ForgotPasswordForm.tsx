@@ -14,11 +14,11 @@ import {
 import { Button, FormField, Input } from "@/shared";
 
 type ForgotPasswordFormProps = {
-  onFormSubmit: (data: FindPasswordFormValues) => Promise<void>;
+  onFormSubmitAction: (data: FindPasswordFormValues) => Promise<void>;
 };
 
 export default function ForgotPasswordForm({
-  onFormSubmit,
+  onFormSubmitAction,
 }: ForgotPasswordFormProps) {
   const {
     control,
@@ -34,9 +34,9 @@ export default function ForgotPasswordForm({
 
   const onSubmit = useCallback(
     async (data: FindPasswordFormValues) => {
-      await onFormSubmit(data);
+      await onFormSubmitAction(data);
     },
-    [onFormSubmit],
+    [onFormSubmitAction],
   );
 
   const handleFormSubmit = handleSubmit(onSubmit);

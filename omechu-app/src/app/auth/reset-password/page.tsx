@@ -79,7 +79,7 @@ function ResetPasswordClient() {
         </div>
 
         <div className="pt-8">
-          <ResetPasswordForm onFormSubmit={handleFormSubmit} />
+          <ResetPasswordForm onFormSubmitAction={handleFormSubmit} />
         </div>
       </div>
 

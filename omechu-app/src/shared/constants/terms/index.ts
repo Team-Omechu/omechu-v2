@@ -1,5 +1,5 @@
 // Types
-export type { TermsItem, TermsType, TermsConfig } from "./types";
+export type { TermsItem, TermsType, TermsConfig } from "./terms.types";
 
 // Data (for direct access if needed)
 export * from "./data/service";

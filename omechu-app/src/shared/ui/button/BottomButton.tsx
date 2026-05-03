@@ -3,7 +3,7 @@ import React from "react";
 
 import { type VariantProps, cva } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
 const bottomButtonStyles = cva(
   [

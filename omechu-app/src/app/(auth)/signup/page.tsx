@@ -122,8 +122,8 @@ export default function SignupPage() {
         {/* 폼 영역 */}
         <main className="flex-1 px-5 pb-16">
           <SignUpForm
-            setActiveModal={setActiveModal}
-            onSubmit={handleSubmit(onSubmit)}
+            setActiveModalAction={setActiveModal}
+            onSubmitAction={handleSubmit(onSubmit)}
           />
         </main>
 

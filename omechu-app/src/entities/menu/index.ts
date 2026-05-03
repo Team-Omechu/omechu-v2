@@ -7,7 +7,7 @@ export type {
   RandomMenu,
   MenuItem,
   MenuListResponse,
-  menuType,
+  MenuType,
 } from "./config/resultData";
 export type { Menu, MenuDetail } from "./model/menu.types";
 export { useGetMenu } from "./model/useGetMenu";

@@ -3,7 +3,7 @@ export const MUKBURIM_ERROR_CODE = {
   STATISTICS_FAILED: "MK005",
 } as const;
 
-export type mukburimResponse = {
+export type MukburimResponse = {
   resultType: string;
   error: null;
   success: {

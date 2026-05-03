@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { budgetOptions, useQuestionAnswerStore } from "@/entities/question";
+import { BUDGET_OPTIONS, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 
 import { Button } from "@/shared";
@@ -22,7 +22,7 @@ export function BudgetStep() {
 
   return (
     <QuestionAnswerLayout title="예산은 어떻게 되시나요?">
-      {budgetOptions.map(({ label, value, description }) => (
+      {BUDGET_OPTIONS.map(({ label, value, description }) => (
         <Button
           key={value}
           onClick={() => handleSelect(label, description)}

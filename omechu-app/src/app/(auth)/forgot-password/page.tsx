@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
 
         {/* 폼 영역 */}
         <div className="pt-12">
-          <ForgotPasswordForm onFormSubmit={handleFormSubmit} />
+          <ForgotPasswordForm onFormSubmitAction={handleFormSubmit} />
         </div>
       </div>
 

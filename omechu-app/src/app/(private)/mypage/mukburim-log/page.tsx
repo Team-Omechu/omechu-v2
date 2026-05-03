@@ -1,12 +1,13 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 
-import { CustomDatePicker, MukburimFoodBox, PeriodTap } from "@/widgets/mypage";
+import { MukburimFoodBox, PeriodTap } from "@/widgets/mypage";
 
 import {
   type GetMukburimStatisticsResponse,
@@ -19,6 +20,14 @@ import {
 import { type PERIOD_OPTIONS } from "@/shared/constants/mypage";
 import { Header } from "@/shared/index";
 import { HttpError } from "@/shared/lib/httpError";
+
+const CustomDatePicker = dynamic(
+  () =>
+    import("@/widgets/mypage").then((mod) => ({
+      default: mod.CustomDatePicker,
+    })),
+  { ssr: false },
+);
 
 type Period = (typeof PERIOD_OPTIONS)[number];
 

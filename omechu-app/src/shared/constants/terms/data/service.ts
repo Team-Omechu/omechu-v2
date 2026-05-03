@@ -1,4 +1,4 @@
-import type { TermsItem } from "../types";
+import type { TermsItem } from "../terms.types";
 
 export const termsForServiceMain: TermsItem[] = [
   {

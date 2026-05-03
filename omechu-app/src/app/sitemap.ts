@@ -1,70 +1,17 @@
 import type { MetadataRoute } from "next";
 
 import { BASE_URL } from "@/shared/constants/url";
+import { createClient } from "@/shared/lib/supabase/server";
 
-interface Menu {
-  id: string;
-  name: string;
-  image_link: string | null;
-}
-
-type WrappedResponse<T> = {
-  resultType: "SUCCESS" | "FAIL";
-  success?: T;
-};
-
-// TODO(supabase-migration): Supabase `menu` 테이블 조회로 이전.
-// 현재 NEXT_PUBLIC_API_URL(UMC 백엔드) 페이징 의존 — 백엔드 부재 시 빈 배열 반환.
-async function fetchAllMenus(): Promise<Menu[]> {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!apiUrl) return [];
-
-  const allMenus: Menu[] = [];
-  let lastMenuId = 0;
-
-  while (true) {
-    let res: Response;
-    try {
-      res = await fetch(`${apiUrl}/menu/allMenu/${lastMenuId}`);
-    } catch {
-      break;
-    }
-
-    if (res.status === 404) break;
-    if (!res.ok) break;
-
-    let raw: unknown;
-    try {
-      raw = await res.json();
-    } catch {
-      break;
-    }
-
-    // resultType 래핑 여부 처리
-    let data: Menu[];
-    if (
-      raw &&
-      typeof raw === "object" &&
-      !Array.isArray(raw) &&
-      "resultType" in raw
-    ) {
-      const wrapped = raw as WrappedResponse<Menu[]>;
-      if (wrapped.resultType !== "SUCCESS" || !wrapped.success) break;
-      data = wrapped.success;
-    } else {
-      data = raw as Menu[];
-    }
-
-    if (!Array.isArray(data) || data.length === 0) break;
-
-    const fetchedLastId = Number(data[data.length - 1]?.id);
-    if (!Number.isFinite(fetchedLastId) || fetchedLastId <= lastMenuId) break;
-
-    allMenus.push(...data);
-    lastMenuId = fetchedLastId;
+async function fetchAllMenus(): Promise<{ name: string }[]> {
+  try {
+    const sb = await createClient();
+    const { data, error } = await sb.from("menu").select("name").order("id");
+    if (error) return [];
+    return (data ?? []) as { name: string }[];
+  } catch {
+    return [];
   }
-
-  return allMenus;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

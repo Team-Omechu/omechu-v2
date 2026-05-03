@@ -32,7 +32,7 @@ export type MenuListResponse = {
   results: MenuItem[];
 };
 
-export type menuType = {
+export type MenuType = {
   id: number;
   title: string;
   description: string;

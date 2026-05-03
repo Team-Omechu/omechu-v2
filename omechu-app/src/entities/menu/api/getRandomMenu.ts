@@ -1,19 +1,34 @@
-// TODO(supabase-migration): `menu` 테이블 + 필터(prefer/allergy) 랜덤 RPC로 이전 필요.
-// 현재 NEXT_PUBLIC_API_URL(UMC 백엔드) 의존 — 백엔드 서버 부재로 동작하지 않음.
 import {
   type RandomMenu,
   type RandomMenuRequest,
 } from "@/entities/menu/config/resultData";
 
-import { axiosInstance } from "@/shared";
+import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
+
+interface MenuRow {
+  id: number;
+  name: string;
+  image_link: string | null;
+}
 
 export const getRandomMenu = async (
   request: RandomMenuRequest,
 ): Promise<RandomMenu> => {
-  // POST 로 body 에 실어서 보내기
-  const { data } = await axiosInstance.post<RandomMenu>(
-    "/menu/recommend/random",
-    request,
-  );
-  return data;
+  const sb = createSupabaseBrowserClient();
+  const tags = request.addition ?? null;
+
+  const { data, error } = await sb.rpc("recommend_random", {
+    tags,
+    limit_count: 1,
+  });
+  if (error) throw error;
+
+  const rows = (data ?? []) as MenuRow[];
+  const picked = rows[0];
+  if (!picked) throw new Error("no menu matched");
+
+  return {
+    name: picked.name,
+    image_link: picked.image_link ?? "",
+  };
 };

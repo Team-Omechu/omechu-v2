@@ -113,6 +113,25 @@ export function signInWithGoogleCode(code: string, redirectUri: string) {
   );
 }
 
+// Kakao authorize URL로 리다이렉트 (Google과 대칭). client_id는 REST API 키.
+// Kakao REST API 키는 OAuth client_id로 공개 노출 허용된 값이므로 NEXT_PUBLIC_ 가능.
+export function beginKakaoLogin(redirectUri?: string): void {
+  const restKey = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
+  if (!restKey) throw new Error("NEXT_PUBLIC_KAKAO_REST_API_KEY missing");
+
+  const finalRedirect =
+    redirectUri ??
+    process.env.NEXT_PUBLIC_KAKAO_REDIRECT_URI ??
+    `${window.location.origin}/auth/kakao/callback`;
+
+  const params = new URLSearchParams({
+    client_id: restKey,
+    redirect_uri: finalRedirect,
+    response_type: "code",
+  });
+  window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
+}
+
 export function signInWithKakaoCode(code: string, redirectUri: string) {
   return exchangeOAuthCode(
     "kakao-login",

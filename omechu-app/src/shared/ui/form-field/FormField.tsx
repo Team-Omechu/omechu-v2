@@ -1,7 +1,7 @@
 // ! 26.01.04 작업 완료
 import * as React from "react";
 
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 import { HelperText } from "@/shared/ui/input/HelperText";
 import { Label } from "@/shared/ui/input/Label";
 

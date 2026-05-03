@@ -3,7 +3,7 @@ import Image from "next/image";
 
 import { type VariantProps, cva } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
 const buttonContainerStyle = "w-12 h-14 flex flex-col gap-2 items-center";
 

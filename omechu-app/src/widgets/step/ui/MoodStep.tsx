@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { moodOptions, useQuestionAnswerStore } from "@/entities/question";
+import { MOOD_OPTIONS, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 
 import { Button } from "@/shared";
@@ -22,7 +22,7 @@ export function MoodStep() {
 
   return (
     <QuestionAnswerLayout title="날씨는 어떤가요?">
-      {moodOptions.map(({ label, value, description }) => (
+      {MOOD_OPTIONS.map(({ label, value, description }) => (
         <Button
           key={value}
           onClick={() => handleSelect(label, description)}

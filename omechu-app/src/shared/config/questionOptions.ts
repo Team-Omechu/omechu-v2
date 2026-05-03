@@ -1,4 +1,4 @@
-export const mealTimeOptions = [
+export const MEAL_TIME_OPTIONS = [
   { label: "🌅 아침", value: 1, description: "간단하고 속에 편한 음식" },
   {
     label: "🏙️ 점심",
@@ -17,7 +17,7 @@ export const mealTimeOptions = [
   },
 ];
 
-export const purposeOptions = [
+export const PURPOSE_OPTIONS = [
   {
     label: "🍛 든든한 한 끼 식사",
     value: 1,
@@ -40,7 +40,7 @@ export const purposeOptions = [
   },
 ];
 
-export const moodOptions = [
+export const MOOD_OPTIONS = [
   {
     label: "🌤️ 맑음",
     value: 1,
@@ -63,7 +63,7 @@ export const moodOptions = [
   },
 ];
 
-export const whoOptions = [
+export const WHO_OPTIONS = [
   {
     label: "👤 혼자",
     value: 1,
@@ -86,7 +86,7 @@ export const whoOptions = [
   },
 ];
 
-export const budgetOptions = [
+export const BUDGET_OPTIONS = [
   {
     label: "🪙 1만원 미만",
     value: 1,

@@ -1,26 +1,53 @@
-// TODO(supabase-migration): ML 추천 embed 서버 의존. Supabase 기반 대체 전략 필요
-// (자체 Edge Function + 자체 추천 로직, 또는 Vercel AI SDK 등). 백엔드 부재로 동작하지 않음.
-import axios from "axios";
-
+// TODO(recommend-engine): 본래 ML embed 서버가 담당했던 개인화 추천.
+// 현재는 Supabase `recommend_random` RPC(태그 필터 + 유저 알러지/제외 반영)로 대체.
+// 질문 응답(분위기/예산/동반자)은 반영 못함. 자체 추천 엔진 도입 시 교체.
 import {
   type MenuListResponse,
   type RecommendMenuRequest,
 } from "@/entities/menu/config/resultData";
 
-const BASE_URL = process.env.NEXT_PUBLIC_EMBED_API_URL ?? "";
+import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
 
-// BASE_URL + path를 안전하게 합치기
-function joinUrl(base: string, path: string) {
-  const b = base.replace(/\/+$/, "");
-  const p = path.replace(/^\/+/, "");
-  return `${b}/${p}`;
+interface MenuRow {
+  id: number;
+  name: string;
+  description: string | null;
+  image_link: string | null;
 }
+
+const PREFER_TO_TAG: Record<string, string> = {
+  한식: "korean",
+  양식: "western",
+  중식: "chinese",
+  일식: "japanese",
+  다른나라: "other",
+};
 
 export const getMenu = async (
   request: RecommendMenuRequest,
 ): Promise<MenuListResponse> => {
-  const url = joinUrl(BASE_URL, "recommend/menu");
+  const sb = createSupabaseBrowserClient();
 
-  const { data } = await axios.post<MenuListResponse>(url, request);
-  return data;
+  const preferTag = request.선호음식
+    ? PREFER_TO_TAG[request.선호음식]
+    : undefined;
+  const tags = preferTag ? [preferTag] : null;
+
+  const { data, error } = await sb.rpc("recommend_random", {
+    tags,
+    limit_count: 10,
+  });
+  if (error) throw error;
+
+  const rows = (data ?? []) as MenuRow[];
+
+  return {
+    query_text: request.선호음식 ?? "",
+    results: rows.map((m) => ({
+      menu: m.name,
+      text: m.description ?? "",
+      image_link: m.image_link ?? "",
+      allergens: [],
+    })),
+  };
 };

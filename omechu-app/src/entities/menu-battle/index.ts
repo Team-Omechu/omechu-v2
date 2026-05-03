@@ -6,7 +6,7 @@ export type {
   PlayerResult,
   Winner,
   Ranking,
-} from "./model/types";
+} from "./model/menuBattle.types";
 export type {
   ParticipantJoinedPayload,
   SpinCompletedPayload,

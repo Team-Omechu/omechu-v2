@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { purposeOptions, useQuestionAnswerStore } from "@/entities/question";
+import { PURPOSE_OPTIONS, useQuestionAnswerStore } from "@/entities/question";
 import { useTagStore } from "@/entities/tag";
 
 import { Button } from "@/shared";
@@ -22,7 +22,7 @@ export function PurposeStep() {
 
   return (
     <QuestionAnswerLayout title="식사 목적은 무엇인가요?">
-      {purposeOptions.map(({ label, value, description }) => (
+      {PURPOSE_OPTIONS.map(({ label, value, description }) => (
         <Button
           key={value}
           onClick={() => handleSelect(label, description)}

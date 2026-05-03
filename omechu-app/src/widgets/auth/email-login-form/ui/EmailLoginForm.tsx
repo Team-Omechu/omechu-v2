@@ -12,12 +12,12 @@ import { Button, FormField, Input } from "@/shared";
 
 type EmailLoginFormProps = {
   isPending: boolean;
-  onFormSubmit: (data: LoginFormValues) => void;
+  onFormSubmitAction: (data: LoginFormValues) => void;
 };
 
 export default function EmailLoginForm({
   isPending,
-  onFormSubmit,
+  onFormSubmitAction,
 }: EmailLoginFormProps) {
   const [rememberMe, setRememberMe] = useState(true);
 
@@ -45,8 +45,8 @@ export default function EmailLoginForm({
   const isFormEmpty = !trimmedEmailValue || !trimmedPasswordValue;
 
   const onSubmit = useCallback(
-    (data: LoginFormValues) => onFormSubmit(data),
-    [onFormSubmit],
+    (data: LoginFormValues) => onFormSubmitAction(data),
+    [onFormSubmitAction],
   );
 
   const handleFormSubmit = handleSubmit(onSubmit);

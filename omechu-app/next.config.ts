@@ -4,6 +4,19 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  reactCompiler: true,
+  experimental: {
+    optimizePackageImports: [
+      "motion",
+      "@tanstack/react-query",
+      "@tanstack/react-query-devtools",
+      "zod",
+      "@supabase/ssr",
+      "@supabase/supabase-js",
+      "react-hook-form",
+      "@hookform/resolvers",
+    ],
+  },
   async redirects() {
     return [
       {
@@ -13,8 +26,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  /* config options here */
   images: {
+    formats: ["image/avif", "image/webp"],
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: "https",

@@ -4,8 +4,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { fetchJSON } from "@/shared/api/fetchJSON";
 import { handleLocation } from "@/shared/lib/handleLocation";
+import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
 import { useLocationAnswerStore } from "@/shared/store/locationAnswer.store";
 
 type WinnerCardProps = {
@@ -23,14 +23,16 @@ export function WinnerCard({ winner }: WinnerCardProps) {
   const [menuImage, setMenuImage] = useState<string | null>(null);
 
   useEffect(() => {
-    void fetchJSON<{ name: string; image_link: string }[]>(
-      `/menu/search?keyword=${encodeURIComponent(winner.closestMenuName)}`,
-    ).then((response) => {
-      const first = response[0];
-      if (first) {
-        setMenuImage(first.image_link);
-      }
-    });
+    const sb = createSupabaseBrowserClient();
+    void sb
+      .from("menu")
+      .select("name, image_link")
+      .eq("name", winner.closestMenuName)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.image_link) setMenuImage(data.image_link as string);
+      });
   }, [winner.closestMenuName]);
 
   return (

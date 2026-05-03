@@ -1,7 +1,7 @@
 //! 26.01.06 작업
 import { cva } from "class-variance-authority";
 
-import { cn } from "@/shared/lib/cn.util";
+import { cn } from "@/shared/lib/cn";
 
 type ProgressBarProps = {
   currentStep: number;

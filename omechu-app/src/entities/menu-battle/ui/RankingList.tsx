@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-import { type Ranking } from "../model/types";
+import { type Ranking } from "../model/menuBattle.types";
 
 export function RankingList({ rankings }: { rankings: Ranking[] }) {
   return (

@@ -5,6 +5,7 @@ export {
   signOut as signOutSupabase,
   beginGoogleLogin,
   signInWithGoogleCode,
+  beginKakaoLogin,
   signInWithKakaoCode,
   sendVerificationCodeEmail,
   verifyEmailCode,
@@ -31,8 +32,6 @@ export {
 export { ApiClientError } from "@/shared/lib/apiClientError";
 export type { ApiResponse, ApiError } from "@/shared/config/api.types";
 
-// TODO(supabase-migration): 추천 제외 메뉴 관리.
-// 현재 레거시 axios 기반 — user_except_menu 테이블 + RLS로 이전 필요.
 export {
   fetchRecommendManagement,
   exceptMenu,

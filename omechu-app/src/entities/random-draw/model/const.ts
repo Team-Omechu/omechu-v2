@@ -1,4 +1,4 @@
-import type { RandomDrawGroup, RandomDrawSelection } from "./types";
+import type { RandomDrawGroup, RandomDrawSelection } from "./randomDraw.types";
 
 export const RANDOM_DRAW_GROUPS: RandomDrawGroup[] = [
   {

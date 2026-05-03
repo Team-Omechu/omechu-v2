@@ -15,11 +15,11 @@ import {
 import { Button, FormField, Input, Toast, useToast } from "@/shared";
 
 type ResetPasswordFormProps = {
-  onFormSubmit: (data: ResetPasswordFormValues) => Promise<void>;
+  onFormSubmitAction: (data: ResetPasswordFormValues) => Promise<void>;
 };
 
 export default function ResetPasswordForm({
-  onFormSubmit,
+  onFormSubmitAction,
 }: ResetPasswordFormProps) {
   const {
     control,
@@ -41,7 +41,7 @@ export default function ResetPasswordForm({
   const onSubmitHandler = useCallback(
     async (values: ResetPasswordFormValues) => {
       try {
-        await onFormSubmit(values);
+        await onFormSubmitAction(values);
       } catch (err: unknown) {
         const e = err as ApiClientError;
         const msg = getAuthErrorMessage(
@@ -51,7 +51,7 @@ export default function ResetPasswordForm({
         triggerToast(msg);
       }
     },
-    [onFormSubmit, triggerToast],
+    [onFormSubmitAction, triggerToast],
   );
 
   const onSubmit = handleSubmit(onSubmitHandler);

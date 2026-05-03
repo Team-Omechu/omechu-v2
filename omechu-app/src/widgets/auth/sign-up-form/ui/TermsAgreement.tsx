@@ -8,13 +8,13 @@ import type { SignupFormValues } from "@/entities/user";
 
 import { CheckBox } from "@/shared";
 
-import type { ModalType } from "../types";
+import type { ModalType } from "../signUpForm.types";
 
 type TermsAgreementProps = {
-  setActiveModal: (modal: ModalType | null) => void;
+  setActiveModalAction: (modal: ModalType | null) => void;
 };
 
-const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
+const TermsAgreement = ({ setActiveModalAction }: TermsAgreementProps) => {
   const { register, setValue, watch } = useFormContext<SignupFormValues>();
 
   const termNames = [
@@ -71,7 +71,7 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
           />
           <button
             type="button"
-            onClick={() => setActiveModal("service")}
+            onClick={() => setActiveModalAction("service")}
             className="text-caption-2-regular text-font-extra-low"
           >
             보기
@@ -92,7 +92,7 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
           />
           <button
             type="button"
-            onClick={() => setActiveModal("privacy")}
+            onClick={() => setActiveModalAction("privacy")}
             className="text-caption-2-regular text-font-extra-low"
           >
             보기
@@ -113,7 +113,7 @@ const TermsAgreement = ({ setActiveModal }: TermsAgreementProps) => {
           />
           <button
             type="button"
-            onClick={() => setActiveModal("location")}
+            onClick={() => setActiveModalAction("location")}
             className="text-caption-2-regular text-font-extra-low"
           >
             보기

@@ -15,6 +15,7 @@ import {
   Header,
   Input,
   ModalWrapper,
+  Spinner,
   Toast,
   useToast,
 } from "@/shared";
@@ -245,9 +246,9 @@ ${shareUrl}`;
         </div>
 
         {isLoadingMenus && (
-          <p className="text-caption-2 text-font-placeholder mt-4 text-center">
-            메뉴 불러오는 중...
-          </p>
+          <div className="mt-4 flex justify-center">
+            <Spinner />
+          </div>
         )}
 
         {menusError && !isLoadingMenus && (

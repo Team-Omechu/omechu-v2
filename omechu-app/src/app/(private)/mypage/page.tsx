@@ -9,7 +9,7 @@ import { useProfile, useUpdateProfileMutation } from "@/entities/user";
 
 import { CloseIcon } from "@/shared/assets/icons/index";
 
-import { BaseModal, Header, MainLoading, ModalWrapper } from "@/shared";
+import { BaseModal, ContentLoading, Header, ModalWrapper } from "@/shared";
 
 export default function MypageMain() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function MypageMain() {
     return (
       <>
         <Header title="마이페이지" onBackClick={() => router.push("/")} />
-        <MainLoading />
+        <ContentLoading />
       </>
     );
   }

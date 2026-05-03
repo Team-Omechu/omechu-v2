@@ -12,14 +12,14 @@ import {
 
 import { createSupabaseBrowserClient } from "@/shared/lib/supabase";
 
-import { BaseModal, Header, ModalWrapper } from "@/shared";
+import { BaseModal, ContentLoading, Header, ModalWrapper } from "@/shared";
 
 export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-dvh items-center justify-center">
-          <span className="text-font-medium">로딩 중...</span>
+        <main className="flex min-h-dvh flex-col">
+          <ContentLoading />
         </main>
       }
     >
@@ -58,8 +58,8 @@ function ResetPasswordClient() {
 
   if (!isReady) {
     return (
-      <main className="flex min-h-dvh items-center justify-center">
-        <p className="text-font-medium">링크를 확인하는 중...</p>
+      <main className="flex min-h-dvh flex-col">
+        <ContentLoading />
       </main>
     );
   }

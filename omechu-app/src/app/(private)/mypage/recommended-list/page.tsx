@@ -16,7 +16,7 @@ import {
 } from "@/entities/user";
 
 import { MENU_SUGGESTIONS } from "@/shared/constants/mypage";
-import { Header, SearchBar } from "@/shared/index";
+import { Header, SearchBar, Spinner } from "@/shared/index";
 import { useToast } from "@/shared/lib/useToast";
 import { Toast } from "@/shared/ui/toast/Toast";
 
@@ -111,8 +111,8 @@ export default function RecommendedListPage() {
         />
 
         {isLoading ? (
-          <div className="text-font-low flex h-40 items-center justify-center">
-            불러오는 중...
+          <div className="flex h-40 items-center justify-center">
+            <Spinner />
           </div>
         ) : currentMenus.length === 0 ? (
           <div className="text-font-low flex h-40 items-center justify-center">

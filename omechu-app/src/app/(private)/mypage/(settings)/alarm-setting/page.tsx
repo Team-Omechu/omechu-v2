@@ -21,7 +21,7 @@ import {
 
 import { ArrowIcon } from "@/shared/assets/icons";
 
-import { Header, ModalWrapper } from "@/shared";
+import { ContentLoading, Header, ModalWrapper } from "@/shared";
 
 const MEAL_LABELS: Record<MealType, string> = {
   breakfast: "아침 알림",
@@ -106,10 +106,8 @@ export default function AlarmSettingPage() {
       />
 
       {isLoading ? (
-        <main className="mt-2 flex h-[80dvh] w-full items-center justify-center">
-          <span className="text-font-low text-body-3-regular">
-            불러오는 중...
-          </span>
+        <main className="mt-2 flex h-[80dvh] w-full">
+          <ContentLoading />
         </main>
       ) : isError || !alerts ? (
         <main className="mt-2 flex h-[80dvh] w-full items-center justify-center">

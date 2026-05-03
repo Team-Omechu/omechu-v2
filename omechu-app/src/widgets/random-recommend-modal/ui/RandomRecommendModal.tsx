@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useLocationAnswerStore } from "@/entities/location";
 import { useGetRandomMenu } from "@/entities/menu";
 
-import { MainLoading } from "@/shared";
+import { Spinner } from "@/shared";
 
 type ModalProps = {
   confirmText: string;
@@ -36,7 +36,11 @@ export function RandomRecommendModal({
   };
 
   if (isLoading || isRefetching) {
-    return <MainLoading />;
+    return (
+      <div className="flex h-[300px] w-[300px] items-center justify-center rounded-[20px] bg-white p-5 shadow-xl">
+        <Spinner size={36} />
+      </div>
+    );
   }
   return (
     <div className="relative flex h-[300px] w-[300px] flex-col justify-between rounded-[20px] bg-white p-5 shadow-xl">

@@ -96,7 +96,18 @@ export default function ResultPage() {
     setShowLoginModalForReshuffle(false);
   };
 
-  if (isLoading || isRefetching) return <MainLoading />;
+  if (isLoading || isRefetching) {
+    return (
+      <div className="flex min-h-dvh flex-col items-center">
+        <Header
+          title="맞춤 추천"
+          onBackClick={() => router.back()}
+          showHomeButton={true}
+        />
+        <ContentLoading />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-dvh flex-col items-center">
